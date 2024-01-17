@@ -1,8 +1,6 @@
 package com.android.tiki_taka;
-
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -30,4 +28,13 @@ public interface ApiService {
     @POST("/savePass.php")
     Call<Boolean> sendPass(@Field("email") String email,
                            @Field("password") String password);
+
+    @GET("/generateCode.php")
+    Call<CodeResponse> getInvitationCode(@Query("userId") int userId);
+
+    @FormUrlEncoded
+    @POST("/connect.php")
+    Call<ResponseBody> sendInviteCode(@Field("userId") int userId,
+                                      @Field("inviCode") String inviCode);
+
 }

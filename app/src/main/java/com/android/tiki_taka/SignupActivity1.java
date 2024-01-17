@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -36,6 +37,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SignupActivity1 extends AppCompatActivity {
     Retrofit retrofit;
     ApiService service;
+    TextInputLayout emailTextLayout;
     TextInputEditText emailTextInput; // 클래스 멤버 변수로 선언
     ImageView verifyButton;
     TextInputEditText codeTextInput;
@@ -52,6 +54,7 @@ public class SignupActivity1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup1);
 
+        emailTextLayout = findViewById(R.id.textInputLayout);
         emailTextInput = findViewById(R.id.이메일); // 여기서 초기화
         verifyButton = findViewById(R.id.imageView6);
         codeTextInput = findViewById(R.id.인증번호);
@@ -71,6 +74,29 @@ public class SignupActivity1 extends AppCompatActivity {
 
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ApiService.class);
+
+        emailTextInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //1. 이메일 주소가 올바른 형식인지 확인
+                // 이메일 형식이 올바르지 않으면 TextInputLayout에 오류 메시지를 표시하고 함수를 종료
+                if (!isValidEmail(s.toString())) {
+                    emailTextLayout.setError("이메일 형식이 아닙니다");
+                } else {
+                    emailTextLayout.setError(null); // 오류 메시지 제거
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
 
         // 인증버튼을 클릭하면 이메일 인증번호를 보낼지 말지 결정하는 함수(onVerifyButtonClicked()) 실행
         verifyButton.setOnClickListener(new View.OnClickListener() {
@@ -153,15 +179,6 @@ public class SignupActivity1 extends AppCompatActivity {
     public void onVerifyButtonClicked() {
         email = emailTextInput.getText().toString();
 
-        //1. 이메일 주소가 올바른 형식인지 확인
-        // 이메일 형식이 올바르지 않으면 AlertDialog를 표시하고 함수를 종료
-        if (!isVaildEmail(email)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("이메일 형식이 아닙니다")
-                    .setPositiveButton("확인", null)
-                    .show();
-            return;
-        }
 
         //2.이메일 형식이 올바른 경우, 가입된 이메일 확인 요청을 보냄
         Call<Boolean> call = service.checkUserEmail(email);
@@ -199,7 +216,7 @@ public class SignupActivity1 extends AppCompatActivity {
     }
 
 
-    public boolean isVaildEmail(CharSequence email) {
+    public boolean isValidEmail(CharSequence email) {
         return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
@@ -253,10 +270,19 @@ public class SignupActivity1 extends AppCompatActivity {
                     // 서버에서 응답이 올때
 
                     try {
-                        String responseJson = response.body().string(); //서버 응답 본문을 문자열로 읽어옴
+                        String responseJson = response.body().string();
+                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
+                        //.toString() 과 다름
                         JSONObject jsonObject = new JSONObject(responseJson);
                         boolean success = jsonObject.getBoolean("success");
                         String message = jsonObject.getString("message");
+                        int userId = jsonObject.getInt("userId");
+
+                        //사용자아이디(user_id)를 db에서 가져와서 기기 내에 저장함
+                        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putInt("userId", userId);
+                        editor.apply();
 
                         if (success) {
                             // 인증번호 일치
@@ -298,8 +324,9 @@ public class SignupActivity1 extends AppCompatActivity {
                     Boolean result = response.body();
                     // 서버에서 인증번호 전송에 성공했을 때의 처리
                     if (result) {
-                        // 비밀번호 저장 성공
-                        // 저장이 끝나면, 회원가입_2로 이동
+                        // 비밀번호 db에 저장 성공
+
+                        // 회원가입_2로 이동
                         Intent intent = new Intent(SignupActivity1.this, SignupActivity2.class);
                         startActivity(intent);
 

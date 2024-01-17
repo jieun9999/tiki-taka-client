@@ -20,13 +20,14 @@
             android:exported="true" />
         <activity
             android:name=".SignupActivity2"
-            android:exported="true" />
+            android:exported="true">
+
+        </activity>
         <activity
             android:name=".SignupActivity1"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

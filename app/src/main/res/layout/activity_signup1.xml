@@ -26,7 +26,7 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/solar_menu_dots_outline" />
+        app:srcCompat="@drawable/_solar_menu_dots_outline" />
 
     <ImageView
         android:id="@+id/imageView10"
@@ -39,7 +39,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/imageView7"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/solar_menu_dots_outline" />
+        app:srcCompat="@drawable/_solar_menu_dots_outline" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -55,10 +55,9 @@
         android:id="@+id/imageView6"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginTop="63dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="25dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textInputLayout2"
         app:layout_constraintTop_toBottomOf="@+id/textView2"
         app:srcCompat="@drawable/group_11" />
 
@@ -70,30 +69,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/tabler_circle_2_filled" />
+        app:srcCompat="@drawable/_tabler_circle_2_filled" />
 
     <ImageView
         android:id="@+id/imageView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="110dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="110dp"
-        android:layout_marginBottom="90dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout4"
         app:srcCompat="@drawable/group_47" />
 
     <ImageView
         android:id="@+id/imageView9"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="21dp"
         android:layout_marginEnd="25dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textInputLayout2"
-        app:layout_constraintTop_toBottomOf="@+id/imageView6"
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout"
         app:srcCompat="@drawable/group_12" />
 
     <TextView
@@ -122,12 +119,13 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="63dp"
+        android:layout_width="290dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toStartOf="@+id/imageView6"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView2">
 
@@ -140,12 +138,12 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout2"
-        android:layout_width="0dp"
+        android:layout_width="290dp"
         android:layout_height="60dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="21dp"
         android:layout_marginEnd="10dp"
-        app:layout_constraintEnd_toStartOf="@+id/imageView6"
+        app:layout_constraintEnd_toStartOf="@+id/imageView9"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout">
 
@@ -195,4 +193,5 @@
             android:hint="비밀번호 확인"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
