@@ -25,4 +25,9 @@ public interface ApiService {
     @POST("/checkAuthCode.php")
     Call<ResponseBody> sendAuthCode(@Field("email") String email,
                                     @Field("authCode") String authCode);
+
+    @FormUrlEncoded
+    @POST("/savePass.php")
+    Call<Boolean> sendPass(@Field("email") String email,
+                           @Field("password") String password);
 }
