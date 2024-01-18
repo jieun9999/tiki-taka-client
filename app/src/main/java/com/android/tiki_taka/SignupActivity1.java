@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -22,10 +21,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Random;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -54,7 +49,7 @@ public class SignupActivity1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup1);
 
-        emailTextLayout = findViewById(R.id.textInputLayout);
+        emailTextLayout = findViewById(R.id.textInputLayout2);
         emailTextInput = findViewById(R.id.이메일); // 여기서 초기화
         verifyButton = findViewById(R.id.imageView6);
         codeTextInput = findViewById(R.id.인증번호);

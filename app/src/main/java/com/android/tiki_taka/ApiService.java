@@ -37,4 +37,11 @@ public interface ApiService {
     Call<ResponseBody> sendInviteCode(@Field("userId") int userId,
                                       @Field("inviCode") String inviCode);
 
+    @FormUrlEncoded
+    @POST("/saveUserProfile.php.")
+    Call<ResponseBody> saveUserProfile(@Field("userId") int userId,
+                                      @Field("userProfile") UserProfile userProfile);
+
+
+
 }
