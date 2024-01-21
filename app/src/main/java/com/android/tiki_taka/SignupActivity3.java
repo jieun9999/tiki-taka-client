@@ -169,7 +169,7 @@ public class SignupActivity3 extends AppCompatActivity {
                     userProfile = collectUserData();
 
                     //서버에게 http 요청보내기
-                    Call<ResponseBody> call = service.saveUserProfile(userId, userProfile);
+                    Call<ResponseBody> call = service.saveUserProfile(userProfile);
                     call.enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -430,6 +430,7 @@ public class SignupActivity3 extends AppCompatActivity {
     //사용자 입력값을 가져와서 객체 생성
     private UserProfile collectUserData() {
 
+        int Id= userId;
         byte[] profileImage = convertImageUriToBytes(selectedImageUri);
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();
         String name = editTextName.getText().toString();
@@ -438,7 +439,7 @@ public class SignupActivity3 extends AppCompatActivity {
         boolean agreeTerms = checkBoxTerms.isChecked();
         boolean agreePrivacy = checkBoxPrivacy.isChecked();
 
-        return new UserProfile(profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
+        return new UserProfile(Id, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
     }
     }
 

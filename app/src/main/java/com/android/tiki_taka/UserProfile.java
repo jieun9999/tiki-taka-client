@@ -1,6 +1,7 @@
 package com.android.tiki_taka;
 
 public class UserProfile {
+    private int userId;
     private byte[] profileImage; // 이미지를 저장할 바이트 배열
     private String gender;
     private String name;
@@ -9,7 +10,8 @@ public class UserProfile {
     private boolean agreeTerms;
     private boolean agreePrivacy;
 
-    public UserProfile(byte[] profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
+    public UserProfile(int userId, byte[] profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
+        this.userId = userId;
         this.profileImage = profileImage;
         this.gender = gender;
         this.name = name;
@@ -20,6 +22,7 @@ public class UserProfile {
     }
 
     // 게터 메서드
+    public int getUserId() {return  userId;}
     public String getGender() {
         return gender;
     }
@@ -49,6 +52,7 @@ public class UserProfile {
     }
 
     // 세터 메서드
+    public void setUserId(int userId){this.userId = userId;}
     public void setGender(String gender) {
         this.gender = gender;
     }

@@ -49,7 +49,7 @@ public class SignupActivity1 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup1);
 
-        emailTextLayout = findViewById(R.id.textInputLayout2);
+        emailTextLayout = findViewById(R.id.textInputLayout);
         emailTextInput = findViewById(R.id.이메일); // 여기서 초기화
         verifyButton = findViewById(R.id.imageView6);
         codeTextInput = findViewById(R.id.인증번호);
