@@ -1,4 +1,4 @@
-package com.android.tiki_taka;
+package com.android.tiki_taka.models;
 
 public class UserProfile {
     private int userId;

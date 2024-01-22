@@ -1,4 +1,4 @@
-package com.android.tiki_taka;
+package com.android.tiki_taka.ui;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,13 +7,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.tiki_taka.R;
+import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -79,7 +81,7 @@ public class SignupActivity1 extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 //1. 이메일 주소가 올바른 형식인지 확인
                 // 이메일 형식이 올바르지 않으면 TextInputLayout에 오류 메시지를 표시하고 함수를 종료
-                if (!isValidEmail(s.toString())) {
+                if (ValidatorSingleton.getInstance().isValidEmail(s.toString())) {
                     emailTextLayout.setError("이메일 형식이 아닙니다");
                 } else {
                     emailTextLayout.setError(null); // 오류 메시지 제거
@@ -122,16 +124,13 @@ public class SignupActivity1 extends AppCompatActivity {
             //만약 비밀번호가 조건을 만족하지 않으면 TextInputLayout의 setError 메서드를 사용하여 오류 메시지를 표시
             @Override
             public void afterTextChanged(Editable s) {
-                if (!isValidPassword(s.toString())) {
+                if (ValidatorSingleton.getInstance().isValidPassword(s.toString())) {
                     textInputLayoutPassword.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
                 } else {
                     textInputLayoutPassword.setError(null);
                 }
             }
 
-            private boolean isValidPassword(String password) {
-                return password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}$");
-            }
         });
 
         editTextPasswordConfirm.addTextChangedListener(new TextWatcher() {
@@ -208,11 +207,6 @@ public class SignupActivity1 extends AppCompatActivity {
         });
 
 
-    }
-
-
-    public boolean isValidEmail(CharSequence email) {
-        return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
 

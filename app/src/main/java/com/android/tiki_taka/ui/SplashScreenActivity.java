@@ -1,8 +1,10 @@
-package com.android.tiki_taka;
+package com.android.tiki_taka.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.android.tiki_taka.R;
 
 public class SplashScreenActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package com.android.tiki_taka;
+package com.android.tiki_taka.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,14 +11,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.CodeResponse;
+import com.android.tiki_taka.services.ApiService;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;

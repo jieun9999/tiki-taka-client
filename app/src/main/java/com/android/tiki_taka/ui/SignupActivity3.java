@@ -1,4 +1,4 @@
-package com.android.tiki_taka;
+package com.android.tiki_taka.ui;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -24,6 +24,9 @@ import android.Manifest;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.UserProfile;
+import com.android.tiki_taka.services.ApiService;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
