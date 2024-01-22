@@ -46,7 +46,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         } else if (!isAutoLoginEnabled) {
             // 로그인_1 화면으로 이동
-            intent = new Intent(SplashScreenActivity.this, SigninActivity.class);
+            intent = new Intent(SplashScreenActivity.this, SigninActivity1.class);
 
         }else {
             // 홈 화면으로 이동

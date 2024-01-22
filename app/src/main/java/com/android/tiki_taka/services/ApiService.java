@@ -54,4 +54,12 @@ public interface ApiService {
     Call<ResponseBody> signIn(@Field("email") String email,
                               @Field("password") String password);
 
+    @FormUrlEncoded
+    @POST("/Auth/sendTemporaryPassword.php")
+    Call<ResponseBody> sendTemporaryPassword(@Field("email") String email);
+
+    @FormUrlEncoded
+    @POST("/Auth/saveNewPassword.php")
+    Call<ResponseBody> saveNewPassword(@Field("email") String email);
+
 }

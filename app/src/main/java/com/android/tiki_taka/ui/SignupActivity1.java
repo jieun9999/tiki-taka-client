@@ -57,7 +57,7 @@ public class SignupActivity1 extends AppCompatActivity {
         codeTextInput = findViewById(R.id.인증번호);
         confirmButton = findViewById(R.id.imageView9);
         textInputLayoutPassword = findViewById(R.id.textInputLayout3);
-        editTextPassword = findViewById(R.id.비밀번호);
+        editTextPassword = findViewById(R.id.새비밀번호);
         textInputLayoutPasswordConfirm = findViewById(R.id.textInputLayout4);
         editTextPasswordConfirm = findViewById(R.id.비밀번호확인);
         signupButton = findViewById(R.id.imageView8);

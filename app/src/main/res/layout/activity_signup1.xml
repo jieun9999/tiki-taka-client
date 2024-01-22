@@ -167,7 +167,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout2">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/비밀번호"
+            android:id="@+id/새비밀번호"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="비밀번호"

@@ -185,7 +185,7 @@ public class SignupActivity3 extends AppCompatActivity {
                                         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
                                         //로그인 화면으로 이동
-                                        Intent intent = new Intent(SignupActivity3.this, SigninActivity.class);
+                                        Intent intent = new Intent(SignupActivity3.this, SigninActivity1.class);
                                         startActivity(intent);
 
                                     } else {

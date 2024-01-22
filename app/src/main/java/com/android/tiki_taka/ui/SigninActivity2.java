@@ -1,15 +1,16 @@
 package com.android.tiki_taka.ui;
 
+import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
@@ -30,28 +31,29 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class SigninActivity extends AppCompatActivity {
+public class SigninActivity2 extends AppCompatActivity {
     ApiService service;
     TextInputLayout emailInputLayout;
     TextInputEditText emailEditText;
-    TextInputLayout passInputLayout;
-    TextInputEditText passEditText;
-    ImageView signInButton;
-    TextView forgotText;
-    TextView deleteAccountText;
+    ImageView confirmButton;
+    String email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signin);
+        setContentView(R.layout.activity_signin2);
 
         emailInputLayout = findViewById(R.id.textInputLayout);
         emailEditText = findViewById(R.id.이메일);
-        passInputLayout = findViewById(R.id.textInputLayout2);
-        passEditText = findViewById(R.id.비밀번호);
-        signInButton = findViewById(R.id.imageView5);
-        forgotText = findViewById(R.id.textView8);
-        deleteAccountText = findViewById(R.id.textView9);
+        confirmButton = findViewById(R.id.imageView16);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        // 뒤로 가기 버튼 활성화
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false); // 타이틀 표시하지 않음
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
 
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
@@ -80,48 +82,48 @@ public class SigninActivity extends AppCompatActivity {
             }
 
         });
-        passEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (ValidatorSingleton.getInstance().isValidPassword(s.toString())) {
-                    passInputLayout.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
-                } else {
-                    passInputLayout.setError(null);
-                }
-            }
-
-
-        });
-
-        signInButton.setOnClickListener(new View.OnClickListener() {
+        confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                verifySignIn();
+                email = emailEditText.getText().toString();
+
+                // 이메일 형식이 올바른 경우, 가입된 이메일 확인 요청을 보냄
+                Call<Boolean> call = service.checkUserEmail(email);
+                call.enqueue(new Callback<Boolean>() {
+                    @Override
+                    public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                        if (response.isSuccessful()) {
+                            // 서버에서 응답을 받았을 때
+                            boolean isRegistered = response.body();
+                            if (!isRegistered) {
+                                // 미가입인 경우
+                                Toast.makeText(getApplicationContext(), "가입된 이메일이 아닙니다.", Toast.LENGTH_LONG).show();
+                            } else {
+                                // 가입된 경우, 서버에서 임시 비번과 날짜 생성후 이메일 전송
+                                sendTemporaryPassword();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Boolean> call, Throwable t) {
+                        //네트워크 오류 처리
+                        Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+                    }
+                });
             }
         });
-
     }
 
-    public void verifySignIn(){
-        String email = emailEditText.getText().toString();
-        String password = passEditText.getText().toString();
+    private void sendTemporaryPassword(){
 
-        Call<ResponseBody> call = service.signIn(email, password);
+        Call<ResponseBody> call = service.sendTemporaryPassword(email);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    // http 요청 성공시
+                    // 서버에서 응답이 올때
 
                     try {
                         String responseJson = response.body().string();
@@ -132,33 +134,22 @@ public class SigninActivity extends AppCompatActivity {
                         String message = jsonObject.getString("message");
 
                         if (success) {
-                            // 쉐어드에 자동로그인 정보 저장
-                            SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putBoolean("isAutoLoginEnabled", true);
-                            editor.apply();
-
-                            // 로그인 성공
+                            // 임시 비밀번호 전송 성공
                             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
-                            //홈화면으로 이동
-                            Intent intent = new Intent(SigninActivity.this, HomeActivity.class);
+                            //로그인_3 화면으로 이동
+                            Intent intent = new Intent(SigninActivity2.this, SigninActivity3.class);
+                            intent.putExtra("email", email); // 인텐트에 이메일 추가
                             startActivity(intent);
-
                         } else {
-                            // 로그인 실록
+                            // 임시 비밀번호 전송 실패
                             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                         }
-                    } catch (JSONException e) {
-                        // JSON 파싱 오류 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        // IOException 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
+                    } catch (JSONException | IOException e) {
+                        throw new RuntimeException(e);
                     }
-                }else{
+
+                } else {
                     // 서버 응답 오류
                     Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
                 }
@@ -166,9 +157,21 @@ public class SigninActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                // 네트워크 오류 처리
-                Toast.makeText(getApplicationContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                //네트워크 오류 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
+
+    // 뒤로 가기 버튼 클릭 이벤트 처리
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
 }
