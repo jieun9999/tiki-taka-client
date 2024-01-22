@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.CodeResponse;
 import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONException;
@@ -30,10 +31,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SignupActivity2 extends AppCompatActivity {
-    Retrofit retrofit;
     ApiService service;
     int userId; // 유저 식별 정보
     TextView codeEffectiveDate;
@@ -57,13 +56,8 @@ public class SignupActivity2 extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
 
-        //Retrofit 인스턴스 생성, 위에서 정의한 인터페이스를 사용하여 서비스 객체를 만든다.
-        //전역적으로 한 번만 생성
-        retrofit = new Retrofit.Builder()
-                .baseUrl("http://52.79.41.79/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
+        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
+        Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ApiService.class);
 

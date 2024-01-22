@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -29,10 +30,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+
 
 public class SignupActivity1 extends AppCompatActivity {
-    Retrofit retrofit;
     ApiService service;
     TextInputLayout emailTextLayout;
     TextInputEditText emailTextInput; // 클래스 멤버 변수로 선언
@@ -62,13 +62,8 @@ public class SignupActivity1 extends AppCompatActivity {
         editTextPasswordConfirm = findViewById(R.id.비밀번호확인);
         signupButton = findViewById(R.id.imageView8);
 
-        //Retrofit 인스턴스 생성, 위에서 정의한 인터페이스를 사용하여 서비스 객체를 만든다.
-        //전역적으로 한 번만 생성
-        retrofit = new Retrofit.Builder()
-                .baseUrl("http://52.79.41.79/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
+        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
+        Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ApiService.class);
 
@@ -174,7 +169,7 @@ public class SignupActivity1 extends AppCompatActivity {
         email = emailTextInput.getText().toString();
 
 
-        //2.이메일 형식이 올바른 경우, 가입된 이메일 확인 요청을 보냄
+        // 이메일 형식이 올바른 경우, 가입된 이메일 확인 요청을 보냄
         Call<Boolean> call = service.checkUserEmail(email);
         call.enqueue(new Callback<Boolean>() {
             @Override
