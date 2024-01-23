@@ -60,6 +60,8 @@ public interface ApiService {
 
     @FormUrlEncoded
     @POST("/Auth/saveNewPassword.php")
-    Call<ResponseBody> saveNewPassword(@Field("email") String email);
+    Call<ResponseBody> saveNewPassword(@Field("email") String email,
+                                       @Field("temporaryPassword") String temporaryPassword,
+                                       @Field("newPassword") String newPassword);
 
 }

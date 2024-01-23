@@ -124,7 +124,10 @@ public class SigninActivity3 extends AppCompatActivity {
     private void changePassword(){
         // SigninActivity2에서 이메일 데이터 받기
         String email = getIntent().getStringExtra("email");
-        Call<ResponseBody> call = service.saveNewPassword(email);
+        String tempPassword = tempPassInputText.getText().toString();
+        String newPassword = passInputText.getText().toString();
+
+        Call<ResponseBody> call = service.saveNewPassword(email, tempPassword, newPassword);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
