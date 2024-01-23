@@ -32,8 +32,6 @@ android {
 }
 
 dependencies {
-
-    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation ("androidx.appcompat:appcompat-resources:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -47,5 +45,8 @@ dependencies {
     // Scalars 변환기 라이브러리
     implementation ("com.squareup.retrofit2:converter-scalars:2.6.4")
     implementation ("de.hdodenhof:circleimageview:3.1.0")
+    // 새로운: AndroidX 라이브러리
+    implementation ("com.google.android.material:material:1.11.0")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
 
 }

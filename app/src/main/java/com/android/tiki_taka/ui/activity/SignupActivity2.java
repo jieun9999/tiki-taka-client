@@ -1,4 +1,4 @@
-package com.android.tiki_taka.ui;
+package com.android.tiki_taka.ui.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
