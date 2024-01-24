@@ -6,28 +6,29 @@
     android:layout_height="match_parent"
     tools:context=".ui.activity.HomeActivity">
 
-    <FrameLayout
-        android:id="@+id/menu_frame_layout"
-        android:layout_width="410dp"
-        android:layout_height="764dp"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fragment_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/menu_bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/menu_bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginTop="1dp"
         app:itemIconTint="@drawable/menu_item_color"
         app:itemTextColor="@drawable/menu_item_color"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/menu_frame_layout"
         app:menu="@menu/main_menu_bottom" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

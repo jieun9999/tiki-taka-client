@@ -49,7 +49,10 @@
             android:exported="true"></activity>
         <activity
             android:name=".ui.activity.SignupActivity3"
-            android:exported="true"></activity>
+            android:exported="true">
+
+
+        </activity>
         <activity
             android:name=".ui.activity.SignupActivity2"
             android:exported="true"></activity>

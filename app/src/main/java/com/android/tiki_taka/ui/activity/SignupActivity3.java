@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -72,7 +73,6 @@ public class SignupActivity3 extends AppCompatActivity {
     private boolean isValidInput = false; // 전역 변수 선언
     UserProfile userProfile;
     ApiService service;
-    int userId; // 유저 식별 정보
 
 
     @Override
@@ -145,9 +145,7 @@ public class SignupActivity3 extends AppCompatActivity {
             }
         });
 
-        //레트로핏 요청
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+
 
 
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
@@ -410,24 +408,37 @@ public class SignupActivity3 extends AppCompatActivity {
     }
 
     //이미지 서버 전송시 데이터 형태 갖추기
-    //이미지 URI를 Bitmap으로 변환한 다음, 이를 byte[] 형태로 변환하여 서버에 전송
-    private byte[] convertImageUriToBytes(Uri imageUri) {
+    //1. 이미지 URI를 Bitmap으로 변환한 다음,
+    //2. 이를 byte[] 형태로 변환하여 서버에 전송
+    //3. byte[]를 Base64 문자열로 인코딩
+    private String convertImageUriToBase64(Uri imageUri) {
         try {
+            // 이미지 URI에서 Bitmap을 생성
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            return baos.toByteArray();
+
+            // Bitmap을 ByteArrayOutputStream으로 변환
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+
+            // byte[]로 변환
+            byte[] imageBytes = byteArrayOutputStream.toByteArray();
+
+            // byte[]를 Base64 문자열로 인코딩
+            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
+
     //사용자 입력값을 가져와서 객체 생성
     private UserProfile collectUserData() {
 
-        int Id= userId;
-        byte[] profileImage = convertImageUriToBytes(selectedImageUri);
+        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        int Id = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+
+        String profileImage = convertImageUriToBase64(selectedImageUri);
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();
         String name = editTextName.getText().toString();
         String birthday = editTextDate.getText().toString();

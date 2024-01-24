@@ -2,8 +2,8 @@ package com.android.tiki_taka.models;
 
 import com.google.gson.annotations.SerializedName;
 
-public class UserProfile {
-    // UserProfile 클래스가 데이터 전송 객체(Data Transfer Object, DTO)로 사용
+public class PartnerProfile {
+    // PartnerProfile 클래스가 데이터 전송 객체(Data Transfer Object, DTO)로 사용
     // JSON 키와 Java 클래스의 변수명이 다를 경우에도 올바르게 매핑하기 위해서 @SerializedName 어노테이션을 사용
     @SerializedName("user_id")
     private int userId;
@@ -22,7 +22,7 @@ public class UserProfile {
     @SerializedName("agree_privacy_policy")
     private int agreePrivacy;
 
-    public UserProfile(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
+    public PartnerProfile(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
         this.userId = userId;
         this.profileImage = profileImage;
         this.gender = gender;

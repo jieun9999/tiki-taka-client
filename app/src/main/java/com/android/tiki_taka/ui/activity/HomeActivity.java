@@ -6,16 +6,38 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.PartnerProfile;
+import com.android.tiki_taka.models.UserProfile;
+import com.android.tiki_taka.services.ApiService;
 import com.android.tiki_taka.ui.fragment.AlarmFragment;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.ui.fragment.ChatFragment;
 import com.android.tiki_taka.ui.fragment.HomeFragment;
 import com.android.tiki_taka.ui.fragment.VideochatFragment;
+import com.android.tiki_taka.utils.DateUtils;
+import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class HomeActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
@@ -30,6 +52,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
         fragmentManager = getSupportFragmentManager();
         homeFragment = new HomeFragment();
         albumFragment = new AlbumFragment();
@@ -39,7 +62,7 @@ public class HomeActivity extends AppCompatActivity {
 
         //초기 프래그먼트 설정
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.menu_frame_layout, homeFragment).commitAllowingStateLoss();
+        transaction.replace(R.id.fragment_layout, homeFragment).commitAllowingStateLoss();
 
         // BottomNavigationView 설정
         BottomNavigationView bottomNavigationView = findViewById(R.id.menu_bottom_navigation);
@@ -71,7 +94,7 @@ public class HomeActivity extends AppCompatActivity {
             //선택된 프래그먼트(selectedFragment)로 실제 프래그먼트 전환을 수행하는 코드
             if (selectedFragment != null) {
                 fragmentManager.beginTransaction()
-                        .replace(R.id.menu_frame_layout, selectedFragment)
+                        .replace(R.id.fragment_layout, selectedFragment)
                         .commitAllowingStateLoss();
             }
 
@@ -79,4 +102,7 @@ public class HomeActivity extends AppCompatActivity {
             //true를 반환하여 이벤트 처리가 완료됨을 알림
         }
     }
+
+
+
 }
