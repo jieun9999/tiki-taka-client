@@ -1,12 +1,24 @@
 package com.android.tiki_taka.ui.fragment;
 
+import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
+import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +34,9 @@ import com.android.tiki_taka.services.ApiService;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import java.io.IOException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -40,6 +55,17 @@ public class HomeFragment extends Fragment {
     TextView name2;
     ImageView changeBackgroundBtn;
     int userId; // 유저 식별 정보
+    ImageView backgroundImageView;
+
+    private int currentAction;
+    private static final int PERMISSIONS_REQUEST_CODE = 100; // 권한 요청을 구별하기 위한 고유한 요청 코드, 런타임 권한 요청시 사용
+    private static final int REQUEST_CAMERA = 1;
+    private static final int REQUEST_GALLERY = 2;
+    private static final int REQUEST_IMAGE_CAPTURE = 3;
+    private static final int REQUEST_GALLERY_IMAGE = 4;
+    private boolean isProfileImageChanged;
+    Uri selectedImageUri; //프로필 사진 uri
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -66,6 +92,15 @@ public class HomeFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
+    }
+
+    //  프래그먼트의 레이아웃을 인플레이트하고 초기화하는 데 사용
+    // Retrofit 초기화와 SharedPreferences 사용은 이 메서드 내에서 수행
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_home, container, false);
+
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
@@ -78,28 +113,61 @@ public class HomeFragment extends Fragment {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MySharedPref", MODE_PRIVATE);
             userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
         }
+        return rootView;
+    }
+
+    // onCreateView() 이후에 호출되는 메서드로, 뷰가 생성된 후에 이벤트 리스너를 설정
+    // 뷰 요소에 대한 참조를 설정
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        profile1 = view.findViewById(R.id.imageView20);
+        profile2 = view.findViewById(R.id.imageView22);
+        loveDate = view.findViewById(R.id.textView14);
+        name1 = view.findViewById(R.id.textView16);
+        name2 = view.findViewById(R.id.textView17);
+        changeBackgroundBtn = view.findViewById(R.id.imageView19);
+        backgroundImageView = view.findViewById(R.id.backgroundImageView);
 
         //홈화면 데이터 불러오기
         getHomeProfile();
 
+        // 여기서 이벤트 리스너 설정
+        changeBackgroundBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 클릭 이벤트 처리
+                // getContext()를 사용하여 현재 프래그먼트의 Context를 얻습니다.
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getContext());
+                View bottomSheetView = LayoutInflater.from(getContext()).inflate(R.layout.profile_image_bottom_sheet_dialog, null);
+                bottomSheetDialog.setContentView(bottomSheetView);
+
+                bottomSheetView.findViewById(R.id.take_photo).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // 사진 찍기 로직
+                        currentAction = REQUEST_CAMERA;
+                        requestCameraPermissions();
+                        bottomSheetDialog.dismiss();
+                    }
+                });
+
+                bottomSheetView.findViewById(R.id.choose_from_gallery).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // 앨범에서 선택하기 로직
+                        currentAction = REQUEST_GALLERY;
+                        requestStoragePermissions();
+                        bottomSheetDialog.dismiss();
+                    }
+                });
+
+                bottomSheetDialog.show();
+            }
+        });
+
 
     }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_home, container, false);
-
-        profile1 = rootView.findViewById(R.id.imageView20);
-        profile2 = rootView.findViewById(R.id.imageView22);
-        loveDate = rootView.findViewById(R.id.textView14);
-        name1 = rootView.findViewById(R.id.textView16);
-        name2 = rootView.findViewById(R.id.textView17);
-        changeBackgroundBtn = rootView.findViewById(R.id.imageView19);
-
-        return rootView;
-    }
-
     private void getHomeProfile(){
         // 1. 유저 프로필 정보 가져오기
         Call<HomeProfiles> call = service.getHomeProfile(userId);
@@ -158,5 +226,123 @@ public class HomeFragment extends Fragment {
         });
 
 
+    }
+
+    // 1-1. 카메라 권한 요청
+    private void requestCameraPermissions() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            // 프래그먼트에서 직접 권한 요청
+            requestPermissions (new String[]{Manifest.permission.CAMERA},
+                    PERMISSIONS_REQUEST_CODE);
+        } else {
+            // 권한이 이미 부여되었을 경우, 카메라 및 접근 로직 실행
+            openCamera();
+        }
+    }
+
+    // 1-2. 갤러리 권한 요청
+    private void requestStoragePermissions() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // 프래그먼트에서 직접 권한 요청
+            requestPermissions (new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSIONS_REQUEST_CODE);
+        } else {
+            // 권한이 이미 부여되었을 경우, 카메라 및 저장소 접근 로직 실행
+            openGallery();
+        }
+    }
+
+    // 2. 요청에 대한 사용자 응답을 처리하는 콜백 메서드
+    // 콜백 메서드란?
+    // 프로그래머가 아닌 시스템적으로 자동 호출되는 메서드 (ex. 사용자의 응답이 있을때 호출된다)
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 권한이 부여되었을 경우, 카메라 및 저장소 접근 로직 실행
+                if (currentAction == REQUEST_CAMERA) {
+                    openCamera();
+                } else if (currentAction == REQUEST_GALLERY) {
+                    openGallery();
+                }
+            } else {
+                // 권한이 거부되었을 경우, 사용자에게 권한이 필요한 이유 설명
+                if (currentAction == REQUEST_CAMERA) {
+                    explainCameraPermissionReason();
+                } else if (currentAction == REQUEST_GALLERY) {
+                    explainStoragePermissionReason();
+                }
+
+            }
+        }
+    }
+
+    // 1-1.카메라 열기
+    private void openCamera() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+    }
+
+    //or
+
+    // 1-2.갤러리 열기
+    private void openGallery() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, REQUEST_GALLERY_IMAGE);
+    }
+
+
+    //2. 사진 선택 결과 받기
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && data != null) {
+            Bundle extras = data.getExtras();
+            // 액티비티 간 데이터를 전달시 사용하는 클래스
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            // imageBitmap을 사용하여 사진을 표시하거나 저장
+            backgroundImageView.setImageBitmap(imageBitmap);
+            isProfileImageChanged = true;
+
+        } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
+            selectedImageUri = data.getData();
+            // URI로부터 Bitmap을 생성하고, 이를 backgroundImageView에 설정
+            displayImageFromUri(selectedImageUri, backgroundImageView);
+            isProfileImageChanged = true;
+
+        }
+
+    }
+
+
+    // 권한이 필요하다는 설명 다이얼로그
+    private void explainCameraPermissionReason() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("권한 필요")
+                .setMessage("이 기능을 사용하기 위해서는 카메라 접근 권한이 필요합니다.")
+                .setPositiveButton("권한 요청", (dialog, which) -> requestCameraPermissions())
+                .setNegativeButton("취소", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+    private void explainStoragePermissionReason() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("권한 필요")
+                .setMessage("이 기능을 사용하기 위해서는 저장소 접근 권한이 필요합니다.")
+                .setPositiveButton("권한 요청", (dialog, which) -> requestStoragePermissions())
+                .setNegativeButton("취소", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
+
+    //Uri를 가지고 비트맵으로 바꿔서, 이미지뷰를 교체하는 함수
+    private void displayImageFromUri(Uri imageUri, ImageView imageView) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
+            imageView.setImageBitmap(bitmap);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
