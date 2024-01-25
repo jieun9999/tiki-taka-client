@@ -4,6 +4,7 @@ import com.android.tiki_taka.models.HomeProfiles;
 import com.android.tiki_taka.models.PartnerProfile;
 import com.android.tiki_taka.models.UserProfile;
 
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -68,6 +69,9 @@ public interface ApiService {
 
     @GET("/UserPref/homeProfile.php")
     Call<HomeProfiles> getHomeProfile(@Query("userId") int userId);
+
+    @POST("/UserPref/updateBackgroundImage.php")
+    Call<ResponseBody> updateBackgroundImage(@Body RequestBody body);
 
 
 }

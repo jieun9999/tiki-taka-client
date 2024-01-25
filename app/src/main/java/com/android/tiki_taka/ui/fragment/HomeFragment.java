@@ -19,25 +19,36 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.HomeProfiles;
 import com.android.tiki_taka.models.PartnerProfile;
 import com.android.tiki_taka.models.UserProfile;
 import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.ui.activity.SigninActivity1;
+import com.android.tiki_taka.ui.activity.SignupActivity3;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -63,7 +74,6 @@ public class HomeFragment extends Fragment {
     private static final int REQUEST_GALLERY = 2;
     private static final int REQUEST_IMAGE_CAPTURE = 3;
     private static final int REQUEST_GALLERY_IMAGE = 4;
-    private boolean isProfileImageChanged;
     Uri selectedImageUri; //프로필 사진 uri
 
 
@@ -302,14 +312,22 @@ public class HomeFragment extends Fragment {
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             // imageBitmap을 사용하여 사진을 표시하거나 저장
             backgroundImageView.setImageBitmap(imageBitmap);
-            isProfileImageChanged = true;
+
+            //사진을 찍으면 Bitmap이 나옴 => base64String으로 변환
+            String base64String = getImageBase64(imageBitmap, null);
+            //db 업데이트
+            updateBackgroundImage(base64String, userId);
+
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
             // URI로부터 Bitmap을 생성하고, 이를 backgroundImageView에 설정
             displayImageFromUri(selectedImageUri, backgroundImageView);
-            isProfileImageChanged = true;
 
+            // 이미지를 선택하면 Uri가 나옴 => base64String으로 변환
+            String base64String = getImageBase64(null, selectedImageUri);
+            //db 업데이트
+            updateBackgroundImage(base64String, userId);
         }
 
     }
@@ -345,4 +363,122 @@ public class HomeFragment extends Fragment {
             e.printStackTrace();
         }
     }
+
+    //이미지 서버 전송시 데이터 형태 갖추기
+    //1. 이미지 URI를 Bitmap으로 변환한 다음,
+    //2. 이를 byte[] 형태로 변환하여 서버에 전송
+    //3. byte[]를 Base64 문자열로 인코딩
+    private String convertImageUriToBase64(Uri imageUri) {
+        try {
+            // 이미지 URI에서 Bitmap을 생성
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
+
+            // Bitmap을 ByteArrayOutputStream으로 변환
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+
+            // byte[]로 변환
+            byte[] imageBytes = byteArrayOutputStream.toByteArray();
+
+            // byte[]를 Base64 문자열로 인코딩
+            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+ //찍은 사진의 Bitmap과 갤러리에서 선택한 이미지의 Uri를 모두 처리하여 Base64 문자열로 변환하는 통일적인 메서드 구현
+     private String convertToBase64(Bitmap bitmap) {
+         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+         byte[] imageBytes = byteArrayOutputStream.toByteArray();
+         return Base64.encodeToString(imageBytes, Base64.DEFAULT);
+     }
+
+    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        return MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+    }
+    private String getImageBase64(Bitmap bitmap, Uri uri) {
+        try {
+            Bitmap finalBitmap;
+            if (bitmap != null) {
+                finalBitmap = bitmap; //비트맵이 존재하면, 비트맵을 그대로 쓰고
+            } else if (uri != null) {
+                finalBitmap = getBitmapFromUri(uri); //uri가 존재하면, uri를 가지고 비트맵으로 변환함
+            } else {
+                return null;
+            }
+            return convertToBase64(finalBitmap); // 공통적으로 추출한 비트맵을 가지고 base64String으로 변환함
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Base64String을 가지고 db에 업데이트하는 call 주고받기
+    private void updateBackgroundImage(String imageBase64, int userId){
+
+        //JSON 객체를 생성해서 userId와 image를 같이 보내줌
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("userId", userId);
+            jsonObject.put("image", imageBase64);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        //JSON 객체를 문자열로 변환
+        String jsonData = jsonObject.toString();
+
+        //RequestBody 생성
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonData);
+
+        service.updateBackgroundImage(body).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                // 요청 성공 처리
+                if (response.isSuccessful()) {
+                    // http 요청 성공시
+
+                    try {
+                        String responseJson = response.body().string();
+                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
+                        //.toString() 과 다름
+                        JSONObject jsonObject = new JSONObject(responseJson);
+                        boolean success = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (success) {
+                            // 저장 성공
+                            Toast.makeText(getContext().getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+                        } else {
+                            // 저장 실패
+                            Toast.makeText(getContext().getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        }
+                    } catch (JSONException e) {
+                        // JSON 파싱 오류 처리
+                        e.printStackTrace();
+                        Toast.makeText(getContext().getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        // IOException 처리
+                        e.printStackTrace();
+                        Toast.makeText(getContext().getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
+                    }
+
+                } else {
+                    //서버 응답 오류
+                    Toast.makeText(getContext().getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // 요청 실패 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
 }

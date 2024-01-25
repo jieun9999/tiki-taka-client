@@ -69,7 +69,8 @@ public class SignupActivity3 extends AppCompatActivity {
     CheckBox checkBoxPrivacy;
     ImageView startButton;
     private boolean isProfileImageChanged;
-    Uri selectedImageUri; //프로필 사진 uri
+    Uri selectedImageUri; //프로필 사진 uri (갤러리)
+    Bitmap selectedPhotoBitmap; //프로필 사진 비트맵 (카메라)
     private boolean isValidInput = false; // 전역 변수 선언
     UserProfile userProfile;
     ApiService service;
@@ -293,16 +294,18 @@ public class SignupActivity3 extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && data != null) {
             Bundle extras = data.getExtras();
             // 액티비티 간 데이터를 전달시 사용하는 클래스
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            selectedPhotoBitmap = (Bitmap) extras.get("data");
             // imageBitmap을 사용하여 사진을 표시하거나 저장
-            profileImage.setImageBitmap(imageBitmap);
+            profileImage.setImageBitmap(selectedPhotoBitmap);
             isProfileImageChanged = true;
+
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
             // URI로부터 Bitmap을 생성하고, 이를 ImageView에 설정
             displayImageFromUri(selectedImageUri, profileImage);
             isProfileImageChanged = true;
+
 
         }
 
@@ -407,10 +410,10 @@ public class SignupActivity3 extends AppCompatActivity {
 
     }
 
-    //이미지 서버 전송시 데이터 형태 갖추기
+    //이미지 서버 전송시 데이터 형태 갖추기 (갤러리 편)
     //1. 이미지 URI를 Bitmap으로 변환한 다음,
-    //2. 이를 byte[] 형태로 변환하여 서버에 전송
-    //3. byte[]를 Base64 문자열로 인코딩
+    //2. 이를 byte[] 형태로 변환
+    //3. byte[]를 Base64 문자열로 인코딩 후 서버 전송
     private String convertImageUriToBase64(Uri imageUri) {
         try {
             // 이미지 URI에서 Bitmap을 생성
@@ -431,6 +434,26 @@ public class SignupActivity3 extends AppCompatActivity {
         }
     }
 
+    //이미지 서버 전송시 데이터 형태 갖추기 (카메라 편)
+    //1. 찍은 사진의 Bitmap을 byte[] 형태로 변환
+    //2. byte[]를 Base64 문자열로 인코딩 후 서버 전송
+
+    private String convertToBase64(Bitmap bitmap) {
+        // ByteArrayOutputStream을 사용하여 Bitmap을 byte array로 변환
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        // Bitmap을 JPEG 형식으로 압축. 두 번째 파라미터는 품질 설정 (0-100)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+
+        // ByteArrayOutputStream을 byte array로 변환
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+        // byte array를 Base64 문자열로 인코딩
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+
+
 
     //사용자 입력값을 가져와서 객체 생성
     private UserProfile collectUserData() {
@@ -438,7 +461,18 @@ public class SignupActivity3 extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         int Id = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
 
-        String profileImage = convertImageUriToBase64(selectedImageUri);
+        //카메라로 사진을 찍었을 때와 갤러리에서 이미지를 선택했을 때를 구분
+        String profileImage = "";
+        if (isProfileImageChanged) {
+            if (selectedImageUri != null) {
+                // 갤러리에서 선택된 이미지의 Uri를 Base64 문자열로 변환
+                profileImage = convertImageUriToBase64(selectedImageUri);
+            } else {
+                // 카메라로 찍은 사진의 Bitmap을 Base64 문자열로 변환
+                profileImage = convertToBase64(selectedPhotoBitmap);
+            }
+        }
+
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();
         String name = editTextName.getText().toString();
         String birthday = editTextDate.getText().toString();
