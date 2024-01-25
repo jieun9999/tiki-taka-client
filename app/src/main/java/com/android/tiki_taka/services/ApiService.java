@@ -72,5 +72,11 @@ public interface ApiService {
     @POST("/UserPref/updateBackgroundImage.php")
     Call<ResponseBody> updateBackgroundImage(@Body RequestBody body);
 
+    @GET("/UserPref/getMyModalData.php")
+    Call<ResponseBody> getMyModalData(@Query("userId") int userId);
+
+    @GET("/UserPref/getPtnrModalData.php")
+    Call<ResponseBody> getPtnrModalData(@Query("userId") int userId);
+
 
 }

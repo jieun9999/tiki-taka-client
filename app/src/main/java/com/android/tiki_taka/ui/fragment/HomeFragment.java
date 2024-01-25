@@ -3,10 +3,7 @@ package com.android.tiki_taka.ui.fragment;
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
-import static androidx.core.app.ActivityCompat.requestPermissions;
-
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -21,11 +18,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,13 +36,11 @@ import com.android.tiki_taka.services.ApiService;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -76,6 +72,7 @@ public class HomeFragment extends Fragment {
     private static final int REQUEST_IMAGE_CAPTURE = 3;
     private static final int REQUEST_GALLERY_IMAGE = 4;
     Uri selectedImageUri; //프로필 사진 uri
+    View dialogView; // 모달창 ui
 
 
     // TODO: Rename and change types of parameters
@@ -140,6 +137,7 @@ public class HomeFragment extends Fragment {
         changeBackgroundBtn = view.findViewById(R.id.imageView19);
         backgroundImageView = view.findViewById(R.id.backgroundImageView);
 
+
         //홈화면 데이터 불러오기
         getHomeProfile();
 
@@ -176,9 +174,21 @@ public class HomeFragment extends Fragment {
                 bottomSheetDialog.show();
             }
         });
+        profile2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMyModalDialog();
+            }
+        });
 
-
+        profile1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPtnrModalDialog();
+            }
+        });
     }
+
     private void getHomeProfile(){
         // 1. 유저 프로필 정보 가져오기
         Call<HomeProfiles> call = service.getHomeProfile(userId);
@@ -426,4 +436,235 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    // 나의 모달창
+    private void showMyModalDialog() {
+
+        //나의 모달창
+        myModalUi();
+        // 서버에서 데이터 가져오기
+        getMyModalData(dialogView);
+    }
+
+    // 파트너의 모달창
+    private void showPtnrModalDialog(){
+
+        //모달창 ui
+        ptnrModalUi();
+        // 서버에서 데이터 가져오기
+        getPtnrModalData(dialogView);
+    }
+
+
+    private void myModalUi(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.modal_my_profile, null);
+
+        builder.setView(dialogView)
+                .setCancelable(true); // 다이얼로그 바깥 영역 터치시 닫기 설정
+
+        final AlertDialog dialog = builder.create();
+
+        // XML 레이아웃에서 버튼 찾기
+        ImageView closeButton = dialogView.findViewById(R.id.btnCloseModal);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss(); // 다이얼로그 닫기
+            }
+        });
+
+        dialog.show();
+
+        // 다이얼로그 창 크기 조절
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+            layoutParams.copyFrom(dialog.getWindow().getAttributes());
+
+            // dp를 픽셀로 변환
+            float density = getResources().getDisplayMetrics().density;
+            int widthPx = (int)(380 * density); // 380dp를 픽셀로 변환
+            int heightPx = (int)(550 * density); // 550dp를 픽셀로 변환
+
+            layoutParams.width = widthPx;
+            layoutParams.height = heightPx;
+            window.setAttributes(layoutParams);
+        }
+    }
+    private void ptnrModalUi(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        dialogView = inflater.inflate(R.layout.modal_ptnr_profile, null);
+
+        builder.setView(dialogView)
+                .setCancelable(true); // 다이얼로그 바깥 영역 터치시 닫기 설정
+
+        final AlertDialog dialog = builder.create();
+
+        // XML 레이아웃에서 버튼 찾기
+        ImageView closeButton = dialogView.findViewById(R.id.btnCloseModal);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss(); // 다이얼로그 닫기
+            }
+        });
+
+        dialog.show();
+
+        // 다이얼로그 창 크기 조절
+        Window window = dialog.getWindow();
+        if (window != null) {
+            WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+            layoutParams.copyFrom(dialog.getWindow().getAttributes());
+
+            // dp를 픽셀로 변환
+            float density = getResources().getDisplayMetrics().density;
+            int widthPx = (int)(380 * density); // 380dp를 픽셀로 변환
+            int heightPx = (int)(550 * density); // 550dp를 픽셀로 변환
+
+            layoutParams.width = widthPx;
+            layoutParams.height = heightPx;
+            window.setAttributes(layoutParams);
+        }
+    }
+
+    //서버에서 데이터 가져오기
+    private void getMyModalData(View dialogView){
+        Call<ResponseBody> call = service.getMyModalData(userId);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful()){
+                    try {
+                        // 서버로부터 응답 본문을 문자열로 변환
+                        String responseString = response.body().string();
+                        //문자열을 JSON객체로 변환
+                        JSONObject jsonObject = new JSONObject(responseString);
+
+                        if(jsonObject.getBoolean("success")){
+                            // 성공적으로 데이터를 가져온 경우
+                            JSONObject userData = jsonObject.getJSONObject("data");
+
+                            //데이터 사용 (칼럼명으로 접근)
+                            // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
+                            String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
+                            String birthday = userData.optString("birthday", "");
+                            String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
+                            String profile_image = userData.optString("profile_image", "");
+                            String profile_background_image = userData.optString("profile_background_image", ""); //null 일 수도 있음
+
+
+                            // 이제 이 데이터를 UI에 표시하거나 필요한 작업 수행
+                            TextView nameTextView = dialogView.findViewById(R.id.textView19);
+                            TextView birthdayTextView = dialogView.findViewById(R.id.textView20);
+                            TextView messageTextView = dialogView.findViewById(R.id.textView18);
+                            ImageView profileImageView = dialogView.findViewById(R.id.imageView17);
+                            ImageView profileBackImageView = dialogView.findViewById(R.id.backgroundImageView);
+
+                            nameTextView.setText(name);
+                            birthdayTextView.setText(birthday);
+                            if(!profile_message.isEmpty()){
+                                messageTextView.setText(profile_message);
+                            }
+                            ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_image,profileImageView);
+                            if(!profile_background_image.isEmpty()){
+                                ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_background_image,profileBackImageView);
+                            }
+
+
+                        }else {
+                            // 데이터를 가져오는데 실패한 경우
+                            String message = jsonObject.getString("message");
+                            // 실패 메시지 처리
+                            Log.e("Error", "데이터를 가져오는데 실패: " + message);
+                        }
+
+                    } catch (IOException | JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } else {
+                    // 응답 실패
+                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+                }
+
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                //네트워크 오류 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+    private void getPtnrModalData(View dialogView){
+
+        Call<ResponseBody> call = service.getPtnrModalData(userId);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful()){
+                    try {
+                        // 서버로부터 응답 본문을 문자열로 변환
+                        String responseString = response.body().string();
+                        //문자열을 JSON객체로 변환
+                        JSONObject jsonObject = new JSONObject(responseString);
+
+                        if(jsonObject.getBoolean("success")){
+                            // 성공적으로 데이터를 가져온 경우
+                            JSONObject userData = jsonObject.getJSONObject("data");
+
+                            //데이터 사용 (칼럼명으로 접근)
+                            // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
+                            String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
+                            String birthday = userData.optString("birthday", "");
+                            String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
+                            String profile_image = userData.optString("profile_image", "");
+                            String profile_background_image = userData.optString("profile_background_image", ""); //null 일 수도 있음
+
+
+                            // 이제 이 데이터를 UI에 표시하거나 필요한 작업 수행
+                            TextView nameTextView = dialogView.findViewById(R.id.textView19);
+                            TextView birthdayTextView = dialogView.findViewById(R.id.textView20);
+                            TextView messageTextView = dialogView.findViewById(R.id.textView18);
+                            ImageView profileImageView = dialogView.findViewById(R.id.imageView17);
+                            ImageView profileBackImageView = dialogView.findViewById(R.id.backgroundImageView);
+
+                            nameTextView.setText(name);
+                            birthdayTextView.setText(birthday);
+                            if(!profile_message.isEmpty()){
+                                messageTextView.setText(profile_message);
+                            }
+                            ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_image,profileImageView);
+                            if(!profile_background_image.isEmpty()){
+                                ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_background_image,profileBackImageView);
+                            }
+
+
+                        }else {
+                            // 데이터를 가져오는데 실패한 경우
+                            String message = jsonObject.getString("message");
+                            // 실패 메시지 처리
+                            Log.e("Error", "데이터를 가져오는데 실패: " + message);
+                        }
+
+                    } catch (IOException | JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } else {
+                    // 응답 실패
+                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+                }
+
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                //네트워크 오류 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+
+    }
 }
