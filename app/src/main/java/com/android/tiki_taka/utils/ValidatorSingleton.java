@@ -1,5 +1,6 @@
 package com.android.tiki_taka.utils;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
@@ -13,6 +14,10 @@ public class ValidatorSingleton {
     // 앱 내에 클래스의 인스턴스가 딱 1개만 존재하도록 보장하는 것
     // 이 패턴은 전역 변수를 사용하지 않고 객체에 전역접근을 제공하는 방법
     // 여러곳에서 공유되는 리소스나 서비스에 대한 중앙관리가 필요할 떄 사용
+
+    Context context;
+    //전역으로 정의하고, 액티비티인지 프래그먼트인지에 따라 변화시켜주기
+
 
     //싱글톤 인스턴스를 저장하기 위한 private static 변수
     private static final ValidatorSingleton instance = new ValidatorSingleton();
@@ -32,23 +37,6 @@ public class ValidatorSingleton {
     public boolean isValidPassword(String password) {
         return !password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}$");
     }
-
-    // Base64 인코딩된 이미지 데이터를 byte[]로 디코딩한 후, 이미지 뷰에 설정
-    public void updateImageViewWithProfileImage(String base64Image, ImageView imageView) {
-        if (base64Image != null && !base64Image.isEmpty()) {
-            // Base64 문자열을 byte[] 형태로 디코딩함
-            byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
-
-            //디코딩된 byte[]를 사용하여 Bitmap을 생성함
-            Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-
-            // Bitmap을 ImageView에 설정합니다.
-            imageView.setImageBitmap(decodedByte);
-        }else {
-            imageView.setImageResource(R.drawable.ph_user_circle_plus_duotone);
-        }
-    }
-
 
 
 }

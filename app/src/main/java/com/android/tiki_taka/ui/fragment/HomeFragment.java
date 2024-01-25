@@ -3,7 +3,10 @@ package com.android.tiki_taka.ui.fragment;
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
+import static androidx.core.app.ActivityCompat.requestPermissions;
+
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,7 +17,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -33,9 +35,8 @@ import com.android.tiki_taka.models.HomeProfiles;
 import com.android.tiki_taka.models.PartnerProfile;
 import com.android.tiki_taka.models.UserProfile;
 import com.android.tiki_taka.services.ApiService;
-import com.android.tiki_taka.ui.activity.SigninActivity1;
-import com.android.tiki_taka.ui.activity.SignupActivity3;
 import com.android.tiki_taka.utils.DateUtils;
+import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -197,9 +198,7 @@ public class HomeFragment extends Fragment {
                     name2.setText(myName);
                     //UserProfile 객체에서 Base64 인토딩된 이미지 문자열을 가져옴
                     String base64Image = userProfile.getProfileImage();
-                    // 로그를 찍습니다. "HomeActivity"는 로그 태그입니다.
-                    Log.d("HomeActivity", "Base64 Image String: " + base64Image);
-                    ValidatorSingleton.getInstance().updateImageViewWithProfileImage(base64Image, profile2);
+                    ImageSingleton.getInstance().updateImageViewWithProfileImage(base64Image, profile2);
 
                     String firstDateStr = userProfile.getMeetingDay();
                     //사귄 날짜부터 지난 일수 계산
@@ -212,6 +211,12 @@ public class HomeFragment extends Fragment {
                         // 유효하지 않은 날짜 데이터 처리
                         Log.e("Date Error", "유효하지 않은 날짜 데이터: " + firstDateStr);
                     }
+                    //홈 배경 사진 교체
+                    String base64Image2 = userProfile.getHomeBackgroundImage();
+                    Log.d("HomeActivity", "Base64 Image String: " + base64Image2);
+                    if(base64Image2 != null){
+                        ImageSingleton.getInstance().updateImageViewWithProfileImage(base64Image2, backgroundImageView);
+                    }
 
                     //파트너 프로필 교체
                     // 예: 이름, 프로필 사진을 홈 액티비티의 뷰에 설정
@@ -219,8 +224,9 @@ public class HomeFragment extends Fragment {
                     name1.setText(myName2);
 
                     //UserProfile 객체에서 Base64 인토딩된 이미지 문자열을 가져옴
-                    String base64Image2 = partnerProfile.getProfileImage();
-                    ValidatorSingleton.getInstance().updateImageViewWithProfileImage(base64Image2, profile1);
+                    String base64Image3 = partnerProfile.getProfileImage();
+                    ImageSingleton.getInstance().updateImageViewWithProfileImage(base64Image3, profile1);
+
 
                 } else {
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
@@ -239,7 +245,7 @@ public class HomeFragment extends Fragment {
     }
 
     // 1-1. 카메라 권한 요청
-    private void requestCameraPermissions() {
+    public void requestCameraPermissions() {
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             // 프래그먼트에서 직접 권한 요청
             requestPermissions (new String[]{Manifest.permission.CAMERA},
@@ -251,7 +257,7 @@ public class HomeFragment extends Fragment {
     }
 
     // 1-2. 갤러리 권한 요청
-    private void requestStoragePermissions() {
+    public void requestStoragePermissions() {
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // 프래그먼트에서 직접 권한 요청
             requestPermissions (new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -314,7 +320,7 @@ public class HomeFragment extends Fragment {
             backgroundImageView.setImageBitmap(imageBitmap);
 
             //사진을 찍으면 Bitmap이 나옴 => base64String으로 변환
-            String base64String = getImageBase64(imageBitmap, null);
+            String base64String = ImageSingleton.getInstance().getImageBase64(imageBitmap, null, getContext());
             //db 업데이트
             updateBackgroundImage(base64String, userId);
 
@@ -322,10 +328,10 @@ public class HomeFragment extends Fragment {
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
             // URI로부터 Bitmap을 생성하고, 이를 backgroundImageView에 설정
-            displayImageFromUri(selectedImageUri, backgroundImageView);
+            ImageSingleton.getInstance().displayImageFromUri(selectedImageUri, backgroundImageView, getContext());
 
             // 이미지를 선택하면 Uri가 나옴 => base64String으로 변환
-            String base64String = getImageBase64(null, selectedImageUri);
+            String base64String = ImageSingleton.getInstance().getImageBase64(null, selectedImageUri, getContext());
             //db 업데이트
             updateBackgroundImage(base64String, userId);
         }
@@ -354,67 +360,6 @@ public class HomeFragment extends Fragment {
                 .show();
     }
 
-    //Uri를 가지고 비트맵으로 바꿔서, 이미지뷰를 교체하는 함수
-    private void displayImageFromUri(Uri imageUri, ImageView imageView) {
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
-            imageView.setImageBitmap(bitmap);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //이미지 서버 전송시 데이터 형태 갖추기
-    //1. 이미지 URI를 Bitmap으로 변환한 다음,
-    //2. 이를 byte[] 형태로 변환하여 서버에 전송
-    //3. byte[]를 Base64 문자열로 인코딩
-    private String convertImageUriToBase64(Uri imageUri) {
-        try {
-            // 이미지 URI에서 Bitmap을 생성
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imageUri);
-
-            // Bitmap을 ByteArrayOutputStream으로 변환
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-
-            // byte[]로 변환
-            byte[] imageBytes = byteArrayOutputStream.toByteArray();
-
-            // byte[]를 Base64 문자열로 인코딩
-            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
- //찍은 사진의 Bitmap과 갤러리에서 선택한 이미지의 Uri를 모두 처리하여 Base64 문자열로 변환하는 통일적인 메서드 구현
-     private String convertToBase64(Bitmap bitmap) {
-         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-         byte[] imageBytes = byteArrayOutputStream.toByteArray();
-         return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-     }
-
-    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
-        return MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
-    }
-    private String getImageBase64(Bitmap bitmap, Uri uri) {
-        try {
-            Bitmap finalBitmap;
-            if (bitmap != null) {
-                finalBitmap = bitmap; //비트맵이 존재하면, 비트맵을 그대로 쓰고
-            } else if (uri != null) {
-                finalBitmap = getBitmapFromUri(uri); //uri가 존재하면, uri를 가지고 비트맵으로 변환함
-            } else {
-                return null;
-            }
-            return convertToBase64(finalBitmap); // 공통적으로 추출한 비트맵을 가지고 base64String으로 변환함
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     // Base64String을 가지고 db에 업데이트하는 call 주고받기
     private void updateBackgroundImage(String imageBase64, int userId){

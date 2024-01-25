@@ -294,7 +294,6 @@ public class SignupActivity1 extends AppCompatActivity {
 
     }
 
-
     public void sendPw(String pw){
         // 1. 서버에 사용자가 입력한 비번 전송
         Call<Boolean> call = service.sendPass(email, pw);

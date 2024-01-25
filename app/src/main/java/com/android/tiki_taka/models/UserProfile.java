@@ -21,6 +21,12 @@ public class UserProfile {
     private int agreeTerms;
     @SerializedName("agree_privacy_policy")
     private int agreePrivacy;
+    @SerializedName("home_background_image")
+    private String homeBackgroundImage;
+    @SerializedName("profile_background_image")
+    private String profileBackgroundImage;
+    @SerializedName("profile_message")
+    private String profileMessage;
 
     public UserProfile(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
         this.userId = userId;
@@ -62,6 +68,9 @@ public class UserProfile {
     public String getProfileImage() {
         return profileImage;
     }
+    public String getHomeBackgroundImage(){return homeBackgroundImage;}
+    public String getProfileBackgroundImage(){return profileBackgroundImage;}
+    public String getProfileMessage(){return  profileMessage;}
 
     // 세터 메서드
     public void setUserId(int userId){this.userId = userId;}
@@ -91,5 +100,16 @@ public class UserProfile {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+    public void setHomeBackgroundImage(String homeBackgroundImage) {
+        this.homeBackgroundImage = homeBackgroundImage;
+    }
+
+    public void setProfileBackgroundImage(String profileBackgroundImage) {
+        this.profileBackgroundImage = profileBackgroundImage;
+    }
+
+    public void setProfileMessage(String profileMessage) {
+        this.profileMessage = profileMessage;
     }
 }

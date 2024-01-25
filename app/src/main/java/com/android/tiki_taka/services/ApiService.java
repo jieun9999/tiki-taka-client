@@ -1,7 +1,6 @@
 package com.android.tiki_taka.services;
 import com.android.tiki_taka.models.CodeResponse;
 import com.android.tiki_taka.models.HomeProfiles;
-import com.android.tiki_taka.models.PartnerProfile;
 import com.android.tiki_taka.models.UserProfile;
 
 import okhttp3.RequestBody;
