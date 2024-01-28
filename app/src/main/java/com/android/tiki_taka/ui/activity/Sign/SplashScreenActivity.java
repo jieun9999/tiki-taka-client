@@ -1,4 +1,4 @@
-package com.android.tiki_taka.ui.activity;
+package com.android.tiki_taka.ui.activity.Sign;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 
 @SuppressLint("CustomSplashScreen")
 //개발자가 코드의 특정 부분에서 발생할 수 있는 경고나 오류 메시지를 의도적으로 무시하고자 할 때 사용

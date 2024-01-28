@@ -1,4 +1,4 @@
-package com.android.tiki_taka.ui.activity;
+package com.android.tiki_taka.ui.activity.Profile;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;

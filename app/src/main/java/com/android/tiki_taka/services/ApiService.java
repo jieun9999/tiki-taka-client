@@ -78,5 +78,10 @@ public interface ApiService {
     @GET("/UserPref/getPtnrModalData.php")
     Call<ResponseBody> getPtnrModalData(@Query("userId") int userId);
 
+    @POST("/UserPref/updateProfileBackImage.php")
+    Call<ResponseBody> updateProfileBackImage(@Body RequestBody body);
+
+    @POST("/UserPref/updateProfileImage.php")
+    Call<ResponseBody> updateProfileImage(@Body RequestBody body);
 
 }

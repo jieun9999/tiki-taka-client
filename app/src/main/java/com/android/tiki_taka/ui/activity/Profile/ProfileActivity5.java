@@ -1,4 +1,4 @@
-package com.android.tiki_taka.ui.activity;
+package com.android.tiki_taka.ui.activity.Profile;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -10,15 +10,15 @@ import com.android.tiki_taka.R;
 
 import java.util.Objects;
 
-public class ProfileActivity4 extends AppCompatActivity {
+public class ProfileActivity5 extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile4);
+        setContentView(R.layout.activity_profile5);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("이름 변경");
+        Objects.requireNonNull(getSupportActionBar()).setTitle("상태 메세지 변경");
         // 뒤로 가기 버튼 활성화
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);

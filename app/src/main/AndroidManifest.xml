@@ -23,20 +23,30 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.activity.ProfileActivity5"
+            android:name=".ui.activity.Profile.ProfileActivity5"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.ProfileActivity4"
+            android:name=".ui.activity.Profile.ProfileActivity4"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.ProfileActivity3"
+            android:name=".ui.activity.Profile.ProfileActivity3"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.ProfileActivity2"
+            android:name=".ui.activity.Profile.ProfileActivity2"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.ProfileActivity1"
+            android:name=".ui.activity.Profile.ProfileActivity1"
             android:exported="true" >
+        </activity>
+        <activity
+            android:name=".ui.activity.Sign.SigninActivity3"
+            android:exported="true" />
+        <activity
+            android:name=".ui.activity.Sign.SigninActivity2"
+            android:exported="true" />
+        <activity
+            android:name=".ui.activity.Profile.HomeActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,30 +54,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.activity.SigninActivity3"
+            android:name=".ui.activity.Sign.SplashScreenActivity"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.SigninActivity2"
+            android:name=".ui.activity.Sign.SigninActivity1"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.HomeActivity"
-            android:exported="true">
-
-        </activity>
-        <activity
-            android:name=".ui.activity.SplashScreenActivity"
+            android:name=".ui.activity.Sign.SignupActivity3"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.SigninActivity1"
+            android:name=".ui.activity.Sign.SignupActivity2"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.SignupActivity3"
-            android:exported="true" />
-        <activity
-            android:name=".ui.activity.SignupActivity2"
-            android:exported="true" />
-        <activity
-            android:name=".ui.activity.SignupActivity1"
+            android:name=".ui.activity.Sign.SignupActivity1"
             android:exported="true" />
     </application>
 

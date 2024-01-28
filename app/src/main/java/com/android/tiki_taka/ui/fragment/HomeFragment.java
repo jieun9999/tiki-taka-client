@@ -33,6 +33,7 @@ import com.android.tiki_taka.models.HomeProfiles;
 import com.android.tiki_taka.models.PartnerProfile;
 import com.android.tiki_taka.models.UserProfile;
 import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -437,6 +438,11 @@ public class HomeFragment extends Fragment {
     }
 
     // 나의 모달창
+    // 코드 정리: myModalUi 메서드 내에서 dialogView는 전역 변수처럼 보입니다.
+    // 가능하면 전역 변수의 사용을 피하고 메서드의 매개변수를 통해 필요한 뷰나 컨텍스트를 전달하는 것이 좋습니다.
+
+    //데이터 캐싱 : 자주 변경되지 않는 데이터는 로컬에 캐싱하여,
+    // 매번 다이얼로그를 열 때마다 서버에 요청하는 대신 빠르게 불러올 수 있도록 하는 것이 효율적
     private void showMyModalDialog() {
 
         //나의 모달창
@@ -473,6 +479,18 @@ public class HomeFragment extends Fragment {
                 dialog.dismiss(); // 다이얼로그 닫기
             }
         });
+
+        // '내정보 수정' 버튼 을 누르면, 프로필 화면_1 로 이동
+        ImageView updateButton = dialogView.findViewById(R.id.imageView21);
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Intent 생성 시 getActivity()를 호출하여 액티비티 컨텍스트를 전달
+                Intent intent = new Intent(getContext(), ProfileActivity1.class);
+                startActivity(intent); // Intent를 사용하여 액티비티 시작
+            }
+        });
+
 
         dialog.show();
 

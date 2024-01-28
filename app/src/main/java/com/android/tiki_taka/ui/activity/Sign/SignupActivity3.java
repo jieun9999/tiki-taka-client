@@ -1,4 +1,4 @@
-package com.android.tiki_taka.ui.activity;
+package com.android.tiki_taka.ui.activity.Sign;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -28,6 +28,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.UserProfile;
 import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
@@ -303,14 +304,13 @@ public class SignupActivity3 extends AppCompatActivity {
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
             // URI로부터 Bitmap을 생성하고, 이를 ImageView에 설정
-            displayImageFromUri(selectedImageUri, profileImage);
+            ImageSingleton.getInstance().displayImageFromUri(selectedImageUri, profileImage, this);
             isProfileImageChanged = true;
 
 
         }
 
     }
-
 
     // 권한이 필요하다는 설명 다이얼로그
     private void explainCameraPermissionReason() {
@@ -333,16 +333,6 @@ public class SignupActivity3 extends AppCompatActivity {
                 .show();
     }
 
-
-    //Uri를 가지고 비트맵으로 바꿔서, 이미지뷰를 교체하는 함수
-    private void displayImageFromUri(Uri imageUri, ImageView imageView) {
-        try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-            imageView.setImageBitmap(bitmap);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     // datePickDialog 생성 함수
     private void datePickDialog(TextInputEditText editTextDate) {
@@ -410,50 +400,6 @@ public class SignupActivity3 extends AppCompatActivity {
 
     }
 
-    //이미지 서버 전송시 데이터 형태 갖추기 (갤러리 편)
-    //1. 이미지 URI를 Bitmap으로 변환한 다음,
-    //2. 이를 byte[] 형태로 변환
-    //3. byte[]를 Base64 문자열로 인코딩 후 서버 전송
-    private String convertImageUriToBase64(Uri imageUri) {
-        try {
-            // 이미지 URI에서 Bitmap을 생성
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-
-            // Bitmap을 ByteArrayOutputStream으로 변환
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-
-            // byte[]로 변환
-            byte[] imageBytes = byteArrayOutputStream.toByteArray();
-
-            // byte[]를 Base64 문자열로 인코딩
-            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    //이미지 서버 전송시 데이터 형태 갖추기 (카메라 편)
-    //1. 찍은 사진의 Bitmap을 byte[] 형태로 변환
-    //2. byte[]를 Base64 문자열로 인코딩 후 서버 전송
-
-    private String convertToBase64(Bitmap bitmap) {
-        // ByteArrayOutputStream을 사용하여 Bitmap을 byte array로 변환
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-        // Bitmap을 JPEG 형식으로 압축. 두 번째 파라미터는 품질 설정 (0-100)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-
-        // ByteArrayOutputStream을 byte array로 변환
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-
-        // byte array를 Base64 문자열로 인코딩
-        return Base64.encodeToString(byteArray, Base64.DEFAULT);
-    }
-
-
-
 
     //사용자 입력값을 가져와서 객체 생성
     private UserProfile collectUserData() {
@@ -466,10 +412,10 @@ public class SignupActivity3 extends AppCompatActivity {
         if (isProfileImageChanged) {
             if (selectedImageUri != null) {
                 // 갤러리에서 선택된 이미지의 Uri를 Base64 문자열로 변환
-                profileImage = convertImageUriToBase64(selectedImageUri);
+                profileImage = ImageSingleton.getInstance().getImageBase64(null, selectedImageUri, this);
             } else {
                 // 카메라로 찍은 사진의 Bitmap을 Base64 문자열로 변환
-                profileImage = convertToBase64(selectedPhotoBitmap);
+                profileImage = ImageSingleton.getInstance().getImageBase64(selectedPhotoBitmap, null, this);
             }
         }
 

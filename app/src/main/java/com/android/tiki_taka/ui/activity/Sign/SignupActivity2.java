@@ -1,4 +1,4 @@
-package com.android.tiki_taka.ui.activity;
+package com.android.tiki_taka.ui.activity.Sign;
 
 import androidx.appcompat.app.AppCompatActivity;
 
