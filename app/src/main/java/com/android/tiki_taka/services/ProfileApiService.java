@@ -42,6 +42,16 @@ public interface ProfileApiService {
     @FormUrlEncoded
     @POST("/UserPref/updateProfileMessage.php")
     Call<ResponseBody> updateProfileMessage(@Field("userId") int userId,
-                                         @Field("message") String message);
+                                            @Field("message") String message);
+
+    @GET("/UserPref/disconnectAccount.php")
+    Call<ResponseBody> disconnectAccount(@Query("userId") int userId);
+
+    @GET("/UserPref/checkConnectState.php")
+    Call<ResponseBody> checkConnectState(@Query("userId") int userId);
+
+    @GET("/UserPref/reconnectAccount.php")
+    Call<ResponseBody> reconnectAccount(@Query("userId") int userId);
+
 
 }
