@@ -1,5 +1,6 @@
 package com.android.tiki_taka.ui.activity.Sign;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -46,13 +47,11 @@ public class SigninActivity2 extends AppCompatActivity {
         emailInputLayout = findViewById(R.id.textInputLayout);
         emailEditText = findViewById(R.id.이메일);
         confirmButton = findViewById(R.id.imageView16);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // 뒤로 가기 버튼 활성화
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(false); // 타이틀 표시하지 않음
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        //기본 액션바를 사용
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼 활성화
         }
 
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
@@ -163,15 +162,15 @@ public class SigninActivity2 extends AppCompatActivity {
         });
     }
 
-    // 뒤로 가기 버튼 클릭 이벤트 처리
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // 뒤로가기 버튼 클릭 시의 동작
+                onBackPressed(); // 이전 액티비티로 돌아가기
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
 
 }

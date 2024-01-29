@@ -13,8 +13,10 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -28,6 +30,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
+import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity2;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -171,22 +174,38 @@ public class ProfileActivity1 extends AppCompatActivity {
                 // "로그아웃" 옵션을 클릭했을 때
 
                 if (options[position].equals("로그아웃")) {
-                    
+
+                    // 쉐어드에 자동로그인 비활성화 상태저장
+                    SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putBoolean("isAutoLoginEnabled", false);
+                    editor.apply();
+
+                    // 로그인_1 화면으로 이동하면서 스택 초기화
+                    Intent intent = new Intent(getApplicationContext(), SigninActivity1.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish(); // 현재 액티비티 종료
+
 
                 } else if (options[position].equals("비밀번호 변경하기")) {
 
+                    // 로그인_2 화면으로 이동하면서 스택 초기화
                     Intent intent = new Intent(ProfileActivity1.this, SigninActivity2.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
+                    finish(); // 현재 액티비티 종료
 
                 } else if (options[position].equals("알림 동의 설정")) {
 
+                    // 앱의 알림 설정 화면으로 이동
+                    goToSetting();
 
                 } else if (options[position].equals("상대방과 연결끊기")) {
                     Intent intent = new Intent(ProfileActivity1.this, ProfileActivity3.class);
                     startActivity(intent);
 
                 } else if (options[position].equals("회원 탈퇴")){
-
                     Intent intent = new Intent(ProfileActivity1.this, ProfileActivity2.class);
                     startActivity(intent);
                 }
@@ -522,6 +541,28 @@ public class ProfileActivity1 extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void goToSetting(){
+        // 현재 앱의 패키지 이름을 가져옵니다.
+        String packageName = getApplicationContext().getPackageName();
+
+        // 설정 화면으로 이동하는 Intent 생성
+        Intent intent = new Intent();
+        intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+
+        // 안드로이드 버전별로 필요한 Intent 정보를 추가합니다.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // 안드로이드 8.0 (오레오) 이상의 경우
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // 안드로이드 5.0 (롤리팝) 이상의 경우
+            intent.putExtra("app_package", packageName);
+            intent.putExtra("app_uid", getApplicationContext().getApplicationInfo().uid);
+        }
+        // 설정 화면으로 이동합니다.
+        startActivity(intent);
+
     }
 
 
