@@ -32,7 +32,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.HomeProfiles;
 import com.android.tiki_taka.models.PartnerProfile;
 import com.android.tiki_taka.models.UserProfile;
-import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.ImageSingleton;
@@ -55,7 +55,7 @@ import retrofit2.Retrofit;
 public class HomeFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    ApiService service;
+    ProfileApiService service;
     //홈 화면 뷰들
     ImageView profile1;
     ImageView profile2;
@@ -113,7 +113,7 @@ public class HomeFragment extends Fragment {
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
-        service = retrofit.create(ApiService.class);
+        service = retrofit.create(ProfileApiService.class);
 
         //Android 프래그먼트에서 getSharedPreferences 메서드를 사용하려 할 때, getSharedPreferences는 Context 객체의 메서드이기 때문에 직접적으로 사용할 수 없습니다.
         // 프래그먼트에서는 getActivity() 메서드를 통해 액티비티의 컨텍스트에 접근한 다음, 이 컨텍스트를 사용하여 getSharedPreferences를 호출해야 합니다.
@@ -188,6 +188,12 @@ public class HomeFragment extends Fragment {
                 showPtnrModalDialog();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getHomeProfile();
     }
 
     private void getHomeProfile(){
@@ -485,6 +491,9 @@ public class HomeFragment extends Fragment {
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //기존 모달창 닫음
+                dialog.dismiss();
+
                 // Intent 생성 시 getActivity()를 호출하여 액티비티 컨텍스트를 전달
                 Intent intent = new Intent(getContext(), ProfileActivity1.class);
                 startActivity(intent); // Intent를 사용하여 액티비티 시작

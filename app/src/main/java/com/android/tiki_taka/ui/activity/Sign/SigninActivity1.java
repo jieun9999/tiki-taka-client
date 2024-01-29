@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
@@ -32,7 +32,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class SigninActivity1 extends AppCompatActivity {
-    ApiService service;
+    AuthApiService service;
     TextInputLayout emailInputLayout;
     TextInputEditText emailEditText;
     TextInputLayout passInputLayout;
@@ -57,7 +57,7 @@ public class SigninActivity1 extends AppCompatActivity {
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
-        service = retrofit.create(ApiService.class);
+        service = retrofit.create(AuthApiService.class);
 
         emailEditText.addTextChangedListener(new TextWatcher() {
             @Override

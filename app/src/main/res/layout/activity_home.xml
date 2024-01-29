@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.activity.Profile.HomeActivity">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/fragment_layout"
         android:layout_width="0dp"
@@ -29,6 +28,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/main_menu_bottom" />
+        app:menu="@menu/main_menu_bottom"
+        android:background="@color/white"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

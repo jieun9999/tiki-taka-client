@@ -27,7 +27,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.UserProfile;
-import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -74,7 +74,7 @@ public class SignupActivity3 extends AppCompatActivity {
     Bitmap selectedPhotoBitmap; //프로필 사진 비트맵 (카메라)
     private boolean isValidInput = false; // 전역 변수 선언
     UserProfile userProfile;
-    ApiService service;
+    AuthApiService service;
 
 
     @Override
@@ -153,7 +153,7 @@ public class SignupActivity3 extends AppCompatActivity {
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
-        service = retrofit.create(ApiService.class);
+        service = retrofit.create(AuthApiService.class);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override

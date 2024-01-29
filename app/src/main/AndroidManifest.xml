@@ -23,6 +23,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Profile.ReconnectActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.Profile.ProfileActivity6"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.Profile.ProfileActivity5"
             android:exported="true" />
         <activity
@@ -36,8 +42,7 @@
             android:exported="true" />
         <activity
             android:name=".ui.activity.Profile.ProfileActivity1"
-            android:exported="true" >
-        </activity>
+            android:exported="true" />
         <activity
             android:name=".ui.activity.Sign.SigninActivity3"
             android:exported="true" />

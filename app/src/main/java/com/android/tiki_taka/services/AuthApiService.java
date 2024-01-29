@@ -1,9 +1,8 @@
 package com.android.tiki_taka.services;
+
 import com.android.tiki_taka.models.CodeResponse;
-import com.android.tiki_taka.models.HomeProfiles;
 import com.android.tiki_taka.models.UserProfile;
 
-import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -13,7 +12,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
-public interface ApiService {
+public interface AuthApiService {
     // 안드로이드 클라이언트에서 Retrofit 인터페이스를 정의함
     // 이 인터페이스는 서버의 특정 URL로 HTTP요청을 보내는 메서드를 정의함
 
@@ -48,7 +47,7 @@ public interface ApiService {
 
     @POST("/Auth/saveUserProfile.php")
     Call<ResponseBody> saveUserProfile(@Body UserProfile userProfile);
-     //@Body 어노테이션으로 UserProfile 객체를 전송하는 경우, 이 데이터는 기본적으로 JSON 형식으로 서버에 전달
+    //@Body 어노테이션으로 UserProfile 객체를 전송하는 경우, 이 데이터는 기본적으로 JSON 형식으로 서버에 전달
 
 
     @FormUrlEncoded
@@ -65,23 +64,4 @@ public interface ApiService {
     Call<ResponseBody> saveNewPassword(@Field("email") String email,
                                        @Field("temporaryPassword") String temporaryPassword,
                                        @Field("newPassword") String newPassword);
-
-    @GET("/UserPref/homeProfile.php")
-    Call<HomeProfiles> getHomeProfile(@Query("userId") int userId);
-
-    @POST("/UserPref/updateBackgroundImage.php")
-    Call<ResponseBody> updateBackgroundImage(@Body RequestBody body);
-
-    @GET("/UserPref/getMyModalData.php")
-    Call<ResponseBody> getMyModalData(@Query("userId") int userId);
-
-    @GET("/UserPref/getPtnrModalData.php")
-    Call<ResponseBody> getPtnrModalData(@Query("userId") int userId);
-
-    @POST("/UserPref/updateProfileBackImage.php")
-    Call<ResponseBody> updateProfileBackImage(@Body RequestBody body);
-
-    @POST("/UserPref/updateProfileImage.php")
-    Call<ResponseBody> updateProfileImage(@Body RequestBody body);
-
 }

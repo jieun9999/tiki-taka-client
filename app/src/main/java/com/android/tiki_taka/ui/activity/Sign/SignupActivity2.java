@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.CodeResponse;
-import com.android.tiki_taka.services.ApiService;
+import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -33,7 +33,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class SignupActivity2 extends AppCompatActivity {
-    ApiService service;
+    AuthApiService service;
     int userId; // 유저 식별 정보
     TextView codeEffectiveDate;
     TextView code;
@@ -59,7 +59,7 @@ public class SignupActivity2 extends AppCompatActivity {
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
-        service = retrofit.create(ApiService.class);
+        service = retrofit.create(AuthApiService.class);
 
         //1. 서버에 getInvitationCode 요청을 보냄
         Call<CodeResponse> call = service.getInvitationCode(userId);

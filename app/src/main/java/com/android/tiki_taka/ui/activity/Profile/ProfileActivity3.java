@@ -1,5 +1,6 @@
 package com.android.tiki_taka.ui.activity.Profile;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -16,23 +17,22 @@ public class ProfileActivity3 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile3);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("상대방과 연결 끊기");
-        // 뒤로 가기 버튼 활성화
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        //기본 액션바를 사용
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("상대방과 연결 끊기"); // 액션바 타이틀 설정
+            actionBar.setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼 활성화
         }
     }
 
-    // 뒤로 가기 버튼 클릭 이벤트 처리
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // 뒤로가기 버튼 클릭 시의 동작
+                onBackPressed(); // 이전 액티비티로 돌아가기
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
