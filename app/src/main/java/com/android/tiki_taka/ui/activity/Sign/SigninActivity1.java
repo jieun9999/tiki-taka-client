@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,7 +15,9 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.AuthApiService;
+import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
+import com.android.tiki_taka.ui.activity.Profile.ProfileActivity6;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -33,6 +36,7 @@ import retrofit2.Retrofit;
 
 public class SigninActivity1 extends AppCompatActivity {
     AuthApiService service;
+    ProfileApiService service2;
     TextInputLayout emailInputLayout;
     TextInputEditText emailEditText;
     TextInputLayout passInputLayout;
@@ -40,6 +44,7 @@ public class SigninActivity1 extends AppCompatActivity {
     ImageView signInButton;
     TextView forgotText;
     TextView deleteAccountText;
+    int userId; // 유저 식별 정보
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +63,12 @@ public class SigninActivity1 extends AppCompatActivity {
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(AuthApiService.class);
+        service2 = retrofit.create(ProfileApiService.class);
+        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+
+        //정상 연결 계정인 경우, '회원탈퇴' 뷰를 숨김
+        checkConnectState();
 
         emailEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -103,14 +114,12 @@ public class SigninActivity1 extends AppCompatActivity {
 
 
         });
-
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 verifySignIn();
             }
         });
-
         forgotText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,6 +127,13 @@ public class SigninActivity1 extends AppCompatActivity {
                 Intent intent = new Intent(SigninActivity1.this, SigninActivity2.class);
                 startActivity(intent);
 
+            }
+        });
+        deleteAccountText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SigninActivity1.this, ProfileActivity6.class);
+                startActivity(intent);
             }
         });
 
@@ -179,6 +195,47 @@ public class SigninActivity1 extends AppCompatActivity {
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 // 네트워크 오류 처리
                 Toast.makeText(getApplicationContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void checkConnectState(){
+        service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String responseBodyString = response.body().string();
+                        JSONObject jsonObject = new JSONObject(responseBodyString);
+
+                        if (jsonObject.getBoolean("success")) {
+                            int userState = jsonObject.getInt("userState");
+
+                            if (userState == 1) {
+                                // connect가 1이면, '회원탈퇴' 버튼을 숨김
+                                deleteAccountText.setVisibility(View.GONE);
+                            }
+
+                        } else {
+                            // 프로필이 존재하지 않는 경우
+                            String errorMessage = jsonObject.getString("message");
+                            // 에러 메시지 처리
+                            Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        // 서버 응답 실패 처리
+                        Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
+                    }
+                } catch (IOException | JSONException e) {
+                    // JSON 파싱 오류 처리
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // 요청 실패 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }

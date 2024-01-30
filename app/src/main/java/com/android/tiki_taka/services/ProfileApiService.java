@@ -53,5 +53,6 @@ public interface ProfileApiService {
     @GET("/UserPref/reconnectAccount.php")
     Call<ResponseBody> reconnectAccount(@Query("userId") int userId);
 
-
+   @GET("/UserPref/dropAccount.php")
+    Call<ResponseBody> dropAccount(@Query("userId") int userId);
 }

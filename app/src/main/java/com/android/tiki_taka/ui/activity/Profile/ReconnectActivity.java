@@ -154,7 +154,6 @@ public class ReconnectActivity extends AppCompatActivity {
                                 //파트너 1
                                 Toast.makeText(getApplicationContext(), "재연결에 성공하셨습니다!",Toast.LENGTH_LONG).show();
 
-
                                 // 스택 초기화 후 홈화면 으로 이동
                                 Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
