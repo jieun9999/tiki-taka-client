@@ -29,7 +29,7 @@ public class ProfileActivity2 extends AppCompatActivity {
         //기본 액션바를 사용
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("상대방과 연결 끊기"); // 액션바 타이틀 설정
+            actionBar.setTitle("회원 탈퇴"); // 액션바 타이틀 설정
             actionBar.setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼 활성화
         }
 

@@ -18,6 +18,7 @@ import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity6;
+import com.android.tiki_taka.ui.activity.Profile.ReconnectActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.ValidatorSingleton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -67,8 +68,8 @@ public class SigninActivity1 extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
 
-        //정상 연결 계정인 경우, '회원탈퇴' 뷰를 숨김
-        checkConnectState();
+        //회원탈퇴 버튼을 보여줄 지 말지 결정함
+        showDeleteBtn();
 
         emailEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -117,7 +118,9 @@ public class SigninActivity1 extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                verifySignIn();
+
+                // 사용자와 파트너의 연결상태 확인 후, 로그인 허가 여부 결정
+                checkConnectState();
             }
         });
         forgotText.setOnClickListener(new View.OnClickListener() {
@@ -137,6 +140,55 @@ public class SigninActivity1 extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //회원탈퇴 버튼을 보여줄 지 말지 결정함
+        showDeleteBtn();
+    }
+
+    public void showDeleteBtn(){
+        service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String responseBodyString = response.body().string();
+                        JSONObject jsonObject = new JSONObject(responseBodyString);
+
+                        if (jsonObject.getBoolean("success")) {
+                            int userState = jsonObject.getInt("userState");
+                            int partnerState = jsonObject.getInt("partnerState");
+
+                           if (userState == 1) {
+                                // connect가 1이면, '회원탈퇴' 버튼을 숨김
+                                deleteAccountText.setVisibility(View.GONE);
+
+                            }
+                        } else {
+                            // 프로필이 존재하지 않는 경우
+                            String errorMessage = jsonObject.getString("message");
+                            // 에러 메시지 처리
+                            Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        // 서버 응답 실패 처리
+                        Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
+                    }
+                } catch (IOException | JSONException e) {
+                    // JSON 파싱 오류 처리
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // 요청 실패 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
     }
 
     public void verifySignIn(){
@@ -199,6 +251,7 @@ public class SigninActivity1 extends AppCompatActivity {
         });
     }
 
+
     public void checkConnectState(){
         service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -210,12 +263,28 @@ public class SigninActivity1 extends AppCompatActivity {
 
                         if (jsonObject.getBoolean("success")) {
                             int userState = jsonObject.getInt("userState");
+                            int partnerState = jsonObject.getInt("partnerState");
 
-                            if (userState == 1) {
-                                // connect가 1이면, '회원탈퇴' 버튼을 숨김
-                                deleteAccountText.setVisibility(View.GONE);
+                            // 여기에 connectStatus를 기반으로 한 로직을 구현합니다.
+                            if (userState == 0) {
+                                //유저 0
+
+                                // 재연결 액티비티로 이동
+                                Intent intent = new Intent(SigninActivity1.this, ReconnectActivity.class);
+                                startActivity(intent);
+
+                            } else if (userState == 1 && partnerState == 0) {
+                                //유저 1, 상대방 0
+
+                                Toast.makeText(getApplicationContext(), "상대방은 재연결을 원하지 않습니다.",Toast.LENGTH_LONG).show();
+
+                            } else {
+                                // 유저 1, 상대방 1
+                                // 정상 연결
+
+                                // 정상 연결시에만 로그인을 허락해줌!!
+                                verifySignIn();
                             }
-
                         } else {
                             // 프로필이 존재하지 않는 경우
                             String errorMessage = jsonObject.getString("message");
