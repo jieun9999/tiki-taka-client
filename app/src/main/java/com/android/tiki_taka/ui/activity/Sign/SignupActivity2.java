@@ -12,7 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.CodeResponse;
+import com.android.tiki_taka.models.responses.CodeResponse;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.textfield.TextInputEditText;

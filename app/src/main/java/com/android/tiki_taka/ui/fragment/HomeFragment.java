@@ -29,9 +29,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.HomeProfiles;
-import com.android.tiki_taka.models.PartnerProfile;
-import com.android.tiki_taka.models.UserProfile;
+import com.android.tiki_taka.models.dtos.HomeProfilesDto;
+import com.android.tiki_taka.models.dtos.PartnerProfileDto;
+import com.android.tiki_taka.models.dtos.UserProfileDto;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
@@ -53,8 +53,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class HomeFragment extends Fragment {
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
     ProfileApiService service;
     //홈 화면 뷰들
     ImageView profile1;
@@ -75,40 +73,10 @@ public class HomeFragment extends Fragment {
     Uri selectedImageUri; //프로필 사진 uri
     View dialogView; // 모달창 ui
 
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public HomeFragment() {
-        // Required empty public constructor
-    }
-
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
-    }
-
-    //  프래그먼트의 레이아웃을 인플레이트하고 초기화하는 데 사용
-    // Retrofit 초기화와 SharedPreferences 사용은 이 메서드 내에서 수행
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_home, container, false);
+        // Retrofit 인스턴스 초기화나 쉐어드 프리퍼런스에서 데이터 읽기
 
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
@@ -122,7 +90,15 @@ public class HomeFragment extends Fragment {
             SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MySharedPref", MODE_PRIVATE);
             userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
         }
-        return rootView;
+
+    }
+
+    //UI 요소를 초기화하고 뷰 관련 설정
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     // onCreateView() 이후에 호출되는 메서드로, 뷰가 생성된 후에 이벤트 리스너를 설정
@@ -137,7 +113,6 @@ public class HomeFragment extends Fragment {
         name2 = view.findViewById(R.id.textView17);
         changeBackgroundBtn = view.findViewById(R.id.imageView19);
         backgroundImageView = view.findViewById(R.id.backgroundImageView);
-
 
         //홈화면 데이터 불러오기
         getHomeProfile();
@@ -198,20 +173,21 @@ public class HomeFragment extends Fragment {
 
     private void getHomeProfile(){
         // 1. 유저 프로필 정보 가져오기
-        Call<HomeProfiles> call = service.getHomeProfile(userId);
-        call.enqueue(new Callback<HomeProfiles>() {
+        Call<HomeProfilesDto> call = service.getHomeProfile(userId);
+        call.enqueue(new Callback<HomeProfilesDto>() {
             @Override
-            public void onResponse(Call<HomeProfiles> call, Response<HomeProfiles> response) {
+            public void onResponse(Call<HomeProfilesDto> call, Response<HomeProfilesDto> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     //서버에서 홈프로필 정보를 가져옴
-                    HomeProfiles homeProfiles = response.body();
+                    HomeProfilesDto homeProfiles = response.body();
                     // 유저 프로필 정보 처리
-                    UserProfile userProfile = homeProfiles.getUserProfile();
+                    UserProfileDto userProfile = homeProfiles.getUserProfile();
                     // 파트너 프로필 정보 처리
-                    PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
+                    PartnerProfileDto partnerProfile = homeProfiles.getPartnerProfile();
 
                     //나의 프로필 교체
                     String myName = userProfile.getName();
+                    Log.e("Date Error", "myName: " + myName);
                     name2.setText(myName);
                     //UserProfile 객체에서 Base64 인토딩된 이미지 문자열을 가져옴
                     String base64Image = userProfile.getProfileImage();
@@ -252,7 +228,7 @@ public class HomeFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<HomeProfiles> call, Throwable t) {
+            public void onFailure(Call<HomeProfilesDto> call, Throwable t) {
                 //네트워크 오류 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }

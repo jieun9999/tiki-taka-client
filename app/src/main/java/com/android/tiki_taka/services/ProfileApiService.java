@@ -1,7 +1,5 @@
 package com.android.tiki_taka.services;
-import com.android.tiki_taka.models.CodeResponse;
-import com.android.tiki_taka.models.HomeProfiles;
-import com.android.tiki_taka.models.UserProfile;
+import com.android.tiki_taka.models.dtos.HomeProfilesDto;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -16,7 +14,7 @@ import retrofit2.http.Query;
 public interface ProfileApiService {
 
     @GET("/UserPref/homeProfile.php")
-    Call<HomeProfiles> getHomeProfile(@Query("userId") int userId);
+    Call<HomeProfilesDto> getHomeProfile(@Query("userId") int userId);
 
     @POST("/UserPref/updateBackgroundImage.php")
     Call<ResponseBody> updateBackgroundImage(@Body RequestBody body);

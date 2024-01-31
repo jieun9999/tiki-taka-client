@@ -1,7 +1,7 @@
 package com.android.tiki_taka.services;
 
-import com.android.tiki_taka.models.CodeResponse;
-import com.android.tiki_taka.models.UserProfile;
+import com.android.tiki_taka.models.responses.CodeResponse;
+import com.android.tiki_taka.models.dtos.UserProfileDto;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -46,7 +46,7 @@ public interface AuthApiService {
     //@field나 @Query는 키-값 쌍 형식으로 데이터를 저장
 
     @POST("/Auth/saveUserProfile.php")
-    Call<ResponseBody> saveUserProfile(@Body UserProfile userProfile);
+    Call<ResponseBody> saveUserProfile(@Body UserProfileDto userProfileDTO);
     //@Body 어노테이션으로 UserProfile 객체를 전송하는 경우, 이 데이터는 기본적으로 JSON 형식으로 서버에 전달
 
 

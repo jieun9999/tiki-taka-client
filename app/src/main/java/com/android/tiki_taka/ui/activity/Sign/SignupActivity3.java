@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -26,7 +25,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.UserProfile;
+import com.android.tiki_taka.models.dtos.UserProfileDto;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -37,7 +36,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -73,7 +71,7 @@ public class SignupActivity3 extends AppCompatActivity {
     Uri selectedImageUri; //프로필 사진 uri (갤러리)
     Bitmap selectedPhotoBitmap; //프로필 사진 비트맵 (카메라)
     private boolean isValidInput = false; // 전역 변수 선언
-    UserProfile userProfile;
+    UserProfileDto userProfileDTO;
     AuthApiService service;
 
 
@@ -162,10 +160,10 @@ public class SignupActivity3 extends AppCompatActivity {
                 if (isValidInput) {
                     // 유효한 입력 처리 로직
                     // 유저 데이터 모아서 객체 생성
-                    userProfile = collectUserData();
+                    userProfileDTO = collectUserData();
 
                     //서버에게 http 요청보내기
-                    Call<ResponseBody> call = service.saveUserProfile(userProfile);
+                    Call<ResponseBody> call = service.saveUserProfile(userProfileDTO);
                     call.enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -402,7 +400,7 @@ public class SignupActivity3 extends AppCompatActivity {
 
 
     //사용자 입력값을 가져와서 객체 생성
-    private UserProfile collectUserData() {
+    private UserProfileDto collectUserData() {
 
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         int Id = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
@@ -426,7 +424,7 @@ public class SignupActivity3 extends AppCompatActivity {
         boolean agreeTerms = checkBoxTerms.isChecked();
         boolean agreePrivacy = checkBoxPrivacy.isChecked();
 
-        return new UserProfile(Id, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
+        return new UserProfileDto(Id, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
     }
     }
 

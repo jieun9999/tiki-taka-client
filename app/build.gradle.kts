@@ -48,5 +48,8 @@ dependencies {
     // 새로운: AndroidX 라이브러리
     implementation ("com.google.android.material:material:1.11.0")
     implementation ("androidx.appcompat:appcompat:1.6.1")
+    // 글라이드
+    implementation ("com.github.bumptech.glide:glide:4.12.0") //Glide 라이브러리의 핵심 기능을 포함
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0") //커스텀 Glide 모듈 지원
 
 }

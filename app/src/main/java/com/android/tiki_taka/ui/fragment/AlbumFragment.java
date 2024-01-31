@@ -1,62 +1,61 @@
 package com.android.tiki_taka.ui.fragment;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.google.android.material.tabs.TabLayout;
+import com.android.tiki_taka.adapters.StoryFolderAdapter;
+import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.responses.StoryFoldersResponse;
+import com.android.tiki_taka.services.StoryFolderApiService;
+import com.android.tiki_taka.utils.RetrofitClient;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AlbumFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+
 public class AlbumFragment extends Fragment {
+    private RecyclerView recyclerView;
+    private StoryFolderAdapter adapter;
+    StoryFolderApiService storyFolderApiService;
+    int userId; // 유저 식별 정보
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public AlbumFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AlbumFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AlbumFragment newInstance(String param1, String param2) {
-        AlbumFragment fragment = new AlbumFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         // 프래그먼트 생성 시 초기화, 비 UI 관련 작업 수행
+
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
+        Retrofit retrofit = RetrofitClient.getClient();
+        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
+        storyFolderApiService = retrofit.create(StoryFolderApiService.class);
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+
     }
 
 
@@ -64,54 +63,63 @@ public class AlbumFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         //프래그먼트의 뷰 생성 및 UI 관련 작업 수행
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_album, container,false);
-        TabLayout tabLayout = rootView.findViewById(R.id.tab_layout);
+        View view = inflater.inflate(R.layout.fragment_album, container, false);
 
-        // 탭 설정
-        tabLayout.addTab(tabLayout.newTab().setText("스토리"));
-        tabLayout.addTab(tabLayout.newTab().setText("추억상자"));
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // 탭 선택 리스너 설정
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        // 어댑터 설정 이후 데이터 로드
+        // 1.빈 어댑터로 초기화
+        adapter = new StoryFolderAdapter(new ArrayList<>());
+        recyclerView.setAdapter(adapter);
+
+        // 2.데이터를 비동기적으로 가져오는 메서드 호출
+        loadStoryFolders();
+
+        return view;
+
+    }
+
+
+
+    private void loadStoryFolders() {
+        storyFolderApiService.getStoryFolders(userId).enqueue(new Callback<StoryFoldersResponse>() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                Fragment selectedFragment = null;
+            public void onResponse(Call<StoryFoldersResponse> call, Response<StoryFoldersResponse> response) {
 
-                switch (tab.getPosition()) {
-                    case 0:
-                        selectedFragment = new StoryFragment();
-                        break;
-                    case 1:
-                        selectedFragment = new MemoryBoxFragment();
-                        break;
-                }
+                if(response.isSuccessful() && response.body() != null){
+                    // 요청 성공 + 응답 존재
 
-                // 프래그먼트 전환
-                if (selectedFragment != null) {
-                    getChildFragmentManager().beginTransaction()
-                            .replace(R.id.fragment_container, selectedFragment)
-                            .commit();
+                    StoryFoldersResponse storyFoldersResponse = response.body();
+                    if(storyFoldersResponse.isSuccess()){
+                        //success가 true인 경우,
+                        List<StoryFolderDto> storyFolderDto = storyFoldersResponse.getStoryFolders();
+
+                        // 서버에서 가져온 리스트를 어댑터에 추가함
+                        adapter.setData(storyFolderDto);
+
+                        String message = storyFoldersResponse.getMessage();
+                        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+
+                    }else {
+                        //success가 false인 경우,
+                        String message = storyFoldersResponse.getMessage();
+                        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                    }
+
+                }else {
+                    // 응답 실패
+                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
                 }
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                // 탭 선택 해제 시 필요한 경우 여기에 로직 추가
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                // 탭이 재선택될 때 필요한 경우 여기에 로직 추가
+            public void onFailure(Call<StoryFoldersResponse> call, Throwable t) {
+                // 요청 실패 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
 
-        // 현재 화면에 보이는 프래그먼트 내에서 자식 프래그먼트들을 관리하기 위한 용도
-        // 초기상태에서 스토리 프래그먼트를 선택
-        getChildFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new StoryFragment())
-                .commit();
-
-        return rootView;
     }
 
 }
