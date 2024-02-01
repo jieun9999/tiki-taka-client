@@ -3,9 +3,9 @@ package com.android.tiki_taka.ui.activity.Profile;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.content.Intent;
@@ -16,6 +16,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -41,7 +42,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 import okhttp3.MediaType;
@@ -62,7 +67,6 @@ public class ProfileActivity1 extends AppCompatActivity {
     private static final int REQUEST_BACKGROUND_IMAGE = 6; // 배경 사진 변경을 위한 요청 코드(갤러리)
 
     private int currentAction;
-    Bitmap selectedPhotoBitmap; //프로필 사진 비트맵 (카메라)
 
     private ListView listView;
     private String[] options = {"로그아웃", "비밀번호 변경하기", "알림 동의 설정", "상대방과 연결끊기", "회원 탈퇴"};
@@ -74,6 +78,8 @@ public class ProfileActivity1 extends AppCompatActivity {
     TextView messageView;
     ProfileApiService service;
     int userId; // 유저 식별 정보
+    private Uri imageUri; //카메라 앱이 전달받을 파일경로
+    String imgAbsolutePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -330,9 +336,25 @@ public class ProfileActivity1 extends AppCompatActivity {
     }
 
     // 1-1.카메라 열기
+    // 카메라 인텐트를 생성하고, EXTRA_OUTPUT에 사진을 저장할 파일의 Uri를 전달
     private void openCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = createImageFile(); //파일 경로를 만듦
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+            }
+            if (photoFile != null) {
+                imageUri = FileProvider.getUriForFile(this,
+                        "com.android.tiki_taka.fileprovider", //authorities 문자열이 AndroidManifest.xml 파일과 정확히 일치하는지 확인!
+                        photoFile);
+                // 로컬 파일 시스템에 있는 파일(photoFile)에 대한 Content Uri를 생성
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
     }
 
     // 1-2.갤러리 열기 (프로필)
@@ -350,18 +372,19 @@ public class ProfileActivity1 extends AppCompatActivity {
     //2. 사진 선택 결과 받기
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) { // 카메라 앱은 사진을 imageUri 위치에 저장하고, data 인텐트에 추가 정보를 반환하지 않을 수 있습니다. 따라서 data != null 조건을 삭제함
+            // 카메라 앱에서 직접 반환받은 Bitmap 객체에는 원본 파일 경로 정보가 포함x
+            // 카메라로 사진을 찍을 때 원본 파일 경로를 저장하려면, 사진을 찍기 전에 이미지 파일을 생성하고 이 파일의 경로를 카메라 앱에 전달해야 함
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && data != null) {
-            Bundle extras = data.getExtras();
-            // 액티비티 간 데이터를 전달시 사용하는 클래스
-            selectedPhotoBitmap = (Bitmap) extras.get("data");
-            // imageBitmap을 사용하여 사진을 표시하거나 저장
-            profileImage.setImageBitmap(selectedPhotoBitmap);
-
-            // 이미지를 선택하면 Uri가 나옴 => base64String으로 변환
-            String base64String = ImageSingleton.getInstance().getImageBase64(selectedPhotoBitmap, null, this);
             //db 업데이트
-            updateProfileImage(base64String, userId);
+            String imageUriString = imageUri.toString(); // URI를 String으로 변환한 값을 저장
+            updateProfileImage(imageUriString, userId);
+
+            //글라이드로 이미지를 ImageView에 표시
+            //Uri로 로드
+            Glide.with(this)
+                    .load(imageUri)
+                    .into(profileImage);
 
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
@@ -390,6 +413,25 @@ public class ProfileActivity1 extends AppCompatActivity {
                     .into(backImage);
         }
 
+    }
+
+    //사진을 저장할 파일 생성, 이 파일 경로는 나중에 사진의 경로로 사용됨
+    private File createImageFile() throws IOException {
+        // 이미지 파일 이름 생성
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+        // 파일의 절대 경로를 로그로 출력
+        Log.d("ImagePath", "File path: " + image.getAbsolutePath());
+        imgAbsolutePath = image.getAbsolutePath();         // 파일: 경로를 문자열로 저장
+
+
+        return image;
     }
 
     // Uri를 실제 파일 경로로 변환하는 메소드

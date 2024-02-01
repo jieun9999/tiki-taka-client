@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path
+        name="my_images"
+        path="Android/data/com.android.tiki_taka/files/Pictures" />
+</paths>
+
+<!--//여기서 주의할 점은-->
+<!--    path="Android/data/com.roopre.cameratutorial/files/Pictures" /> 이라고 되어 있는 부분에서-->
+<!--    com.roopre.cameatutorial 부분을 자신의 package 명으로 바꾸어 주어야 합니다.-->

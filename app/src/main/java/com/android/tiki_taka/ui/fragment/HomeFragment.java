@@ -38,7 +38,6 @@ import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
@@ -192,9 +191,7 @@ public class HomeFragment extends Fragment {
                     Log.e("Date Error", "myName: " + myName);
                     name2.setText(myName);
                     String profile2ImageUrl = userProfile.getProfileImage();
-                    Glide.with(getActivity())
-                            .load(profile2ImageUrl)
-                            .into(profile2);
+                    ImageSingleton.getInstance().loadImage(profile2ImageUrl,profile2, getContext());
 
                     String firstDateStr = userProfile.getMeetingDay();
                     //사귄 날짜부터 지난 일수 계산
@@ -210,9 +207,7 @@ public class HomeFragment extends Fragment {
                     //홈 배경 사진 교체
                     String backImgUrl = userProfile.getHomeBackgroundImage();
                     if(backImgUrl != null){
-                        Glide.with(getActivity())
-                                .load(backImgUrl)
-                                .into(backgroundImageView);
+                        ImageSingleton.getInstance().loadImage(backImgUrl,backgroundImageView, getContext());
                     }
 
                     //파트너 프로필 교체
@@ -220,9 +215,7 @@ public class HomeFragment extends Fragment {
                     String myName2 = partnerProfile.getName();
                     name1.setText(myName2);
                     String profile1ImageUrl = partnerProfile.getProfileImage();
-                    Glide.with(getActivity())
-                            .load(profile1ImageUrl)
-                            .into(profile1);
+                    ImageSingleton.getInstance().loadImage(profile1ImageUrl,profile1, getContext());
 
 
                 } else {
@@ -575,15 +568,11 @@ public class HomeFragment extends Fragment {
                             if(!profile_message.isEmpty()){
                                 messageTextView.setText(profile_message);
                             }
-                            Glide.with(getContext())
-                                    .load(profile_image)
-                                    .into(profileImageView);
+                            //글라이드로 imageUriString 분기처리
+                            ImageSingleton.getInstance().loadImage(profile_image,profileImageView, getContext());
                             if(!profile_background_image.isEmpty()){
-                                Glide.with(getContext())
-                                        .load(profile_background_image)
-                                        .into(profileBackImageView);
+                                ImageSingleton.getInstance().loadImage(profile_background_image,profileBackImageView, getContext());
                             }
-
 
                         }else {
                             // 데이터를 가져오는데 실패한 경우
@@ -647,13 +636,9 @@ public class HomeFragment extends Fragment {
                             if(!profile_message.isEmpty()){
                                 messageTextView.setText(profile_message);
                             }
-                            Glide.with(getContext())
-                                    .load(profile_image)
-                                    .into(profileImageView);
+                            ImageSingleton.getInstance().loadImage(profile_image,profileImageView,getContext());
                             if(!profile_background_image.isEmpty()){
-                                Glide.with(getContext())
-                                        .load(profile_background_image)
-                                        .into(profileBackImageView);
+                                ImageSingleton.getInstance().loadImage(profile_background_image,profileBackImageView,getContext());
                             }
 
 

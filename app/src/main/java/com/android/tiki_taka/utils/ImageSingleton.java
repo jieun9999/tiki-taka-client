@@ -10,8 +10,10 @@ import android.widget.ImageView;
 
 
 import com.android.tiki_taka.R;
+import com.bumptech.glide.Glide;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 public class ImageSingleton {
@@ -86,6 +88,25 @@ public class ImageSingleton {
             imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    // 이미지 로드 메서드
+    // Glide를 사용하여 imageUriString으로부터 이미지를 렌더링하는 분기 로직은, URI가 HTTP/HTTPS URL인지, 또는 로컬 파일 시스템의 content/file URI인지에 따라 달라짐
+    public void loadImage(String imageUriString, ImageView imageView, Context context) {
+        if (imageUriString.startsWith("http://") || imageUriString.startsWith("https://")) {
+            // 웹 URL에서 이미지 로드
+            Glide.with(context)
+                    .load(imageUriString)
+                    .into(imageView);
+        } else {
+            // 로컬 content URI 또는 파일 URI에서 이미지 로드
+            // Uri는 file:// 스킴을 포함하게 되며, 이는 Glide가 파일 접근을 올바르게 처리하는 데 필요
+            File file = new File(imageUriString); // 절대 경로를 사용하여 File 객체 생성
+            Uri imageUri = Uri.fromFile(file); // File 객체로부터 Uri 생성
+            Glide.with(context)
+                    .load(imageUri)
+                    .into(imageView);
         }
     }
 
