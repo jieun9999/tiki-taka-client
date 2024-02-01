@@ -21,10 +21,10 @@
 
         <ImageView
             android:id="@+id/plus_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:layout_marginEnd="17dp"
             app:srcCompat="@drawable/octicon_feed_plus_16" />
 

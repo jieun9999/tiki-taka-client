@@ -7,11 +7,14 @@
     android:background="#D9D9D9"
     tools:context=".ui.activity.Album.StoryFolderActivity1">
     <!-- 커스텀 툴바 포함 -->
-    <include
-        android:id="@+id/include"
-        layout="@layout/toolbar_with_image" />
 
     <!-- 스토리 상세 레이아웃 포함 -->
+    <include
+        android:id="@+id/include"
+        layout="@layout/toolbar_with_image"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
+
     <include
         android:id="@+id/include3"
         layout="@layout/item_thumbnail_image"
@@ -28,6 +31,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp"
+        android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
