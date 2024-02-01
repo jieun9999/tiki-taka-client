@@ -11,6 +11,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -34,6 +35,7 @@ import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity2;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
@@ -60,7 +62,6 @@ public class ProfileActivity1 extends AppCompatActivity {
     private static final int REQUEST_BACKGROUND_IMAGE = 6; // 배경 사진 변경을 위한 요청 코드(갤러리)
 
     private int currentAction;
-    Uri selectedImageUri; //프로필 사진 uri (갤러리)
     Bitmap selectedPhotoBitmap; //프로필 사진 비트맵 (카메라)
 
     private ListView listView;
@@ -213,12 +214,6 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // 데이터를 새로고침합니다
-        getData();
-    }
 
     private void getData(){
         Call<ResponseBody> call = service.getMyModalData(userId);
@@ -247,9 +242,14 @@ public class ProfileActivity1 extends AppCompatActivity {
                                 if(!profile_message.isEmpty()){
                                     messageView.setText(profile_message);
                                 }
-                                ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_image,profileImage);
+                                //글라이드로 profile과 배경이미지 처리함
+                                Glide.with(getApplicationContext())
+                                        .load(profile_image)
+                                        .into(profileImage);
                                 if(!profile_background_image.isEmpty()){
-                                    ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_background_image,backImage);
+                                    Glide.with(getApplicationContext())
+                                            .load(profile_background_image)
+                                            .into(backImage);
                                 }
                             }else {
                                 // 데이터를 가져오는데 실패한 경우
@@ -365,27 +365,46 @@ public class ProfileActivity1 extends AppCompatActivity {
 
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
-            selectedImageUri = data.getData();
-            // URI로부터 Bitmap을 생성하고, 이를 ImageView에 설정
-            ImageSingleton.getInstance().displayImageFromUri(selectedImageUri, profileImage, this);
+            Uri selectedImageUri = data.getData();
 
-            // 이미지를 선택하면 Uri가 나옴 => base64String으로 변환
-            String base64String = ImageSingleton.getInstance().getImageBase64(null, selectedImageUri, this);
+            // Uri를 통해 파일 경로 추출
+            String imagePath = getPathFromUri(selectedImageUri);
             //db 업데이트
-            updateProfileImage(base64String, userId);
+            updateProfileImage(imagePath, userId);
+            //글라이드로 이미지를 ImageView에 표시
+            Glide.with(this)
+                    .load(imagePath)
+                    .into(profileImage);
 
 
         } else if (requestCode == REQUEST_BACKGROUND_IMAGE && resultCode == RESULT_OK && data != null) {
-            selectedImageUri = data.getData();
-            // URI로부터 Bitmap을 생성하고, 이를 ImageView에 설정
-            ImageSingleton.getInstance().displayImageFromUri(selectedImageUri, backImage, this);
+            Uri selectedImageUri = data.getData();
 
-            // 이미지를 선택하면 Uri가 나옴 => base64String으로 변환
-            String base64String = ImageSingleton.getInstance().getImageBase64(null, selectedImageUri, this);
+            // Uri를 통해 파일 경로 추출
+            String imagePath = getPathFromUri(selectedImageUri);
             //db 업데이트
-            updateProfileBackImage(base64String, userId);
+            updateProfileBackImage(imagePath, userId);
+            //글라이드로 이미지를 ImageView에 표시
+            Glide.with(this)
+                    .load(imagePath)
+                    .into(backImage);
         }
 
+    }
+
+    // Uri를 실제 파일 경로로 변환하는 메소드
+    public String getPathFromUri(Uri uri) {
+        String path = null;
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            if(cursor.moveToFirst()){
+                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                path = cursor.getString(columnIndex);
+            }
+            cursor.close();
+        }
+        return path;
     }
 
     // 권한이 필요하다는 설명 다이얼로그
@@ -471,13 +490,13 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
-    private void updateProfileImage(String imageBase64, int userId){
+    private void updateProfileImage(String imageUrl, int userId){
 
         //JSON 객체를 생성해서 userId와 image를 같이 보내줌
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("userId", userId);
-            jsonObject.put("image", imageBase64);
+            jsonObject.put("image", imageUrl);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

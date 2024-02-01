@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Gainmap;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -37,6 +38,7 @@ import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.ImageSingleton;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
@@ -189,9 +191,10 @@ public class HomeFragment extends Fragment {
                     String myName = userProfile.getName();
                     Log.e("Date Error", "myName: " + myName);
                     name2.setText(myName);
-                    //UserProfile 객체에서 Base64 인토딩된 이미지 문자열을 가져옴
-                    String base64Image = userProfile.getProfileImage();
-                    ImageSingleton.getInstance().updateImageViewWithProfileImage(base64Image, profile2);
+                    String profile2ImageUrl = userProfile.getProfileImage();
+                    Glide.with(getActivity())
+                            .load(profile2ImageUrl)
+                            .into(profile2);
 
                     String firstDateStr = userProfile.getMeetingDay();
                     //사귄 날짜부터 지난 일수 계산
@@ -205,20 +208,21 @@ public class HomeFragment extends Fragment {
                         Log.e("Date Error", "유효하지 않은 날짜 데이터: " + firstDateStr);
                     }
                     //홈 배경 사진 교체
-                    String base64Image2 = userProfile.getHomeBackgroundImage();
-                    Log.d("HomeActivity", "Base64 Image String: " + base64Image2);
-                    if(base64Image2 != null){
-                        ImageSingleton.getInstance().updateImageViewWithProfileImage(base64Image2, backgroundImageView);
+                    String backImgUrl = userProfile.getHomeBackgroundImage();
+                    if(backImgUrl != null){
+                        Glide.with(getActivity())
+                                .load(backImgUrl)
+                                .into(backgroundImageView);
                     }
 
                     //파트너 프로필 교체
                     // 예: 이름, 프로필 사진을 홈 액티비티의 뷰에 설정
                     String myName2 = partnerProfile.getName();
                     name1.setText(myName2);
-
-                    //UserProfile 객체에서 Base64 인토딩된 이미지 문자열을 가져옴
-                    String base64Image3 = partnerProfile.getProfileImage();
-                    ImageSingleton.getInstance().updateImageViewWithProfileImage(base64Image3, profile1);
+                    String profile1ImageUrl = partnerProfile.getProfileImage();
+                    Glide.with(getActivity())
+                            .load(profile1ImageUrl)
+                            .into(profile1);
 
 
                 } else {
@@ -571,9 +575,13 @@ public class HomeFragment extends Fragment {
                             if(!profile_message.isEmpty()){
                                 messageTextView.setText(profile_message);
                             }
-                            ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_image,profileImageView);
+                            Glide.with(getContext())
+                                    .load(profile_image)
+                                    .into(profileImageView);
                             if(!profile_background_image.isEmpty()){
-                                ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_background_image,profileBackImageView);
+                                Glide.with(getContext())
+                                        .load(profile_background_image)
+                                        .into(profileBackImageView);
                             }
 
 
@@ -639,9 +647,13 @@ public class HomeFragment extends Fragment {
                             if(!profile_message.isEmpty()){
                                 messageTextView.setText(profile_message);
                             }
-                            ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_image,profileImageView);
+                            Glide.with(getContext())
+                                    .load(profile_image)
+                                    .into(profileImageView);
                             if(!profile_background_image.isEmpty()){
-                                ImageSingleton.getInstance().updateImageViewWithProfileImage(profile_background_image,profileBackImageView);
+                                Glide.with(getContext())
+                                        .load(profile_background_image)
+                                        .into(profileBackImageView);
                             }
 
 
