@@ -168,12 +168,12 @@ public class StoryFolderActivity1 extends AppCompatActivity {
                         adapter.setData(storyCardDtos);
 
                         String message = storyCardsResponse.getMessage();
-                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
                     }else {
                         //success가 false인 경우,
                         String message = storyCardsResponse.getMessage();
-                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
                     }
 
                 }else {

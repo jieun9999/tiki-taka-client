@@ -102,12 +102,12 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
                         adapter.setData(storyFolderDtos);
 
                         String message = storyFoldersResponse.getMessage();
-                        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
 
                     }else {
                         //success가 false인 경우,
                         String message = storyFoldersResponse.getMessage();
-                        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
                     }
 
                 }else {
