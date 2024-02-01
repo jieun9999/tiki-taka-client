@@ -20,7 +20,7 @@ import com.android.tiki_taka.adapters.StoryFolderAdapter;
 import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.StoryFolderDto;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
-import com.android.tiki_taka.services.StoryFolderApiService;
+import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity1;
 import com.android.tiki_taka.utils.RetrofitClient;
 
@@ -38,7 +38,7 @@ import retrofit2.Retrofit;
 public class AlbumFragment extends Fragment implements ItemClickListener {
     private RecyclerView recyclerView;
     private StoryFolderAdapter adapter;
-    StoryFolderApiService storyFolderApiService;
+    StoryApiService storyFolderApiService;
     int userId; // 유저 식별 정보
 
 
@@ -54,7 +54,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
-        storyFolderApiService = retrofit.create(StoryFolderApiService.class);
+        storyFolderApiService = retrofit.create(StoryApiService.class);
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MySharedPref", MODE_PRIVATE);
         userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
@@ -96,10 +96,10 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
                     StoryFoldersResponse storyFoldersResponse = response.body();
                     if(storyFoldersResponse.isSuccess()){
                         //success가 true인 경우,
-                        List<StoryFolderDto> storyFolderDto = storyFoldersResponse.getStoryFolders();
+                        List<StoryFolderDto> storyFolderDtos = storyFoldersResponse.getStoryFolders();
 
                         // 서버에서 가져온 리스트를 어댑터에 추가함
-                        adapter.setData(storyFolderDto);
+                        adapter.setData(storyFolderDtos);
 
                         String message = storyFoldersResponse.getMessage();
                         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();

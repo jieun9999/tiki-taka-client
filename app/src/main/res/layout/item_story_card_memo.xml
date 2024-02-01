@@ -6,7 +6,7 @@
     android:layout_height="600dp">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/imageView40"
         android:layout_width="380dp"
         android:layout_height="500dp"
         android:layout_marginStart="15dp"
