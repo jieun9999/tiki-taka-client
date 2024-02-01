@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Application theme. -->
+    <style name="NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Disable the default action bar -->
+        <item name="windowActionBar">false</item>
+        <!-- Disable the title -->
+        <item name="windowNoTitle">true</item>
+    </style>
+
+</resources>

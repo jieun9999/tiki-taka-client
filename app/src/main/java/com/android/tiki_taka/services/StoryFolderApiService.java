@@ -1,6 +1,7 @@
 package com.android.tiki_taka.services;
 
 import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 
 import java.util.List;
@@ -13,5 +14,8 @@ public interface StoryFolderApiService {
     @GET("StoryFolder/getStoryFolders.php")
     Call<StoryFoldersResponse> getStoryFolders(@Query("userId") int userId);
     // <StoryFoldersResponse>는 서버에서 받아올 데이터 형식을 지정
+
+   @GET("StoryFolder/getThumbNail.php")
+    Call<StoryFolderResponse> getThumbNail(@Query("folderId") int folderId);
 
 }

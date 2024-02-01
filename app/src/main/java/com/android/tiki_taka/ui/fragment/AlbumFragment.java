@@ -2,6 +2,7 @@ package com.android.tiki_taka.ui.fragment;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -16,9 +17,11 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryFolderAdapter;
+import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.StoryFolderDto;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryFolderApiService;
+import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity1;
 import com.android.tiki_taka.utils.RetrofitClient;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -31,8 +34,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-
-public class AlbumFragment extends Fragment {
+// 프래그먼트 내에서 ItemClickListener 인터페이스를 구현하고, 이를 어댑터에 전달할 수 있음
+public class AlbumFragment extends Fragment implements ItemClickListener {
     private RecyclerView recyclerView;
     private StoryFolderAdapter adapter;
     StoryFolderApiService storyFolderApiService;
@@ -70,7 +73,7 @@ public class AlbumFragment extends Fragment {
 
         // 어댑터 설정 이후 데이터 로드
         // 1.빈 어댑터로 초기화
-        adapter = new StoryFolderAdapter(new ArrayList<>());
+        adapter = new StoryFolderAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
         // 2.데이터를 비동기적으로 가져오는 메서드 호출
@@ -121,5 +124,13 @@ public class AlbumFragment extends Fragment {
         });
 
     }
+    //아이템 클릭시, 아이템의 id를 다음 화면에 넘겨줍니다.
+    @Override
+    public void onItemClick(int position) {
+        StoryFolderDto clickedItem = adapter.getItem(position);
 
+        Intent intent = new Intent(getContext(), StoryFolderActivity1.class);
+        intent.putExtra("CLICKED_ITEM_ID", clickedItem.getFolderId());
+        startActivity(intent);
+    }
 }
