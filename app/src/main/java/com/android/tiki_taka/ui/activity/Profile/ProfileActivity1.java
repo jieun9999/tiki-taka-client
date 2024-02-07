@@ -220,6 +220,11 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getNameAndMessage();
+    }
 
     private void getData(){
         Call<ResponseBody> call = service.getMyModalData(userId);
@@ -281,6 +286,56 @@ public class ProfileActivity1 extends AppCompatActivity {
                 }
             });
         }
+
+    private void getNameAndMessage(){
+        Call<ResponseBody> call = service.getMyModalData(userId);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful()){
+                    try {
+                        // 서버로부터 응답 본문을 문자열로 변환
+                        String responseString = response.body().string();
+                        //문자열을 JSON객체로 변환
+                        JSONObject jsonObject = new JSONObject(responseString);
+
+                        if(jsonObject.getBoolean("success")){
+                            // 성공적으로 데이터를 가져온 경우
+                            JSONObject userData = jsonObject.getJSONObject("data");
+
+                            //데이터 사용 (칼럼명으로 접근)
+                            // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
+                            String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
+                            String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
+
+                            nameView.setText(name);
+                            if(!profile_message.isEmpty()){
+                                messageView.setText(profile_message);
+                            }
+                        }else {
+                            // 데이터를 가져오는데 실패한 경우
+                            String message = jsonObject.getString("message");
+                            // 실패 메시지 처리
+                            Log.e("Error", "데이터를 가져오는데 실패: " + message);
+                        }
+
+                    } catch (IOException | JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } else {
+                    // 응답 실패
+                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+                }
+
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                //네트워크 오류 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
 
     // 1-1. 카메라 권한 요청
     private void requestCameraPermissions() {
