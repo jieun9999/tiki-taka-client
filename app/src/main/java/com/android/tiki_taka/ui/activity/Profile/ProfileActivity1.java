@@ -220,6 +220,7 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
+    // 사용자 경험(UX)을 최적화: onResume()에서 사용자의 기타 정보를 업데이트
     @Override
     protected void onResume() {
         super.onResume();
@@ -435,6 +436,7 @@ public class ProfileActivity1 extends AppCompatActivity {
             String imageUriString = imageUri.toString(); // URI를 String으로 변환한 값을 저장
             updateProfileImage(imageUriString, userId);
 
+            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
             //글라이드로 이미지를 ImageView에 표시
             //Uri로 로드
             Glide.with(this)
@@ -449,6 +451,7 @@ public class ProfileActivity1 extends AppCompatActivity {
             String imagePath = getPathFromUri(selectedImageUri);
             //db 업데이트
             updateProfileImage(imagePath, userId);
+            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
             //글라이드로 이미지를 ImageView에 표시
             Glide.with(this)
                     .load(imagePath)
@@ -462,6 +465,7 @@ public class ProfileActivity1 extends AppCompatActivity {
             String imagePath = getPathFromUri(selectedImageUri);
             //db 업데이트
             updateProfileBackImage(imagePath, userId);
+            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
             //글라이드로 이미지를 ImageView에 표시
             Glide.with(this)
                     .load(imagePath)
