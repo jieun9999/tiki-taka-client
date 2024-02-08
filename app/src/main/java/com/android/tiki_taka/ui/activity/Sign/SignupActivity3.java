@@ -3,13 +3,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -27,7 +27,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.UserProfileDto;
 import com.android.tiki_taka.services.AuthApiService;
-import com.android.tiki_taka.utils.ImageSingleton;
+import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,6 +36,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
@@ -69,10 +70,11 @@ public class SignupActivity3 extends AppCompatActivity {
     ImageView startButton;
     private boolean isProfileImageChanged;
     Uri selectedImageUri; //프로필 사진 uri (갤러리)
-    Bitmap selectedPhotoBitmap; //프로필 사진 비트맵 (카메라)
     private boolean isValidInput = false; // 전역 변수 선언
     UserProfileDto userProfileDTO;
     AuthApiService service;
+    private Uri cameraImageUri; //카메라 앱이 전달받을 파일경로
+    String imageUriString; // 이미지 uri를 문자열로 저장함
 
 
     @Override
@@ -274,7 +276,22 @@ public class SignupActivity3 extends AppCompatActivity {
     // 1-1.카메라 열기
     private void openCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = ImageUtils.createImageFile(this); //파일 경로를 만듦
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+            }
+            if (photoFile != null) {
+                cameraImageUri = FileProvider.getUriForFile(this,
+                        "com.android.tiki_taka.fileprovider", //authorities 문자열이 AndroidManifest.xml 파일과 정확히 일치하는지 확인!
+                        photoFile);
+                // 로컬 파일 시스템에 있는 파일(photoFile)에 대한 Content Uri를 생성
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
     }
 
     //or
@@ -290,21 +307,25 @@ public class SignupActivity3 extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && data != null) {
-            Bundle extras = data.getExtras();
-            // 액티비티 간 데이터를 전달시 사용하는 클래스
-            selectedPhotoBitmap = (Bitmap) extras.get("data");
-            // imageBitmap을 사용하여 사진을 표시하거나 저장
-            profileImage.setImageBitmap(selectedPhotoBitmap);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // 카메라 앱은 사진을 cameraImageUri 위치에 저장하고, data 인텐트에 추가 정보를 반환하지 않을 수 있습니다. 따라서 data != null 조건을 삭제함
+            // 카메라 앱에서 직접 반환받은 Bitmap 객체에는 원본 파일 경로 정보가 포함x
+            // 카메라로 사진을 찍을 때 원본 파일 경로를 저장하려면, 사진을 찍기 전에 이미지 파일을 생성하고 이 파일의 경로를 카메라 앱에 전달해야 함
+
+            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
+            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드 가능
+            ImageUtils.loadImage(String.valueOf(cameraImageUri), profileImage, this);
             isProfileImageChanged = true;
 
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
+            //Uri를 직접 사용하는 것은 파일 접근에 있어 더 현대적이고 안전한 방법
             selectedImageUri = data.getData();
-            // URI로부터 Bitmap을 생성하고, 이를 ImageView에 설정
-            ImageSingleton.getInstance().displayImageFromUri(selectedImageUri, profileImage, this);
-            isProfileImageChanged = true;
 
+            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
+            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드 가능
+            ImageUtils.loadImage(String.valueOf(selectedImageUri), profileImage, this);
+            isProfileImageChanged = true;
 
         }
 
@@ -405,16 +426,18 @@ public class SignupActivity3 extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         int Id = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
 
-        //카메라로 사진을 찍었을 때와 갤러리에서 이미지를 선택했을 때를 구분
         String profileImage = "";
         if (isProfileImageChanged) {
-            if (selectedImageUri != null) {
-                // 갤러리에서 선택된 이미지의 Uri를 Base64 문자열로 변환
-                profileImage = ImageSingleton.getInstance().getImageBase64(null, selectedImageUri, this);
-            } else {
-                // 카메라로 찍은 사진의 Bitmap을 Base64 문자열로 변환
-                profileImage = ImageSingleton.getInstance().getImageBase64(selectedPhotoBitmap, null, this);
-            }
+               if(selectedImageUri != null){
+                   //갤러리에서 사진 선택시
+                   imageUriString = selectedImageUri.toString(); ; // URI를 String으로 변환한 값을 저장
+                   profileImage = imageUriString;
+               }else {
+                   //카메라 앱에서 사진 선택시
+                   imageUriString = cameraImageUri.toString(); // URI를 String으로 변환한 값을 저장
+                   profileImage = imageUriString;
+               }
+
         }
 
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();

@@ -1,7 +1,6 @@
 package com.android.tiki_taka.ui.activity.Sign;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -17,7 +16,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.ValidatorSingleton;
+import com.android.tiki_taka.utils.ValidationUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -72,7 +71,7 @@ public class SigninActivity2 extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (ValidatorSingleton.getInstance().isValidEmail(s.toString())) {
+                if (ValidationUtils.isValidEmail(s.toString())) {
                     emailInputLayout.setError("이메일 형식이 아닙니다");
                 } else {
                     emailInputLayout.setError(null); // 오류 메시지 제거

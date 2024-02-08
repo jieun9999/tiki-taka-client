@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,9 +33,8 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity2;
-import com.android.tiki_taka.utils.ImageSingleton;
+import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
@@ -44,10 +42,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -79,7 +73,6 @@ public class ProfileActivity1 extends AppCompatActivity {
     ProfileApiService service;
     int userId; // 유저 식별 정보
     private Uri imageUri; //카메라 앱이 전달받을 파일경로
-    String imgAbsolutePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -254,15 +247,12 @@ public class ProfileActivity1 extends AppCompatActivity {
                                 if(!profile_message.isEmpty()){
                                     messageView.setText(profile_message);
                                 }
-                                //글라이드로 profile과 배경이미지 처리함
-                                Glide.with(getApplicationContext())
-                                        .load(profile_image)
-                                        .into(profileImage);
+                                //글라이드로 프로필이미지 & 배경이미지 처리함
+                                ImageUtils.loadImage(profile_image, profileImage, ProfileActivity1.this);
                                 if(!profile_background_image.isEmpty()){
-                                    Glide.with(getApplicationContext())
-                                            .load(profile_background_image)
-                                            .into(backImage);
+                                    ImageUtils.loadImage(profile_background_image, backImage, ProfileActivity1.this);
                                 }
+
                             }else {
                                 // 데이터를 가져오는데 실패한 경우
                                 String message = jsonObject.getString("message");
@@ -391,6 +381,7 @@ public class ProfileActivity1 extends AppCompatActivity {
         }
     }
 
+    // 액티비티의 컨텍스트와 밀접한 관련이 있음
     // 1-1.카메라 열기
     // 카메라 인텐트를 생성하고, EXTRA_OUTPUT에 사진을 저장할 파일의 Uri를 전달
     private void openCamera() {
@@ -398,7 +389,7 @@ public class ProfileActivity1 extends AppCompatActivity {
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try {
-                photoFile = createImageFile(); //파일 경로를 만듦
+                photoFile = ImageUtils.createImageFile(this); //파일 경로를 만듦
             } catch (IOException ex) {
                 // Error occurred while creating the File
             }
@@ -428,85 +419,46 @@ public class ProfileActivity1 extends AppCompatActivity {
     //2. 사진 선택 결과 받기
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) { // 카메라 앱은 사진을 imageUri 위치에 저장하고, data 인텐트에 추가 정보를 반환하지 않을 수 있습니다. 따라서 data != null 조건을 삭제함
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // 카메라 앱은 사진을 imageUri 위치에 저장하고, data 인텐트에 추가 정보를 반환하지 않을 수 있습니다. 따라서 data != null 조건을 삭제함
             // 카메라 앱에서 직접 반환받은 Bitmap 객체에는 원본 파일 경로 정보가 포함x
             // 카메라로 사진을 찍을 때 원본 파일 경로를 저장하려면, 사진을 찍기 전에 이미지 파일을 생성하고 이 파일의 경로를 카메라 앱에 전달해야 함
 
-            //db 업데이트
+            // Uri를 직접 사용하는 것이 파일 접근에 있어 더 현대적이고 안전한 방법
             String imageUriString = imageUri.toString(); // URI를 String으로 변환한 값을 저장
+            //db 업데이트
             updateProfileImage(imageUriString, userId);
 
-            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
-            //글라이드로 이미지를 ImageView에 표시
-            //Uri로 로드
-            Glide.with(this)
-                    .load(imageUri)
-                    .into(profileImage);
-
+            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드가능
+            ImageUtils.loadImage(imageUriString, profileImage, ProfileActivity1.this);
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri selectedImageUri = data.getData();
 
-            // Uri를 통해 파일 경로 추출
-            String imagePath = getPathFromUri(selectedImageUri);
+            // Uri를 직접 사용하는 것이 파일 접근에 있어 더 현대적이고 안전한 방법
+            String selectedImageUriString =selectedImageUri.toString();
             //db 업데이트
-            updateProfileImage(imagePath, userId);
-            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
-            //글라이드로 이미지를 ImageView에 표시
-            Glide.with(this)
-                    .load(imagePath)
-                    .into(profileImage);
+            updateProfileImage(selectedImageUriString, userId);
+
+            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드가능
+            ImageUtils.loadImage(selectedImageUriString, profileImage, ProfileActivity1.this);
 
 
         } else if (requestCode == REQUEST_BACKGROUND_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri selectedImageUri = data.getData();
 
-            // Uri를 통해 파일 경로 추출
-            String imagePath = getPathFromUri(selectedImageUri);
+            // Uri를 직접 사용하는 것이 파일 접근에 있어 더 현대적이고 안전한 방법
+            String selectedImageUriString =selectedImageUri.toString();
             //db 업데이트
-            updateProfileBackImage(imagePath, userId);
-            // 사용자 경험(UX)을 최적화: 인텐트로 실행되는 카메라나 갤러리가 종료되자마자 선택된 이미지를 화면에 바로 표시
-            //글라이드로 이미지를 ImageView에 표시
-            Glide.with(this)
-                    .load(imagePath)
-                    .into(backImage);
+            updateProfileBackImage(selectedImageUriString, userId);
+
+            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드가능
+            ImageUtils.loadImage(selectedImageUriString, backImage, ProfileActivity1.this);
         }
 
     }
 
-    //사진을 저장할 파일 생성, 이 파일 경로는 나중에 사진의 경로로 사용됨
-    private File createImageFile() throws IOException {
-        // 이미지 파일 이름 생성
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-        // 파일의 절대 경로를 로그로 출력
-        Log.d("ImagePath", "File path: " + image.getAbsolutePath());
-        imgAbsolutePath = image.getAbsolutePath();         // 파일: 경로를 문자열로 저장
 
-
-        return image;
-    }
-
-    // Uri를 실제 파일 경로로 변환하는 메소드
-    public String getPathFromUri(Uri uri) {
-        String path = null;
-        String[] projection = { MediaStore.Images.Media.DATA };
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-        if (cursor != null) {
-            if(cursor.moveToFirst()){
-                int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                path = cursor.getString(columnIndex);
-            }
-            cursor.close();
-        }
-        return path;
-    }
 
     // 권한이 필요하다는 설명 다이얼로그
     private void explainCameraPermissionReason() {

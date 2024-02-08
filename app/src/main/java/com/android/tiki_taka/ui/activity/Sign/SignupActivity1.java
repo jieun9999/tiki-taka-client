@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.ValidatorSingleton;
+import com.android.tiki_taka.utils.ValidationUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -76,7 +76,7 @@ public class SignupActivity1 extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 //1. 이메일 주소가 올바른 형식인지 확인
                 // 이메일 형식이 올바르지 않으면 TextInputLayout에 오류 메시지를 표시하고 함수를 종료
-                if (ValidatorSingleton.getInstance().isValidEmail(s.toString())) {
+                if (ValidationUtils.isValidEmail(s.toString())) {
                     emailTextLayout.setError("이메일 형식이 아닙니다");
                 } else {
                     emailTextLayout.setError(null); // 오류 메시지 제거
@@ -119,7 +119,7 @@ public class SignupActivity1 extends AppCompatActivity {
             //만약 비밀번호가 조건을 만족하지 않으면 TextInputLayout의 setError 메서드를 사용하여 오류 메시지를 표시
             @Override
             public void afterTextChanged(Editable s) {
-                if (ValidatorSingleton.getInstance().isValidPassword(s.toString())) {
+                if (ValidationUtils.isValidPassword(s.toString())) {
                     textInputLayoutPassword.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
                 } else {
                     textInputLayoutPassword.setError(null);

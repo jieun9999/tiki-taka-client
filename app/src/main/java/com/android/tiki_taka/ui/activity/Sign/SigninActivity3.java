@@ -2,7 +2,6 @@ package com.android.tiki_taka.ui.activity.Sign;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +16,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.ValidatorSingleton;
+import com.android.tiki_taka.utils.ValidationUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -80,7 +79,7 @@ public class SigninActivity3 extends AppCompatActivity {
             //만약 비밀번호가 조건을 만족하지 않으면 TextInputLayout의 setError 메서드를 사용하여 오류 메시지를 표시
             @Override
             public void afterTextChanged(Editable s) {
-                if (ValidatorSingleton.getInstance().isValidPassword(s.toString())) {
+                if (ValidationUtils.isValidPassword(s.toString())) {
                     passInputLayout.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
                 } else {
                     passInputLayout.setError(null);

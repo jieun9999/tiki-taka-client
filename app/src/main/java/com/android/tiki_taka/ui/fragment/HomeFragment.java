@@ -7,8 +7,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Gainmap;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -16,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
@@ -36,13 +35,14 @@ import com.android.tiki_taka.models.dtos.UserProfileDto;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
-import com.android.tiki_taka.utils.ImageSingleton;
+import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -64,6 +64,7 @@ public class HomeFragment extends Fragment {
     ImageView changeBackgroundBtn;
     int userId; // 유저 식별 정보
     ImageView backgroundImageView;
+    private Uri imageUri; //카메라 앱이 전달받을 파일경로
 
     private int currentAction;
     private static final int PERMISSIONS_REQUEST_CODE = 100; // 권한 요청을 구별하기 위한 고유한 요청 코드, 런타임 권한 요청시 사용
@@ -71,7 +72,6 @@ public class HomeFragment extends Fragment {
     private static final int REQUEST_GALLERY = 2;
     private static final int REQUEST_IMAGE_CAPTURE = 3;
     private static final int REQUEST_GALLERY_IMAGE = 4;
-    Uri selectedImageUri; //프로필 사진 uri
     View dialogView; // 모달창 ui
 
     @Override
@@ -166,11 +166,6 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        getHomeProfile();
-    }
 
     private void getHomeProfile(){
         // 1. 유저 프로필 정보 가져오기
@@ -191,7 +186,7 @@ public class HomeFragment extends Fragment {
                     Log.e("Date Error", "myName: " + myName);
                     name2.setText(myName);
                     String profile2ImageUrl = userProfile.getProfileImage();
-                    ImageSingleton.getInstance().loadImage(profile2ImageUrl,profile2, getContext());
+                    ImageUtils.loadImage(profile2ImageUrl,profile2, getContext());
 
                     String firstDateStr = userProfile.getMeetingDay();
                     //사귄 날짜부터 지난 일수 계산
@@ -205,9 +200,9 @@ public class HomeFragment extends Fragment {
                         Log.e("Date Error", "유효하지 않은 날짜 데이터: " + firstDateStr);
                     }
                     //홈 배경 사진 교체
-                    String backImgUrl = userProfile.getHomeBackgroundImage();
-                    if(backImgUrl != null){
-                        ImageSingleton.getInstance().loadImage(backImgUrl,backgroundImageView, getContext());
+                    String backImg = userProfile.getHomeBackgroundImage();
+                    if(backImg != null){
+                       ImageUtils.loadImage(backImg,backgroundImageView, getContext());
                     }
 
                     //파트너 프로필 교체
@@ -215,7 +210,7 @@ public class HomeFragment extends Fragment {
                     String myName2 = partnerProfile.getName();
                     name1.setText(myName2);
                     String profile1ImageUrl = partnerProfile.getProfileImage();
-                    ImageSingleton.getInstance().loadImage(profile1ImageUrl,profile1, getContext());
+                    ImageUtils.loadImage(profile1ImageUrl,profile1, getContext());
 
 
                 } else {
@@ -286,7 +281,22 @@ public class HomeFragment extends Fragment {
     // 1-1.카메라 열기
     private void openCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = ImageUtils.createImageFile(getContext()); //파일 경로를 만듦
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+            }
+            if (photoFile != null) {
+                imageUri = FileProvider.getUriForFile(getContext(),
+                        "com.android.tiki_taka.fileprovider", //authorities 문자열이 AndroidManifest.xml 파일과 정확히 일치하는지 확인!
+                        photoFile);
+                // 로컬 파일 시스템에 있는 파일(photoFile)에 대한 Content Uri를 생성
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
     }
 
     //or
@@ -301,29 +311,32 @@ public class HomeFragment extends Fragment {
     //2. 사진 선택 결과 받기
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        //요약하자면, 이미지 변경이 onActivityResult 메서드 내에서 이미 처리되었기 때문에,
+        // 사용자가 다른 프래그먼트로 이동했다가 다시 돌아와도 변경된 이미지가 보여지는 것입니다.
+        // onResume은 이 경우에 이미지 업데이트와는 직접적인 관련이 없습니다.
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && data != null) {
-            Bundle extras = data.getExtras();
-            // 액티비티 간 데이터를 전달시 사용하는 클래스
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            // imageBitmap을 사용하여 사진을 표시하거나 저장
-            backgroundImageView.setImageBitmap(imageBitmap);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK ) {
+            // 카메라 앱은 사진을 imageUri 위치에 저장하고, data 인텐트에 추가 정보를 반환하지 않을 수 있습니다. 따라서 data != null 조건을 삭제함
+            // 카메라 앱에서 직접 반환받은 Bitmap 객체에는 원본 파일 경로 정보가 포함x
+            // 카메라로 사진을 찍을 때 원본 파일 경로를 저장하려면, 사진을 찍기 전에 이미지 파일을 생성하고 이 파일의 경로를 카메라 앱에 전달해야 함
 
-            //사진을 찍으면 Bitmap이 나옴 => base64String으로 변환
-            String base64String = ImageSingleton.getInstance().getImageBase64(imageBitmap, null, getContext());
             //db 업데이트
-            updateBackgroundImage(base64String, userId);
+            String imageUriString = imageUri.toString(); // URI를 String으로 변환한 값을 저장
+            updateBackgroundImage(imageUriString, userId);
+
+            //글라이드로 이미지를 ImageView에 표시
+            ImageUtils.loadImage(imageUriString, backgroundImageView, getActivity());
 
 
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
-            selectedImageUri = data.getData();
-            // URI로부터 Bitmap을 생성하고, 이를 backgroundImageView에 설정
-            ImageSingleton.getInstance().displayImageFromUri(selectedImageUri, backgroundImageView, getContext());
+            Uri selectedImageUri = data.getData();
 
-            // 이미지를 선택하면 Uri가 나옴 => base64String으로 변환
-            String base64String = ImageSingleton.getInstance().getImageBase64(null, selectedImageUri, getContext());
             //db 업데이트
-            updateBackgroundImage(base64String, userId);
+            String selectedImageUriString = selectedImageUri.toString(); // URI를 String으로 변환한 값을 저장
+            updateBackgroundImage(selectedImageUriString, userId);
+
+            //글라이드로 이미지를 ImageView에 표시
+            ImageUtils.loadImage(selectedImageUriString, backgroundImageView, getActivity());
         }
 
     }
@@ -351,14 +364,13 @@ public class HomeFragment extends Fragment {
     }
 
 
-    // Base64String을 가지고 db에 업데이트하는 call 주고받기
-    private void updateBackgroundImage(String imageBase64, int userId){
+    private void updateBackgroundImage(String imageUrl, int userId){
 
         //JSON 객체를 생성해서 userId와 image를 같이 보내줌
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("userId", userId);
-            jsonObject.put("image", imageBase64);
+            jsonObject.put("image", imageUrl);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -569,9 +581,9 @@ public class HomeFragment extends Fragment {
                                 messageTextView.setText(profile_message);
                             }
                             //글라이드로 imageUriString 분기처리
-                            ImageSingleton.getInstance().loadImage(profile_image,profileImageView, getContext());
+                            ImageUtils.loadImage(profile_image,profileImageView, getContext());
                             if(!profile_background_image.isEmpty()){
-                                ImageSingleton.getInstance().loadImage(profile_background_image,profileBackImageView, getContext());
+                                ImageUtils.loadImage(profile_background_image,profileBackImageView, getContext());
                             }
 
                         }else {
@@ -636,9 +648,9 @@ public class HomeFragment extends Fragment {
                             if(!profile_message.isEmpty()){
                                 messageTextView.setText(profile_message);
                             }
-                            ImageSingleton.getInstance().loadImage(profile_image,profileImageView,getContext());
+                            ImageUtils.loadImage(profile_image,profileImageView,getContext());
                             if(!profile_background_image.isEmpty()){
-                                ImageSingleton.getInstance().loadImage(profile_background_image,profileBackImageView,getContext());
+                                ImageUtils.loadImage(profile_background_image,profileBackImageView,getContext());
                             }
 
 

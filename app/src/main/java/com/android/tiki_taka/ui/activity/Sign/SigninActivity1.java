@@ -20,7 +20,7 @@ import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity6;
 import com.android.tiki_taka.ui.activity.Profile.ReconnectActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.ValidatorSingleton;
+import com.android.tiki_taka.utils.ValidationUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -84,7 +84,7 @@ public class SigninActivity1 extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (ValidatorSingleton.getInstance().isValidEmail(s.toString())) {
+                if (ValidationUtils.isValidEmail(s.toString())) {
                     emailInputLayout.setError("이메일 형식이 아닙니다");
                 } else {
                     emailInputLayout.setError(null); // 오류 메시지 제거
@@ -106,7 +106,7 @@ public class SigninActivity1 extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (ValidatorSingleton.getInstance().isValidPassword(s.toString())) {
+                if (ValidationUtils.isValidPassword(s.toString())) {
                     passInputLayout.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
                 } else {
                     passInputLayout.setError(null);
