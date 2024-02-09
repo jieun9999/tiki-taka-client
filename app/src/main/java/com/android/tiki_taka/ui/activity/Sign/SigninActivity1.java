@@ -74,14 +74,10 @@ public class SigninActivity1 extends AppCompatActivity {
         emailEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
-
             @Override
             public void afterTextChanged(Editable s) {
                 if (ValidationUtils.isValidEmail(s.toString())) {
@@ -89,21 +85,16 @@ public class SigninActivity1 extends AppCompatActivity {
                 } else {
                     emailInputLayout.setError(null); // 오류 메시지 제거
                 }
-
             }
 
         });
         passEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
-
             @Override
             public void afterTextChanged(Editable s) {
                 if (ValidationUtils.isValidPassword(s.toString())) {
@@ -113,12 +104,10 @@ public class SigninActivity1 extends AppCompatActivity {
                 }
             }
 
-
         });
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 // 사용자와 파트너의 연결상태 확인 후, 로그인 허가 여부 결정
                 checkConnectState();
             }
@@ -129,7 +118,6 @@ public class SigninActivity1 extends AppCompatActivity {
                 // 로그인_2 화면으로 이동
                 Intent intent = new Intent(SigninActivity1.this, SigninActivity2.class);
                 startActivity(intent);
-
             }
         });
         deleteAccountText.setOnClickListener(new View.OnClickListener() {
@@ -141,7 +129,6 @@ public class SigninActivity1 extends AppCompatActivity {
         });
 
     }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -153,33 +140,11 @@ public class SigninActivity1 extends AppCompatActivity {
         service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    if (response.isSuccessful() && response.body() != null) {
-                        String responseBodyString = response.body().string();
-                        JSONObject jsonObject = new JSONObject(responseBodyString);
-
-                        if (jsonObject.getBoolean("success")) {
-                            int userState = jsonObject.getInt("userState");
-                            int partnerState = jsonObject.getInt("partnerState");
-
-                           if (userState == 1) {
-                                // connect가 1이면, '회원탈퇴' 버튼을 숨김
-                                deleteAccountText.setVisibility(View.GONE);
-
-                            }
-                        } else {
-                            // 프로필이 존재하지 않는 경우
-                            String errorMessage = jsonObject.getString("message");
-                            // 에러 메시지 처리
-                            Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        // 서버 응답 실패 처리
-                        Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                    }
-                } catch (IOException | JSONException e) {
-                    // JSON 파싱 오류 처리
-                    e.printStackTrace();
+                if (response.isSuccessful() && response.body() != null) {
+                    handleConnectStateResponse(response);
+                } else {
+                    // 서버 응답 실패 처리
+                    showToast("서버 응답 오류: " + response.code());
                 }
             }
 
@@ -190,6 +155,36 @@ public class SigninActivity1 extends AppCompatActivity {
             }
         });
     }
+
+    private void handleConnectStateResponse(Response<ResponseBody> response) {
+        try {
+            String responseBodyString = response.body().string();
+            JSONObject jsonObject = new JSONObject(responseBodyString);
+            updateDeleteButtonVisibility(jsonObject);
+        } catch (IOException | JSONException e) {
+            handleResponseError(e);
+        }
+    }
+
+    private void updateDeleteButtonVisibility(JSONObject jsonObject) throws JSONException {
+        if (jsonObject.getBoolean("success")) {
+            int userState = jsonObject.getInt("userState");
+            if (userState == 1) {
+                // connect가 1이면, '회원탈퇴' 버튼을 숨김
+                deleteAccountText.setVisibility(View.GONE);
+            }
+        } else {
+            // 프로필이 존재하지 않는 경우의 처리 로직
+            String errorMessage = jsonObject.getString("message");
+            showToast(errorMessage);
+        }
+    }
+
+    private void handleResponseError(Exception e) {
+        e.printStackTrace();
+        showToast("데이터 처리 오류");
+    }
+
 
     public void verifySignIn(){
         String email = emailEditText.getText().toString();
@@ -201,48 +196,12 @@ public class SigninActivity1 extends AppCompatActivity {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     // http 요청 성공시
-
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-
-                        if (success) {
-                            // 쉐어드에 자동로그인 정보 저장
-                            SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putBoolean("isAutoLoginEnabled", true);
-                            editor.apply();
-
-                            // 로그인 성공
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                            //홈화면으로 이동
-                            Intent intent = new Intent(SigninActivity1.this, HomeActivity.class);
-                            startActivity(intent);
-
-                        } else {
-                            // 로그인 실록
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-                    } catch (JSONException e) {
-                        // JSON 파싱 오류 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        // IOException 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                    }
+                    handleSignInResponse(response);
                 }else{
                     // 서버 응답 오류
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
+                    showToast("서버 응답 오류: " + response.code());
                 }
             }
-
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 // 네트워크 오류 처리
@@ -251,54 +210,52 @@ public class SigninActivity1 extends AppCompatActivity {
         });
     }
 
+    private void handleSignInResponse(Response<ResponseBody> response) {
+        try {
+            String responseJson = response.body().string();
+            JSONObject jsonObject = new JSONObject(responseJson);
+            processLoginResult(jsonObject);
+        } catch (JSONException e) {
+            showToast("JSON 파싱 오류");
+            e.printStackTrace();
+        } catch (IOException e) {
+            showToast("IO 오류");
+            e.printStackTrace();
+        }
+    }
+
+    private void processLoginResult(JSONObject jsonObject) throws JSONException {
+        boolean success = jsonObject.getBoolean("success");
+        String message = jsonObject.getString("message");
+
+        if (success) {
+            saveAutoLoginPreference();
+            showToast(message);
+            navigateToHome();
+        } else {
+            showToast(message);
+        }
+    }
+
+    private void saveAutoLoginPreference() {
+        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isAutoLoginEnabled", true);
+        editor.apply();
+    }
+
+    private void navigateToHome() {
+        Intent intent = new Intent(SigninActivity1.this, HomeActivity.class);
+        startActivity(intent);
+    }
+
+
 
     public void checkConnectState(){
         service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    if (response.isSuccessful() && response.body() != null) {
-                        String responseBodyString = response.body().string();
-                        JSONObject jsonObject = new JSONObject(responseBodyString);
-
-                        if (jsonObject.getBoolean("success")) {
-                            int userState = jsonObject.getInt("userState");
-                            int partnerState = jsonObject.getInt("partnerState");
-
-                            // 여기에 connectStatus를 기반으로 한 로직을 구현합니다.
-                            if (userState == 0) {
-                                //유저 0
-
-                                // 재연결 액티비티로 이동
-                                Intent intent = new Intent(SigninActivity1.this, ReconnectActivity.class);
-                                startActivity(intent);
-
-                            } else if (userState == 1 && partnerState == 0) {
-                                //유저 1, 상대방 0
-
-                                Toast.makeText(getApplicationContext(), "상대방은 재연결을 원하지 않습니다.",Toast.LENGTH_LONG).show();
-
-                            } else {
-                                // 유저 1, 상대방 1
-                                // 정상 연결
-
-                                // 정상 연결시에만 로그인을 허락해줌!!
-                                verifySignIn();
-                            }
-                        } else {
-                            // 프로필이 존재하지 않는 경우
-                            String errorMessage = jsonObject.getString("message");
-                            // 에러 메시지 처리
-                            Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        // 서버 응답 실패 처리
-                        Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                    }
-                } catch (IOException | JSONException e) {
-                    // JSON 파싱 오류 처리
-                    e.printStackTrace();
-                }
+                processResponse(response); // 여기에서 새로운 함수를 호출합니다.
             }
 
             @Override
@@ -308,4 +265,63 @@ public class SigninActivity1 extends AppCompatActivity {
             }
         });
     }
+
+    private void processResponse(Response<ResponseBody> response){
+        try {
+            if (!response.isSuccessful() && response.body() == null) {
+                handleServerFailureResponse(response.code());
+                return;
+            }
+                String responseBodyString = response.body().string();
+                JSONObject jsonObject = new JSONObject(responseBodyString);
+
+                if (jsonObject.getBoolean("success")) {
+                    handleSuccessResponse(jsonObject);
+                } else {
+                   handleErrorResponse(jsonObject);
+                }
+
+        } catch (IOException | JSONException e) {
+            // JSON 파싱 오류 처리
+            e.printStackTrace();
+        }
+    }
+
+    private void handleServerFailureResponse(int errorCode) {
+        showToast("서버 응답 오류: " + errorCode);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void handleSuccessResponse(JSONObject jsonObject) throws JSONException {
+        int userState = jsonObject.getInt("userState");
+        int partnerState = jsonObject.getInt("partnerState");
+
+        if (userState == 0) {
+            navigateToReconnectActivity();
+        } else if (userState == 1 && partnerState == 0) {
+            showPartnerNotInterestedToast();
+        } else {
+            verifySignIn();
+        }
+    }
+
+    private void navigateToReconnectActivity() {
+        Intent intent = new Intent(SigninActivity1.this, ReconnectActivity.class);
+        startActivity(intent);
+    }
+
+    private void showPartnerNotInterestedToast() {
+        showToast("상대방은 재연결을 원하지 않습니다.");
+    }
+
+    private void handleErrorResponse(JSONObject jsonObject) throws JSONException {
+        String errorMessage = jsonObject.getString("message");
+        showToast(errorMessage);
+    }
+
+
+
 }
