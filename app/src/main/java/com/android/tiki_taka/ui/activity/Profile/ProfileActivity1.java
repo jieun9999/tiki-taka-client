@@ -458,8 +458,6 @@ public class ProfileActivity1 extends AppCompatActivity {
 
     }
 
-
-
     // 권한이 필요하다는 설명 다이얼로그
     private void explainCameraPermissionReason() {
         new AlertDialog.Builder(this)
@@ -481,14 +479,13 @@ public class ProfileActivity1 extends AppCompatActivity {
                 .show();
     }
 
-    // Base64String을 가지고 db에 업데이트하는 call 주고받기
-    private void updateProfileBackImage(String imageBase64, int userId){
+    private void updateProfileBackImage(String imageUriString, int userId){
 
         //JSON 객체를 생성해서 userId와 image를 같이 보내줌
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("userId", userId);
-            jsonObject.put("image", imageBase64);
+            jsonObject.put("image", imageUriString);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -543,13 +540,13 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
-    private void updateProfileImage(String imageUrl, int userId){
+    private void updateProfileImage(String imageUriString, int userId){
 
         //JSON 객체를 생성해서 userId와 image를 같이 보내줌
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("userId", userId);
-            jsonObject.put("image", imageUrl);
+            jsonObject.put("image", imageUriString);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

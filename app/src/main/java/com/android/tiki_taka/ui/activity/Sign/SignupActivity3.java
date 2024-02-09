@@ -100,7 +100,6 @@ public class SignupActivity3 extends AppCompatActivity {
         checkBoxPrivacy = findViewById(R.id.checkbox_agree_terms2);
         startButton = findViewById(R.id.imageView12);
 
-
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -447,7 +446,9 @@ public class SignupActivity3 extends AppCompatActivity {
         boolean agreeTerms = checkBoxTerms.isChecked();
         boolean agreePrivacy = checkBoxPrivacy.isChecked();
 
-        return new UserProfileDto(Id, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
+        // 정적 팩토리 메서드를 사용하여 객체 생성
+        return UserProfileDto.createUserProfile(Id, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
+        // 이렇게 변경함으로써, UserProfileDto 객체 생성 과정이 더 명확해지고, 생성자에 비해 더 많은 정보를 제공하거나, 생성 과정을 좀 더 제어할 수 있는 유연성을 얻을 수 있습니다.
     }
     }
 

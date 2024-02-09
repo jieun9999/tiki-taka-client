@@ -131,6 +131,7 @@ public class ProfileActivity3 extends AppCompatActivity {
         });
     }
 
+    //액티비티 또는 프래그먼트의 생명주기와 밀접하게 연결
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

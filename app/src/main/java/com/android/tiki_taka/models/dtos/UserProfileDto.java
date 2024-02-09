@@ -28,7 +28,8 @@ public class UserProfileDto {
     @SerializedName("profile_message")
     private String profileMessage;
 
-    public UserProfileDto(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
+    // 생성자를 private으로 만듭니다.
+    private UserProfileDto(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
         this.userId = userId;
         this.profileImage = profileImage;
         this.gender = gender;
@@ -37,6 +38,11 @@ public class UserProfileDto {
         this.meetingDay = meetingDay;
         this.agreeTerms = agreeTerms ? 1 : 0; // true를 1로 매핑, false를 0으로 매핑
         this.agreePrivacy = agreePrivacy ? 1 : 0; // true를 1로 매핑, false를 0으로 매핑
+    }
+
+    // 정적 팩토리 메서드
+    public static UserProfileDto createUserProfile(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy){
+        return new UserProfileDto(userId, profileImage, gender, name,  birthday, meetingDay, agreeTerms, agreePrivacy);
     }
 
     // 게터 메서드
