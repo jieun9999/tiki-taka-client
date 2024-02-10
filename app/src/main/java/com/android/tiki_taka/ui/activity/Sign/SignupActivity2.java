@@ -137,54 +137,68 @@ public class SignupActivity2 extends AppCompatActivity {
 
     private void sendCode(String code){
         Call<ResponseBody> call = service.sendInviteCode(userId,code);
-
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    // http 요청 성공시
-
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-
-                        if (success) {
-                            // 초대번호 일치
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                            //회원가입_3으로 이동
-                            Intent intent = new Intent(SignupActivity2.this, SignupActivity3.class);
-                            startActivity(intent);
-
-                        } else {
-                            // 초대번호 불일치 or 만료됨
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-                    } catch (JSONException e) {
-                        // JSON 파싱 오류 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        // IOException 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                    }
-
-                } else {
-                    // 서버에서 인증번호 전송 실패 처리
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                }
+                responseProcess(response);
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                // 네트워크 오류 처리
-                Toast.makeText(getApplicationContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                showToast("\"네트워크 오류: \" + t.getMessage()");
             }
         });
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void responseProcess(Response<ResponseBody> response){
+        if (response.isSuccessful()) {
+            // http 요청 성공시
+
+            try {
+                handleSuccessfulResponse(response);
+
+            } catch (JSONException | IOException e) {
+                handleResponseParsingError(e);
+            }
+
+        } else {
+            // 실패한 HTTP 요청 처리
+            handleServerError(response.code());
+        }
+    }
+
+    private void handleSuccessfulResponse(Response<ResponseBody> response) throws JSONException, IOException {
+        String responseJson = response.body().string();
+        JSONObject jsonObject = new JSONObject(responseJson);
+        boolean success = jsonObject.getBoolean("success");
+        String message = jsonObject.getString("message");
+
+        if (success) {
+            // 초대번호 일치
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+            //회원가입_3으로 이동
+            Intent intent = new Intent(SignupActivity2.this, SignupActivity3.class);
+            startActivity(intent);
+
+        } else {
+            // 초대번호 불일치 or 만료됨
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void handleResponseParsingError(Exception e){
+        // JSON 파싱 오류 및 IOException 처리
+        e.printStackTrace();
+        Toast.makeText(getApplicationContext(), "오류 발생", Toast.LENGTH_LONG).show();
+    }
+
+    private void handleServerError(int errorCode) {
+        // 서버에서 인증번호 전송 실패 처리
+        Toast.makeText(getApplicationContext(), "서버 응답 오류: " + errorCode, Toast.LENGTH_LONG).show();
     }
 }
