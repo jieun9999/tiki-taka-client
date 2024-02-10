@@ -120,37 +120,8 @@ public class SigninActivity2 extends AppCompatActivity {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    // 서버에서 응답이 올때
-
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-
-                        if (success) {
-                            // 임시 비밀번호 전송 성공
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                            //로그인_3 화면으로 이동
-                            Intent intent = new Intent(SigninActivity2.this, SigninActivity3.class);
-                            intent.putExtra("email", email); // 인텐트에 이메일 추가
-                            startActivity(intent);
-                        } else {
-                            // 임시 비밀번호 전송 실패
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-                    } catch (JSONException | IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                } else {
-                    // 서버 응답 오류
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                }
+                // 서버에서 온 응답 처리
+                processResponse(response);
             }
 
             @Override
@@ -159,6 +130,54 @@ public class SigninActivity2 extends AppCompatActivity {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
+    }
+
+    private void processResponse(Response<ResponseBody> response){
+        // 서버로부터의 응답 처리를 담당하는 메서드
+        if (response.isSuccessful()) {
+            // 서버에서 응답이 올때
+            try {
+                String responseJson = response.body().string();
+                JSONObject jsonObject = new JSONObject(responseJson);
+                boolean success = jsonObject.getBoolean("success");
+
+                if (success) {
+                    handleSuccessResponse(jsonObject); // 성공 응답 처리
+                } else {
+                    handleErrorResponse(jsonObject); // 실패 응답 처리
+                }
+            } catch (JSONException | IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            // 서버에서 응답이 안 올때
+            handleServerFailureResponse(response.code()); //서버 응답 오류
+        }
+    }
+
+    private void handleSuccessResponse(JSONObject jsonObject) throws JSONException {
+        String message = jsonObject.getString("message");
+        // 임시 비밀번호 전송 성공
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+        //로그인_3 화면으로 이동
+        Intent intent = new Intent(SigninActivity2.this, SigninActivity3.class);
+        intent.putExtra("email", email); // 인텐트에 이메일 추가
+        startActivity(intent);
+    }
+
+    private void handleErrorResponse(JSONObject jsonObject) throws JSONException {
+        String errorMessage = jsonObject.getString("message");
+        showToast(errorMessage);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void handleServerFailureResponse(int errorCode) {
+        showToast("서버 응답 오류: " + errorCode);
     }
 
     @Override
