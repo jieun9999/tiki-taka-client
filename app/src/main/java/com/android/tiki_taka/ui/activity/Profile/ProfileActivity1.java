@@ -33,6 +33,7 @@ import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity2;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import org.json.JSONException;
@@ -169,7 +170,7 @@ public class ProfileActivity1 extends AppCompatActivity {
 
                 if (options[position].equals("로그아웃")) {
 
-                    makeAutoLoginEnabledFalse();
+                    SharedPreferencesHelper.saveAutoLoginState(ProfileActivity1.this,false);
                     InitializeStackAndNavigateToLogin1Screen();
 
                 } else if (options[position].equals("비밀번호 변경하기")) {
@@ -192,13 +193,6 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
-    private void makeAutoLoginEnabledFalse(){
-        // 쉐어드에 자동로그인 비활성화 상태저장
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("isAutoLoginEnabled", false);
-        editor.apply();
-    }
 
 
     private void InitializeStackAndNavigateToLogin1Screen(){

@@ -17,6 +17,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,59 +65,12 @@ public class ProfileActivity3 extends AppCompatActivity {
                 service.disconnectAccount(userId).enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        responseProcess(response);
 
-                        // 요청 성공 처리
-                        if (response.isSuccessful()) {
-                            // http 요청 성공시
-                            try {
-                                String responseJson = response.body().string();
-                                //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                                //.toString() 과 다름
-                                JSONObject jsonObject = new JSONObject(responseJson);
-                                boolean success = jsonObject.getBoolean("success");
-                                String message = jsonObject.getString("message");
-
-                                if (success) {
-                                    // 성공
-                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                                    // 쉐어드에 자동로그인 비활성화 상태저장
-                                    SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                                    editor.putBoolean("isAutoLoginEnabled", false);
-                                    editor.apply();
-
-                                    // 로그인_1 화면으로 이동하면서 스택 초기화
-                                    Intent intent = new Intent(getApplicationContext(), SigninActivity1.class);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                    startActivity(intent);
-                                    finish(); // 현재 액티비티 종료
-
-
-                                } else {
-                                    // 실패
-                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                                }
-
-                            } catch (JSONException e) {
-                                // JSON 파싱 오류 처리
-                                e.printStackTrace();
-                                Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                            } catch (IOException e) {
-                                // IOException 처리
-                                e.printStackTrace();
-                                Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                            }
-
-                        } else {
-                            //서버 응답 오류
-                            Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                        }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        // 요청 실패 처리
                         Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
                     }
                 });
@@ -131,7 +85,57 @@ public class ProfileActivity3 extends AppCompatActivity {
         });
     }
 
-    //액티비티 또는 프래그먼트의 생명주기와 밀접하게 연결
+    private void responseProcess(Response<ResponseBody> response){
+        // 요청 성공 처리
+        if (response.isSuccessful()) {
+            handleSuccessfulResponse(response);
+
+        } else {
+            showToast("서버 응답 오류");
+        }
+    }
+
+    private void handleSuccessfulResponse(Response<ResponseBody> response){
+        // http 요청 성공시
+        try {
+            String responseJson = response.body().string();
+            JSONObject jsonObject = new JSONObject(responseJson);
+            boolean success = jsonObject.getBoolean("success");
+            String message = jsonObject.getString("message");
+
+            if (success) {
+                handleSuccess(message);
+
+            } else {
+                showToast(message);
+            }
+
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
+            showToast("오류 발생");
+        }
+
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void handleSuccess( String message){
+        showToast(message);
+        SharedPreferencesHelper.saveAutoLoginState(this,false);
+        navigateToSigninActivity1();
+    }
+
+    private void navigateToSigninActivity1() {
+        // 로그인_1 화면으로 이동하면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), SigninActivity1.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    //액티비티 또는 프래그먼트의 생명주기와 밀접하게 연결됨
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
