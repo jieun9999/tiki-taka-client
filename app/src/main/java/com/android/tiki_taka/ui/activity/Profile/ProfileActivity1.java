@@ -11,11 +11,9 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -149,8 +147,7 @@ public class ProfileActivity1 extends AppCompatActivity {
         nameView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProfileActivity1.this, ProfileActivity4.class);
-                startActivity(intent);
+                navigateToProfileScreen(ProfileActivity4.class);
             }
         });
 
@@ -158,12 +155,9 @@ public class ProfileActivity1 extends AppCompatActivity {
         messageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProfileActivity1.this, ProfileActivity5.class);
-                startActivity(intent);
+                navigateToProfileScreen(ProfileActivity5.class);
             }
         });
-
-
 
         listView = (ListView) findViewById(R.id.list_view);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.profile_list_item, R.id.text_view_item, options);
@@ -175,42 +169,58 @@ public class ProfileActivity1 extends AppCompatActivity {
 
                 if (options[position].equals("로그아웃")) {
 
-                    // 쉐어드에 자동로그인 비활성화 상태저장
-                    SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putBoolean("isAutoLoginEnabled", false);
-                    editor.apply();
-
-                    // 로그인_1 화면으로 이동하면서 스택 초기화
-                    Intent intent = new Intent(getApplicationContext(), SigninActivity1.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish(); // 현재 액티비티 종료
-
+                    makeAutoLoginEnabledFalse();
+                    InitializeStackAndNavigateToLogin1Screen();
 
                 } else if (options[position].equals("비밀번호 변경하기")) {
 
-                    // 로그인_2 화면으로 이동하면서 스택 초기화
-                    Intent intent = new Intent(ProfileActivity1.this, SigninActivity2.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish(); // 현재 액티비티 종료
+                    InitializeStackAndNavigateToLogin2Screen();
 
                 } else if (options[position].equals("알림 동의 설정")) {
 
-                    // 앱의 알림 설정 화면으로 이동
                     goToSetting();
 
                 } else if (options[position].equals("상대방과 연결끊기")) {
-                    Intent intent = new Intent(ProfileActivity1.this, ProfileActivity3.class);
-                    startActivity(intent);
+
+                    navigateToProfileScreen(ProfileActivity3.class);
 
                 } else if (options[position].equals("회원 탈퇴")){
-                    Intent intent = new Intent(ProfileActivity1.this, ProfileActivity2.class);
-                    startActivity(intent);
+
+                    navigateToProfileScreen(ProfileActivity2.class);
                 }
             }
         });
+    }
+
+    private void makeAutoLoginEnabledFalse(){
+        // 쉐어드에 자동로그인 비활성화 상태저장
+        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isAutoLoginEnabled", false);
+        editor.apply();
+    }
+
+
+    private void InitializeStackAndNavigateToLogin1Screen(){
+        // 로그인_1 화면으로 이동하면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), SigninActivity1.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish(); // 현재 액티비티 종료
+    }
+
+    private void InitializeStackAndNavigateToLogin2Screen(){
+        // 로그인_2 화면으로 이동하면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), SigninActivity2.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish(); // 현재 액티비티 종료
+    }
+
+    private void navigateToProfileScreen(Class<?> profileActivityClass) {
+        // <?>는 와일드카드 타입으로, 어떤 클래스든 받아들일 수 있다는 것을 의미
+        Intent intent = new Intent(ProfileActivity1.this, profileActivityClass);
+        startActivity(intent);
     }
 
     // 사용자 경험(UX)을 최적화: onResume()에서 사용자의 기타 정보를 업데이트
@@ -225,50 +235,7 @@ public class ProfileActivity1 extends AppCompatActivity {
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if(response.isSuccessful()){
-                        try {
-                            // 서버로부터 응답 본문을 문자열로 변환
-                            String responseString = response.body().string();
-                            //문자열을 JSON객체로 변환
-                            JSONObject jsonObject = new JSONObject(responseString);
-
-                            if(jsonObject.getBoolean("success")){
-                                // 성공적으로 데이터를 가져온 경우
-                                JSONObject userData = jsonObject.getJSONObject("data");
-
-                                //데이터 사용 (칼럼명으로 접근)
-                                // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
-                                String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
-                                String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
-                                String profile_image = userData.optString("profile_image", "");
-                                String profile_background_image = userData.optString("profile_background_image", ""); //null 일 수도 있음
-
-                                nameView.setText(name);
-                                if(!profile_message.isEmpty()){
-                                    messageView.setText(profile_message);
-                                }
-                                //글라이드로 프로필이미지 & 배경이미지 처리함
-                                ImageUtils.loadImage(profile_image, profileImage, ProfileActivity1.this);
-                                if(!profile_background_image.isEmpty()){
-                                    ImageUtils.loadImage(profile_background_image, backImage, ProfileActivity1.this);
-                                }
-
-                            }else {
-                                // 데이터를 가져오는데 실패한 경우
-                                String message = jsonObject.getString("message");
-                                // 실패 메시지 처리
-                                Log.e("Error", "데이터를 가져오는데 실패: " + message);
-                            }
-
-                        } catch (IOException | JSONException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                    } else {
-                        // 응답 실패
-                        Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
-                    }
-
+                    getDataResponseProcess(response);
                 }
                 @Override
                 public void onFailure(Call<ResponseBody> call, Throwable t) {
@@ -278,55 +245,127 @@ public class ProfileActivity1 extends AppCompatActivity {
             });
         }
 
+    private void getDataResponseProcess(Response<ResponseBody> response){
+        if(response.isSuccessful()){
+            try {
+                handleSuccessfulResponse(response);
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            // 응답 실패
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
+
+    private void handleSuccessfulResponse(Response<ResponseBody> response) throws JSONException, IOException {
+        // 서버로부터 응답 본문을 문자열로 변환
+        String responseString = response.body().string();
+        //문자열을 JSON객체로 변환
+        JSONObject jsonObject = new JSONObject(responseString);
+
+        if(jsonObject.getBoolean("success")){
+            // 성공적으로 데이터를 가져온 경우
+            handleUserData(jsonObject);
+
+        }else {
+            // 데이터를 가져오는데 실패한 경우
+            handleFailureMessage(jsonObject);
+        }
+    }
+
+    private void handleUserData(JSONObject jsonObject) throws JSONException {
+        // 성공적으로 데이터를 가져온 경우
+        JSONObject userData = jsonObject.getJSONObject("data");
+
+        //데이터 사용 (칼럼명으로 접근)
+        // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
+        String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
+        String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
+        String profile_image = userData.optString("profile_image", "");
+        String profile_background_image = userData.optString("profile_background_image", ""); //null 일 수도 있음
+
+        updateUI(name, profile_message, profile_image, profile_background_image);
+    }
+
+    private void updateUI(String name, String profile_message, String profile_image,  String profile_background_image){
+        nameView.setText(name);
+        if(!profile_message.isEmpty()){
+            messageView.setText(profile_message);
+        }
+        //글라이드로 프로필이미지 & 배경이미지 처리함
+        ImageUtils.loadImage(profile_image, profileImage, ProfileActivity1.this);
+        if(!profile_background_image.isEmpty()){
+            ImageUtils.loadImage(profile_background_image, backImage, ProfileActivity1.this);
+        }
+    }
+
+    private void handleFailureMessage(JSONObject jsonObject) throws JSONException {
+        String message = jsonObject.getString("message");
+        Log.e("Error", "데이터를 가져오는데 실패: " + message);
+    }
+
     private void getNameAndMessage(){
         Call<ResponseBody> call = service.getMyModalData(userId);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if(response.isSuccessful()){
-                    try {
-                        // 서버로부터 응답 본문을 문자열로 변환
-                        String responseString = response.body().string();
-                        //문자열을 JSON객체로 변환
-                        JSONObject jsonObject = new JSONObject(responseString);
-
-                        if(jsonObject.getBoolean("success")){
-                            // 성공적으로 데이터를 가져온 경우
-                            JSONObject userData = jsonObject.getJSONObject("data");
-
-                            //데이터 사용 (칼럼명으로 접근)
-                            // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
-                            String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
-                            String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
-
-                            nameView.setText(name);
-                            if(!profile_message.isEmpty()){
-                                messageView.setText(profile_message);
-                            }
-                        }else {
-                            // 데이터를 가져오는데 실패한 경우
-                            String message = jsonObject.getString("message");
-                            // 실패 메시지 처리
-                            Log.e("Error", "데이터를 가져오는데 실패: " + message);
-                        }
-
-                    } catch (IOException | JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                } else {
-                    // 응답 실패
-                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
-                }
+                getNameAndMessageResponseProcess(response);
 
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                //네트워크 오류 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
+
+    private void getNameAndMessageResponseProcess(Response<ResponseBody> response){
+        if(response.isSuccessful()){
+            try {
+                handleSuccessfulResponseWithNameAndData(response);
+
+            } catch (IOException | JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            // 응답 실패
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
+
+    private void handleSuccessfulResponseWithNameAndData (Response<ResponseBody> response) throws JSONException, IOException {
+        // 서버로부터 응답 본문을 문자열로 변환
+        String responseString = response.body().string();
+        //문자열을 JSON객체로 변환
+        JSONObject jsonObject = new JSONObject(responseString);
+
+        if(jsonObject.getBoolean("success")){
+            // 성공적으로 데이터를 가져온 경우
+            handleNameAndData(jsonObject);
+        }else {
+            // 데이터를 가져오는데 실패한 경우
+            handleFailureMessage(jsonObject);
+        }
+    }
+
+    private void handleNameAndData(JSONObject jsonObject) throws JSONException {
+        JSONObject userData = jsonObject.getJSONObject("data");
+
+        //데이터 사용 (칼럼명으로 접근)
+        // optString 메서드의 주요 특징은 JSON 객체에 특정 키가 없을때, 기본값("")을 반환
+        String name = userData.optString("name", ""); // "name" 키가 없으면,  빈 문자열 반환
+        String profile_message = userData.optString("profile_message", ""); //null 일 수도 있음
+
+        nameView.setText(name);
+        if(!profile_message.isEmpty()){
+            messageView.setText(profile_message);
+        }
+    }
+
 
     // 1-1. 카메라 권한 요청
     private void requestCameraPermissions() {
@@ -480,56 +519,13 @@ public class ProfileActivity1 extends AppCompatActivity {
     }
 
     private void updateProfileBackImage(String imageUriString, int userId){
+        JSONObject jsonObject = createJsonRequestBody(imageUriString);
+        RequestBody requestBody = createRequestBody(jsonObject);
 
-        //JSON 객체를 생성해서 userId와 image를 같이 보내줌
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("userId", userId);
-            jsonObject.put("image", imageUriString);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-
-        //JSON 객체를 문자열로 변환
-        String jsonData = jsonObject.toString();
-        //RequestBody 생성
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonData);
-        service.updateProfileBackImage(body).enqueue(new Callback<ResponseBody>() {
+        service.updateProfileBackImage(requestBody).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                // 요청 성공 처리
-                if (response.isSuccessful()) {
-                    // http 요청 성공시
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-
-                        if (success) {
-                            // 저장 성공
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        } else {
-                            // 저장 실패
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-
-                    } catch (JSONException e) {
-                        // JSON 파싱 오류 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        // IOException 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                    }
-
-                } else {
-                    //서버 응답 오류
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                }
+                updateBackImgResponseProcess(response);
             }
 
             @Override
@@ -540,8 +536,7 @@ public class ProfileActivity1 extends AppCompatActivity {
         });
     }
 
-    private void updateProfileImage(String imageUriString, int userId){
-
+    private JSONObject createJsonRequestBody(String imageUriString){
         //JSON 객체를 생성해서 userId와 image를 같이 보내줌
         JSONObject jsonObject = new JSONObject();
         try {
@@ -550,47 +545,58 @@ public class ProfileActivity1 extends AppCompatActivity {
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
+        return jsonObject;
+    }
 
+    private RequestBody createRequestBody(JSONObject jsonObject){
         //JSON 객체를 문자열로 변환
         String jsonData = jsonObject.toString();
         //RequestBody 생성
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), jsonData);
-        service.updateProfileImage(body).enqueue(new Callback<ResponseBody>() {
+         return RequestBody.create(MediaType.parse("application/json"), jsonData);
+    }
+
+
+    private void updateBackImgResponseProcess(Response<ResponseBody> response){
+        if (response.isSuccessful()) {
+            handleSuccessfulResponseToUpdateBackImg(response);
+
+        } else {
+            showToast("서버 응답 오류");
+        }
+    }
+
+    private void handleSuccessfulResponseToUpdateBackImg(Response<ResponseBody> response){
+        // http 요청 성공시
+        try {
+            String message = parseResponseData(response);
+            showToast(message);
+
+        } catch (JSONException | IOException e) {
+            // JSON 파싱 오류 처리, IOException 처리
+            e.printStackTrace();
+            showToast("오류 발생");
+        }
+    }
+
+    private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
+        String responseJson = response.body().string();
+        JSONObject jsonObject = new JSONObject(responseJson);
+        return jsonObject.getString("message");
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void updateProfileImage(String imageUriString, int userId){
+
+        JSONObject jsonObject = createJsonRequestBody(imageUriString);
+        RequestBody requestBody = createRequestBody(jsonObject);
+
+        service.updateProfileImage(requestBody).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                // 요청 성공 처리
-                if (response.isSuccessful()) {
-                    // http 요청 성공시
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-
-                        if (success) {
-                            // 저장 성공
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        } else {
-                            // 저장 실패
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-
-                    } catch (JSONException e) {
-                        // JSON 파싱 오류 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        // IOException 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                    }
-
-                } else {
-                    //서버 응답 오류
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                }
+                updateProfileImageResponseProcess(response);
             }
 
             @Override
@@ -599,6 +605,25 @@ public class ProfileActivity1 extends AppCompatActivity {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
+    }
+
+    private void updateProfileImageResponseProcess( Response<ResponseBody> response){
+        // 요청 성공 처리
+        if (response.isSuccessful()) {
+            // http 요청 성공시
+            try {
+                String message = parseResponseData(response);
+                showToast(message);
+
+            } catch (JSONException | IOException e) {
+                // JSON 파싱 오류 처리 , IOException 처리
+                e.printStackTrace();
+                showToast("오류 발생");
+            }
+
+        } else {
+           showToast("서버 응답 오류");
+        }
     }
 
     @Override
