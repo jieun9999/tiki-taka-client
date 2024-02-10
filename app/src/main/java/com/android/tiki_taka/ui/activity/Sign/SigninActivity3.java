@@ -129,35 +129,7 @@ public class SigninActivity3 extends AppCompatActivity {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    // 서버에서 응답이 올때
-
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-                        if (success) {
-                            // 비번 변경 성공
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                            //로그인_1 화면으로 이동
-                            Intent intent = new Intent(SigninActivity3.this, SigninActivity1.class);
-                            startActivity(intent);
-
-                        } else {
-                            // 비번 변경 실패
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-                    } catch (JSONException | IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    // 서버 응답 오류
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                }
+                responseProcess(response);
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
@@ -166,6 +138,56 @@ public class SigninActivity3 extends AppCompatActivity {
             }
         });
     }
+
+    private void responseProcess(Response<ResponseBody> response){
+        if (response.isSuccessful()) {
+            // 서버에서 응답이 올때
+
+            try {
+                String responseJson = response.body().string(); //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
+                JSONObject jsonObject = new JSONObject(responseJson);
+                boolean success = jsonObject.getBoolean("success");
+
+                if (success) {
+                    handleSuccessResponse(jsonObject);
+
+                } else {
+                    handleErrorResponse(jsonObject);
+                }
+            } catch (JSONException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            // 서버 응답 오류
+            handleServerFailureResponse(response.code());
+        }
+    }
+
+    private void handleSuccessResponse(JSONObject jsonObject) throws JSONException {
+        String message = jsonObject.getString("message");
+        // 비번 변경 성공
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+        //로그인_1 화면으로 이동
+        Intent intent = new Intent(SigninActivity3.this, SigninActivity1.class);
+        startActivity(intent);
+    }
+
+    private void handleErrorResponse(JSONObject jsonObject) throws JSONException {
+        // 비번 변경 실패
+        String message = jsonObject.getString("message");
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void handleServerFailureResponse(int errorCode) {
+        showToast("서버 응답 오류: " + errorCode);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
