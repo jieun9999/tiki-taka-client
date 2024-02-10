@@ -20,6 +20,7 @@ import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity6;
 import com.android.tiki_taka.ui.activity.Profile.ReconnectActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.ValidationUtils;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -65,8 +66,7 @@ public class SigninActivity1 extends AppCompatActivity {
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(AuthApiService.class);
         service2 = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         //회원탈퇴 버튼을 보여줄 지 말지 결정함
         showDeleteBtn();

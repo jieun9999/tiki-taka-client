@@ -29,6 +29,7 @@ import com.android.tiki_taka.models.dtos.UserProfileDto;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -54,7 +55,6 @@ public class SignupActivity3 extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 3;
     private static final int REQUEST_GALLERY_IMAGE = 4;
     private int currentAction;
-
 
     //프로필 항목
     CircleImageView profileImage;
@@ -425,23 +425,18 @@ public class SignupActivity3 extends AppCompatActivity {
     //사용자 입력값을 가져와서 객체 생성
     private UserProfileDto collectUserData() {
 
-        int userId = retrieveUserIdFromSharedPreferences();
+        int userId = SharedPreferencesHelper.getUserId(this);
         String profileImage = determineProfileImage();
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();
-        String name = editTextName.getText().toString();
-        String birthday = editTextDate.getText().toString();
-        String meetingDay = editTextDate2.getText().toString();
+        String name = String.valueOf(editTextName.getText());
+        String birthday = String.valueOf(editTextDate.getText());
+        String meetingDay = String.valueOf(editTextDate2.getText());
         boolean agreeTerms = checkBoxTerms.isChecked();
         boolean agreePrivacy = checkBoxPrivacy.isChecked();
 
         // 정적 팩토리 메서드를 사용하여 객체 생성
         return UserProfileDto.createUserProfile(userId, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
         // 이렇게 변경함으로써, UserProfileDto 객체 생성 과정이 더 명확해지고, 생성자에 비해 더 많은 정보를 제공하거나, 생성 과정을 좀 더 제어할 수 있는 유연성을 얻을 수 있습니다.
-    }
-
-    private int retrieveUserIdFromSharedPreferences(){
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        return sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
     }
 
     private String determineProfileImage(){

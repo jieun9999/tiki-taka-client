@@ -22,6 +22,7 @@ import com.android.tiki_taka.ui.fragment.ChatFragment;
 import com.android.tiki_taka.ui.fragment.HomeFragment;
 import com.android.tiki_taka.ui.fragment.VideochatFragment;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONException;
@@ -51,12 +52,9 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
-        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         fragmentManager = getSupportFragmentManager();
         homeFragment = new HomeFragment();

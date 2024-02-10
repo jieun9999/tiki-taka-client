@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONException;
@@ -51,8 +52,7 @@ public class ProfileActivity5 extends AppCompatActivity {
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         saveBtn = findViewById(R.id.button);
         messageView = findViewById(R.id.상태메세지);
@@ -66,48 +66,11 @@ public class ProfileActivity5 extends AppCompatActivity {
                 call.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        // 요청 성공 처리
-                        if (response.isSuccessful()) {
-                            // http 요청 성공시
-                            try {
-                                String responseJson = response.body().string();
-                                //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                                //.toString() 과 다름
-                                JSONObject jsonObject = new JSONObject(responseJson);
-                                boolean success = jsonObject.getBoolean("success");
-                                String message = jsonObject.getString("message");
-
-                                if (success) {
-                                    // 저장 성공
-                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                                    // 현재 액티비티를 종료하고 이전 액티비티로 돌아감
-                                    finish();
-                                    //finish() 사용 후 이전 액티비티에서 데이터 갱신
-
-                                } else {
-                                    // 저장 실패
-                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                                }
-
-                            } catch (JSONException e) {
-                                // JSON 파싱 오류 처리
-                                e.printStackTrace();
-                                Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                            } catch (IOException e) {
-                                // IOException 처리
-                                e.printStackTrace();
-                                Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                            }
-
-                        } else {
-                            //서버 응답 오류
-                            Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                        }
+                        responseProcess(response);
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        // 요청 실패 처리
                         Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
                     }
                 });
@@ -116,6 +79,39 @@ public class ProfileActivity5 extends AppCompatActivity {
         });
     }
 
+    private void responseProcess(Response<ResponseBody> response) {
+        // 요청 성공 처리
+        if (response.isSuccessful()) {
+            // http 요청 성공시
+            try {
+                String responseJson = response.body().string();
+                JSONObject jsonObject = new JSONObject(responseJson);
+                boolean success = jsonObject.getBoolean("success");
+                String message = jsonObject.getString("message");
+
+                    if (success) {
+                        // 저장 성공
+                        showToast(message);
+                        finish();
+
+                    } else {
+                        // 저장 실패
+                    showToast(message);
+                }
+
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+                showToast("오류 발생");
+            }
+
+        } else {
+            showToast("서버 응답 오류");
+        }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

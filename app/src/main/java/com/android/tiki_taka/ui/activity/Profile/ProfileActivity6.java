@@ -18,6 +18,7 @@ import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity2;
 import com.android.tiki_taka.ui.activity.Sign.SignupActivity1;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,8 +56,7 @@ public class ProfileActivity6 extends AppCompatActivity {
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,7 +65,7 @@ public class ProfileActivity6 extends AppCompatActivity {
                 dropAccount();
 
                 //2.자동 로그인 쉐어드 모두 초기화
-                clearShared();
+                SharedPreferencesHelper.clearShared(ProfileActivity6.this);
 
                 //3.회원가입_1화면 으로 이동하면서 스택 초기화
                 clearStack();
@@ -85,57 +85,36 @@ public class ProfileActivity6 extends AppCompatActivity {
         service.dropAccount(userId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                // 요청 성공 처리
-                if (response.isSuccessful()) {
-                    // http 요청 성공시
-                    try {
-                        String responseJson = response.body().string();
-                        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                        //.toString() 과 다름
-                        JSONObject jsonObject = new JSONObject(responseJson);
-                        boolean success = jsonObject.getBoolean("success");
-                        String message = jsonObject.getString("message");
-
-                        if (success) {
-                            // 성공
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                        } else {
-                            // 실패
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                        }
-
-                    } catch (JSONException e) {
-                        // JSON 파싱 오류 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                    } catch (IOException e) {
-                        // IOException 처리
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                    }
-
-                } else {
-                    //서버 응답 오류
-                    Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                }
+                responseProcess(response);
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                // 요청 실패 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
 
-    private void clearShared(){
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+    private void responseProcess(Response<ResponseBody> response){
+        // 요청 성공 처리
+        if (response.isSuccessful()) {
+            // http 요청 성공시
+            try {
+                String responseJson = response.body().string();
+                JSONObject jsonObject = new JSONObject(responseJson);
+                String message = jsonObject.getString("message");
 
-        // SharedPreferences의 모든 데이터를 초기화
-        editor.clear();
-        editor.apply(); // 비동기적으로 저장
+                //성공, 실패 관계 없이 모두 메세지를 보여줌
+                showToast(message);
+
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+               showToast("오류 생성");
+            }
+
+        } else {
+            showToast("서버 응답 오류");
+        }
     }
 
     private void clearStack(){
@@ -145,6 +124,7 @@ public class ProfileActivity6 extends AppCompatActivity {
         startActivity(intent);
         finish(); // 현재 액티비티 종료
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -154,6 +134,10 @@ public class ProfileActivity6 extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
     }
 
 }

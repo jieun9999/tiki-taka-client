@@ -15,6 +15,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.responses.CodeResponse;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONException;
@@ -50,13 +51,9 @@ public class SignupActivity2 extends AppCompatActivity {
         inputCode = findViewById(R.id.초대코드입력);
         connectButton = findViewById(R.id.imageView3);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
-
-        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
-        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(AuthApiService.class);
+        userId = SharedPreferencesHelper.getUserId(this);
 
         //1. 서버에 getInvitationCode 요청을 보냄
         Call<CodeResponse> call = service.getInvitationCode(userId);
@@ -67,7 +64,6 @@ public class SignupActivity2 extends AppCompatActivity {
                 if(response.isSuccessful()){
                     // HTTP 요청의 응답이 성공적이었는지 여부를 확인
                     // HTTP 응답 코드가 200-299 범위 내에 있을 때 true를 반환
-
                     CodeResponse codeResponse = response.body();
 
                     // 텍스트 교체 (유효시간, 초대코드)
@@ -92,7 +88,7 @@ public class SignupActivity2 extends AppCompatActivity {
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String code = inputCode.getText().toString();
+                String code = String.valueOf(inputCode.getText());
                 sendCode(code);
             }
         });

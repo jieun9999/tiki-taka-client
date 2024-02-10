@@ -52,12 +52,9 @@ public class ProfileActivity3 extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼 활성화
         }
 
-        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
-        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override

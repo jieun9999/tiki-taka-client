@@ -9,7 +9,6 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -85,12 +84,9 @@ public class ProfileActivity1 extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼 활성화
         }
 
-        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
-        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         profileImage = findViewById(R.id.imageView28);
         backImage = findViewById(R.id.imageView25);
@@ -192,8 +188,6 @@ public class ProfileActivity1 extends AppCompatActivity {
             }
         });
     }
-
-
 
     private void InitializeStackAndNavigateToLogin1Screen(){
         // 로그인_1 화면으로 이동하면서 스택 초기화
@@ -454,11 +448,9 @@ public class ProfileActivity1 extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             // 카메라 앱은 사진을 imageUri 위치에 저장하고, data 인텐트에 추가 정보를 반환하지 않을 수 있습니다. 따라서 data != null 조건을 삭제함
-            // 카메라 앱에서 직접 반환받은 Bitmap 객체에는 원본 파일 경로 정보가 포함x
-            // 카메라로 사진을 찍을 때 원본 파일 경로를 저장하려면, 사진을 찍기 전에 이미지 파일을 생성하고 이 파일의 경로를 카메라 앱에 전달해야 함
 
             // Uri를 직접 사용하는 것이 파일 접근에 있어 더 현대적이고 안전한 방법
-            String imageUriString = imageUri.toString(); // URI를 String으로 변환한 값을 저장
+            String imageUriString = imageUri.toString();
             //db 업데이트
             updateProfileImage(imageUriString, userId);
 
@@ -468,24 +460,16 @@ public class ProfileActivity1 extends AppCompatActivity {
         } else if (requestCode == REQUEST_GALLERY_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri selectedImageUri = data.getData();
 
-            // Uri를 직접 사용하는 것이 파일 접근에 있어 더 현대적이고 안전한 방법
             String selectedImageUriString =selectedImageUri.toString();
-            //db 업데이트
             updateProfileImage(selectedImageUriString, userId);
-
-            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드가능
             ImageUtils.loadImage(selectedImageUriString, profileImage, ProfileActivity1.this);
 
 
         } else if (requestCode == REQUEST_BACKGROUND_IMAGE && resultCode == RESULT_OK && data != null) {
             Uri selectedImageUri = data.getData();
 
-            // Uri를 직접 사용하는 것이 파일 접근에 있어 더 현대적이고 안전한 방법
             String selectedImageUriString =selectedImageUri.toString();
-            //db 업데이트
             updateProfileBackImage(selectedImageUriString, userId);
-
-            //imageUri (Uri 객체)나 imageUriString (Uri의 String 표현) 중 어느 것을 사용하여도 Glide는 올바르게 이미지를 로드가능
             ImageUtils.loadImage(selectedImageUriString, backImage, ProfileActivity1.this);
         }
 

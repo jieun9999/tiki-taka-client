@@ -16,6 +16,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,19 +44,15 @@ public class ReconnectActivity extends AppCompatActivity {
         button = findViewById(R.id.btn_confirm);
         button2 = findViewById(R.id.btn_cancel);
 
-        //기본 액션바를 사용
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("상대방과 연결 끊기"); // 액션바 타이틀 설정
-            actionBar.setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼 활성화
+            actionBar.setTitle("상대방과 연결 끊기");
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
-        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(ProfileApiService.class);
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        userId = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+        userId = SharedPreferencesHelper.getUserId(this);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,8 +68,6 @@ public class ReconnectActivity extends AppCompatActivity {
                             // http 요청 성공시
                             try {
                                 String responseJson = response.body().string();
-                                //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                                //.toString() 과 다름
                                 JSONObject jsonObject = new JSONObject(responseJson);
                                 boolean success = jsonObject.getBoolean("success");
                                 String message = jsonObject.getString("message");
