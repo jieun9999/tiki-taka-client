@@ -40,9 +40,6 @@ public class SignupActivity2 extends AppCompatActivity {
     TextInputEditText inputCode;
     ImageView connectButton;
 
-
-
-    // protected : 같은 패키지안의 모든 클래스와, 다른 패키지의 자식 클래스에서 접근
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

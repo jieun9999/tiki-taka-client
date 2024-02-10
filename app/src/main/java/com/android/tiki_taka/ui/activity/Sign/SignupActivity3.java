@@ -146,9 +146,6 @@ public class SignupActivity3 extends AppCompatActivity {
             }
         });
 
-
-
-
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
@@ -159,7 +156,6 @@ public class SignupActivity3 extends AppCompatActivity {
             public void onClick(View v) {
                 validateInputs();
                 if (isValidInput) {
-                    // 유효한 입력 처리 로직
                     // 유저 데이터 모아서 객체 생성
                     userProfileDTO = collectUserData();
 
@@ -168,59 +164,66 @@ public class SignupActivity3 extends AppCompatActivity {
                     call.enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            if (response.isSuccessful()) {
-                                // http 요청 성공시
-
-                                try {
-                                    String responseJson = response.body().string();
-                                    //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
-                                    //.toString() 과 다름
-                                    JSONObject jsonObject = new JSONObject(responseJson);
-                                    boolean success = jsonObject.getBoolean("success");
-                                    String message = jsonObject.getString("message");
-
-                                    if (success) {
-                                        // 저장 성공
-                                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-
-                                        //로그인 화면으로 이동
-                                        Intent intent = new Intent(SignupActivity3.this, SigninActivity1.class);
-                                        startActivity(intent);
-
-                                    } else {
-                                        // 저장 실패
-                                        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-                                    }
-                                } catch (JSONException e) {
-                                    // JSON 파싱 오류 처리
-                                    e.printStackTrace();
-                                    Toast.makeText(getApplicationContext(), "JSON 파싱 오류", Toast.LENGTH_LONG).show();
-                                } catch (IOException e) {
-                                    // IOException 처리
-                                    e.printStackTrace();
-                                    Toast.makeText(getApplicationContext(), "IO 오류", Toast.LENGTH_LONG).show();
-                                }
-
-                            } else {
-                                //서버 응답 오류
-                                Toast.makeText(getApplicationContext(), "서버 응답 오류: " + response.code(), Toast.LENGTH_LONG).show();
-                            }
+                            responseProcess(response);
                         }
-
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
                             // 네트워크 오류 처리
-                            Toast.makeText(getApplicationContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                            showToast("네트워크 오류: " + t.getMessage());
                         }
                     });
 
                 } else {
                     // 입력이 유효하지 않을 때의 처리 로직
-                    Toast.makeText(getApplicationContext(), "입력이 유효하지 않음", Toast.LENGTH_LONG).show();
+                    showToast("입력이 유효하지 않음");
                 }
             }
         });
 
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    private void responseProcess(Response<ResponseBody> response){
+        if (response.isSuccessful()) {
+            // http 요청 성공시
+
+            try {
+                handleSuccessfulResponse(response);
+
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+               showToast("오류 발생");
+            }
+
+        } else {
+            //서버 응답 오류
+            showToast("서버 응답 오류: " + response.code());
+        }
+    }
+
+    private void handleSuccessfulResponse(Response<ResponseBody> response) throws JSONException, IOException {
+        String responseJson = response.body().string();
+        //response.body().string() 메서드를 사용하여 ResponseBody를 문자열로 읽어오는 것
+        //.toString() 과 다름
+        JSONObject jsonObject = new JSONObject(responseJson);
+        boolean success = jsonObject.getBoolean("success");
+        String message = jsonObject.getString("message");
+
+        if (success) {
+            // 저장 성공
+            showToast(message);
+
+            //로그인 화면으로 이동
+            Intent intent = new Intent(SignupActivity3.this, SigninActivity1.class);
+            startActivity(intent);
+
+        } else {
+            // 저장 실패
+            showToast(message);
+        }
     }
 
     // 1-1. 카메라 권한 요청
@@ -422,23 +425,8 @@ public class SignupActivity3 extends AppCompatActivity {
     //사용자 입력값을 가져와서 객체 생성
     private UserProfileDto collectUserData() {
 
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
-        int Id = sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
-
-        String profileImage = "";
-        if (isProfileImageChanged) {
-               if(selectedImageUri != null){
-                   //갤러리에서 사진 선택시
-                   imageUriString = selectedImageUri.toString(); ; // URI를 String으로 변환한 값을 저장
-                   profileImage = imageUriString;
-               }else {
-                   //카메라 앱에서 사진 선택시
-                   imageUriString = cameraImageUri.toString(); // URI를 String으로 변환한 값을 저장
-                   profileImage = imageUriString;
-               }
-
-        }
-
+        int userId = retrieveUserIdFromSharedPreferences();
+        String profileImage = determineProfileImage();
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();
         String name = editTextName.getText().toString();
         String birthday = editTextDate.getText().toString();
@@ -447,9 +435,32 @@ public class SignupActivity3 extends AppCompatActivity {
         boolean agreePrivacy = checkBoxPrivacy.isChecked();
 
         // 정적 팩토리 메서드를 사용하여 객체 생성
-        return UserProfileDto.createUserProfile(Id, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
+        return UserProfileDto.createUserProfile(userId, profileImage, gender, name, birthday, meetingDay, agreeTerms, agreePrivacy);
         // 이렇게 변경함으로써, UserProfileDto 객체 생성 과정이 더 명확해지고, 생성자에 비해 더 많은 정보를 제공하거나, 생성 과정을 좀 더 제어할 수 있는 유연성을 얻을 수 있습니다.
     }
+
+    private int retrieveUserIdFromSharedPreferences(){
+        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        return sharedPreferences.getInt("userId", -1); // 기본값으로 -1이나 다른 유효하지 않은 값을 설정
+    }
+
+    private String determineProfileImage(){
+        String profileImage = "";
+        if (isProfileImageChanged) {
+            if(selectedImageUri != null){
+                //갤러리에서 사진 선택시
+                imageUriString = selectedImageUri.toString(); ; // URI를 String으로 변환한 값을 저장
+                profileImage = imageUriString;
+            }else {
+                //카메라 앱에서 사진 선택시
+                imageUriString = cameraImageUri.toString(); // URI를 String으로 변환한 값을 저장
+                profileImage = imageUriString;
+            }
+
+        }
+        return profileImage;
+    }
+
     }
 
 
