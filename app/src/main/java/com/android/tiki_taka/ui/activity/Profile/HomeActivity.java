@@ -7,7 +7,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
-import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.fragment.AlarmFragment;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.ui.fragment.ChatFragment;
@@ -55,6 +53,9 @@ public class HomeActivity extends AppCompatActivity {
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(ProfileApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+
+        // 연결끊기가 된 상태이면 바로 프로필_1 화면으로 이동(홈화면 진입 불가)
+        checkConnectStateAndNavigateToProfileActivity1();
 
         fragmentManager = getSupportFragmentManager();
         homeFragment = new HomeFragment();
@@ -106,7 +107,68 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    public void checkConnectStateAndNavigateToProfileActivity1(){
+        service.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    handleConnectStateResponse(response);
+                } else {
+                    // 서버 응답 실패 처리
+                    showToast("서버 응답 오류: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // 요청 실패 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void handleConnectStateResponse(Response<ResponseBody> response) {
+        try {
+            String responseBodyString = response.body().string();
+            JSONObject jsonObject = new JSONObject(responseBodyString);
+            getUserState(jsonObject);
+
+        } catch (IOException | JSONException e) {
+            handleResponseError(e);
+        }
+    }
+
+    private void getUserState(JSONObject jsonObject) throws JSONException {
+        if (jsonObject.getBoolean("success")) {
+            int userState = jsonObject.getInt("userState");
+            if (userState == 0) {
+                navigateToProfileActivity1();
+                return;
+            }
+
+        } else {
+            // 프로필이 존재하지 않는 경우의 처리 로직
+            String errorMessage = jsonObject.getString("message");
+            showToast(errorMessage);
+        }
+    }
+
+    private void navigateToProfileActivity1() {
+        // 프로필_1 화면으로 이동하면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), ProfileActivity1.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
 
 
+    private void handleResponseError(Exception e) {
+        e.printStackTrace();
+        showToast("데이터 처리 오류");
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
 
 }

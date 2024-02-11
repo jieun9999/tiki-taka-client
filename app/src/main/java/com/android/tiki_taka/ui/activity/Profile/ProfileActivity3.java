@@ -120,13 +120,12 @@ public class ProfileActivity3 extends AppCompatActivity {
 
     private void handleSuccess( String message){
         showToast(message);
-        SharedPreferencesHelper.saveAutoLoginState(this,false);
-        navigateToSigninActivity1();
+        navigateToProfileActivity1();
     }
 
-    private void navigateToSigninActivity1() {
-        // 로그인_1 화면으로 이동하면서 스택 초기화
-        Intent intent = new Intent(getApplicationContext(), SigninActivity1.class);
+    private void navigateToProfileActivity1() {
+        // 프로필_1 화면으로 이동하면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), ProfileActivity1.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

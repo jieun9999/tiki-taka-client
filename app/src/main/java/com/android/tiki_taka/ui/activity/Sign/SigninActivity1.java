@@ -45,7 +45,6 @@ public class SigninActivity1 extends AppCompatActivity {
     TextInputEditText passEditText;
     ImageView signInButton;
     TextView forgotText;
-    TextView deleteAccountText;
     int userId; // 유저 식별 정보
 
     @Override
@@ -59,17 +58,12 @@ public class SigninActivity1 extends AppCompatActivity {
         passEditText = findViewById(R.id.새비밀번호);
         signInButton = findViewById(R.id.imageView5);
         forgotText = findViewById(R.id.textView8);
-        deleteAccountText = findViewById(R.id.textView9);
 
         // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(AuthApiService.class);
-        service2 = retrofit.create(ProfileApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-
-        //회원탈퇴 버튼을 보여줄 지 말지 결정함
-        showDeleteBtn();
 
         emailEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -120,69 +114,11 @@ public class SigninActivity1 extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        deleteAccountText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(SigninActivity1.this, ProfileActivity6.class);
-                startActivity(intent);
-            }
-        });
 
     }
     @Override
     protected void onResume() {
         super.onResume();
-        //회원탈퇴 버튼을 보여줄 지 말지 결정함
-        showDeleteBtn();
-    }
-
-    public void showDeleteBtn(){
-        service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    handleConnectStateResponse(response);
-                } else {
-                    // 서버 응답 실패 처리
-                    showToast("서버 응답 오류: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                // 요청 실패 처리
-                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
-            }
-        });
-    }
-
-    private void handleConnectStateResponse(Response<ResponseBody> response) {
-        try {
-            String responseBodyString = response.body().string();
-            JSONObject jsonObject = new JSONObject(responseBodyString);
-            updateDeleteButtonVisibility(jsonObject);
-        } catch (IOException | JSONException e) {
-            handleResponseError(e);
-        }
-    }
-
-    private void updateDeleteButtonVisibility(JSONObject jsonObject) throws JSONException {
-        if (jsonObject.getBoolean("success")) {
-            int userState = jsonObject.getInt("userState");
-            if (userState == 1) {
-                // connect가 1이면, '회원탈퇴' 버튼을 숨김
-                deleteAccountText.setVisibility(View.GONE);
-            }
-        } else {
-            // 프로필이 존재하지 않는 경우의 처리 로직
-            String errorMessage = jsonObject.getString("message");
-            showToast(errorMessage);
-        }
-    }
-
-    private void handleResponseError(Exception e) {
-        e.printStackTrace();
-        showToast("데이터 처리 오류");
     }
 
 
@@ -321,7 +257,5 @@ public class SigninActivity1 extends AppCompatActivity {
         String errorMessage = jsonObject.getString("message");
         showToast(errorMessage);
     }
-
-
 
 }

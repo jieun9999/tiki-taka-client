@@ -109,7 +109,6 @@ public class ProfileActivity1 extends AppCompatActivity {
                 bottomSheetView.findViewById(R.id.take_photo).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // 사진 찍기 로직
                         currentAction = REQUEST_CAMERA;
                         requestCameraPermissions();
                         bottomSheetDialog.dismiss();
@@ -119,7 +118,6 @@ public class ProfileActivity1 extends AppCompatActivity {
                 bottomSheetView.findViewById(R.id.choose_from_gallery).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // 앨범에서 선택하기 로직
                         currentAction = REQUEST_GALLERY;
                         requestStoragePermissions();
                         bottomSheetDialog.dismiss();
@@ -130,17 +128,14 @@ public class ProfileActivity1 extends AppCompatActivity {
             }
         });
 
-        // 배경 사진 변경
         galleryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 앨범에서 선택하기 로직
                 currentAction = REQUEST_GALLERY_BACK_IMG;
                 requestStoragePermissions();
             }
         });
 
-        //이름 변경 액티비티로 이동
         nameView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -148,7 +143,6 @@ public class ProfileActivity1 extends AppCompatActivity {
             }
         });
 
-        //상메 변경 액티비티로 이동
         messageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,7 +156,6 @@ public class ProfileActivity1 extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // "로그아웃" 옵션을 클릭했을 때
 
                 if (options[position].equals("로그아웃")) {
 
@@ -183,7 +176,8 @@ public class ProfileActivity1 extends AppCompatActivity {
 
                 } else if (options[position].equals("회원 탈퇴")){
 
-                    navigateToProfileScreen(ProfileActivity2.class);
+                    checkConnectStateAndNavigateToProfileScreen();
+
                 }
             }
         });
@@ -209,6 +203,60 @@ public class ProfileActivity1 extends AppCompatActivity {
         // <?>는 와일드카드 타입으로, 어떤 클래스든 받아들일 수 있다는 것을 의미
         Intent intent = new Intent(ProfileActivity1.this, profileActivityClass);
         startActivity(intent);
+    }
+
+    public void checkConnectStateAndNavigateToProfileScreen(){
+        service.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    handleConnectStateResponse(response);
+                } else {
+                    // 서버 응답 실패 처리
+                    showToast("서버 응답 오류: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // 요청 실패 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void handleConnectStateResponse(Response<ResponseBody> response) {
+        try {
+            String responseBodyString = response.body().string();
+            JSONObject jsonObject = new JSONObject(responseBodyString);
+            getUserState(jsonObject);
+
+        } catch (IOException | JSONException e) {
+            handleResponseError(e);
+        }
+    }
+
+    private void getUserState(JSONObject jsonObject) throws JSONException {
+        if (jsonObject.getBoolean("success")) {
+            int userState = jsonObject.getInt("userState");
+            if (userState == 0) {
+                // 현재 연결 상태를 확인한뒤, 연결이 끊어져 있으면 프로필_6 화면으로 이동
+                navigateToProfileScreen(ProfileActivity6.class);
+            } else {
+                // 현재 연결 상태를 확인한 뒤, 연결이 되어 있으면 프로필_2 화면으로 이동
+                navigateToProfileScreen(ProfileActivity2.class);
+            }
+
+        } else {
+            // 프로필이 존재하지 않는 경우의 처리 로직
+            String errorMessage = jsonObject.getString("message");
+            showToast(errorMessage);
+        }
+    }
+
+    private void handleResponseError(Exception e) {
+        e.printStackTrace();
+        showToast("데이터 처리 오류");
     }
 
     // 사용자 경험(UX)을 최적화: onResume()에서 사용자의 기타 정보를 업데이트
