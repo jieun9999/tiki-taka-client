@@ -36,14 +36,12 @@ import retrofit2.Retrofit;
 
 // 프래그먼트 내에서 ItemClickListener 인터페이스를 구현하고, 이를 어댑터에 전달할 수 있음
 public class AlbumFragment extends Fragment implements ItemClickListener {
-    private RecyclerView recyclerView;
     private StoryFolderAdapter adapter;
     StoryApiService storyFolderApiService;
     int userId; // 유저 식별 정보
 
-
     public AlbumFragment() {
-        // Required empty public constructor
+
     }
 
     @Override
@@ -61,14 +59,13 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
 
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         //프래그먼트의 뷰 생성 및 UI 관련 작업 수행
         View view = inflater.inflate(R.layout.fragment_album, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // 어댑터 설정 이후 데이터 로드
@@ -83,37 +80,12 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
 
     }
 
-
-
     private void loadStoryFolders() {
         storyFolderApiService.getStoryFolders(userId).enqueue(new Callback<StoryFoldersResponse>() {
             @Override
             public void onResponse(Call<StoryFoldersResponse> call, Response<StoryFoldersResponse> response) {
+                processStoryFolderResponse(response);
 
-                if(response.isSuccessful() && response.body() != null){
-                    // 요청 성공 + 응답 존재
-
-                    StoryFoldersResponse storyFoldersResponse = response.body();
-                    if(storyFoldersResponse.isSuccess()){
-                        //success가 true인 경우,
-                        List<StoryFolderDto> storyFolderDtos = storyFoldersResponse.getStoryFolders();
-
-                        // 서버에서 가져온 리스트를 어댑터에 추가함
-                        adapter.setData(storyFolderDtos);
-
-                        String message = storyFoldersResponse.getMessage();
-                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-
-                    }else {
-                        //success가 false인 경우,
-                        String message = storyFoldersResponse.getMessage();
-                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-                    }
-
-                }else {
-                    // 응답 실패
-                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
-                }
             }
 
             @Override
@@ -124,6 +96,41 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
         });
 
     }
+
+    private void processStoryFolderResponse(Response<StoryFoldersResponse> response){
+        if(response.isSuccessful() && response.body() != null){
+
+            StoryFoldersResponse storyFoldersResponse = response.body();
+            if(storyFoldersResponse.isSuccess()){
+                updateUIOnSuccess(storyFoldersResponse);
+
+            }else {
+                handleFailure(storyFoldersResponse);
+
+            }
+
+        }else {
+            // 응답 실패
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
+
+    private void updateUIOnSuccess(StoryFoldersResponse storyFoldersResponse){
+
+        List<StoryFolderDto> storyFolderDtos = storyFoldersResponse.getStoryFolders();
+
+        // 서버에서 가져온 리스트를 어댑터에 추가함
+        adapter.setData(storyFolderDtos);
+
+        String message = storyFoldersResponse.getMessage();
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleFailure(StoryFoldersResponse storyFoldersResponse){
+        String message = storyFoldersResponse.getMessage();
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
     //아이템 클릭시, 아이템의 id를 다음 화면에 넘겨줍니다.
     @Override
     public void onItemClick(int position) {
