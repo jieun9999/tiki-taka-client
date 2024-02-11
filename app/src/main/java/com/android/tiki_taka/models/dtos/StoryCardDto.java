@@ -12,8 +12,12 @@ public class StoryCardDto {
     private int folderId;
     @SerializedName("user_id")
     private int userId;
+    @SerializedName("data_type")
+    private String dataType;
     @SerializedName("image_url")
     private String imageUrl; //이미지라면 url이, 메모라면 텍스트가 들어감
+    @SerializedName("memo_type")
+    private String memoText;
     @SerializedName("user_good")
     private int userGood;
     @SerializedName("partner_good")
@@ -28,11 +32,13 @@ public class StoryCardDto {
     //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱
 
     // 생성자
-    public StoryCardDto(int cardId, int folderId, int userId, String imageUrl, int userGood, int partnerGood) {
+    public StoryCardDto(int cardId, int folderId, int userId, String dataType, String imageUrl,String memoText, int userGood, int partnerGood) {
         this.cardId = cardId;
         this.folderId = folderId;
         this.userId = userId;
+        this.dataType = dataType;
         this.imageUrl = imageUrl;
+        this.memoText = memoText;
         this.userGood = userGood;
         this.partnerGood = partnerGood;
     }
@@ -100,4 +106,21 @@ public class StoryCardDto {
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getMemoText() {
+        return memoText;
+    }
+
+    public void setMemoText(String memoText) {
+        this.memoText = memoText;
+    }
+
 }
