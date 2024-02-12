@@ -14,10 +14,10 @@ public class StoryCardDto {
     private int userId;
     @SerializedName("data_type")
     private String dataType;
-    @SerializedName("image_url")
-    private String imageUrl; //이미지라면 url이, 메모라면 텍스트가 들어감
-    @SerializedName("memo_type")
-    private String memoText;
+    @SerializedName("image")
+    private String image;
+    @SerializedName("memo")
+    private String memo;
     @SerializedName("user_good")
     private int userGood;
     @SerializedName("partner_good")
@@ -32,13 +32,13 @@ public class StoryCardDto {
     //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱
 
     // 생성자
-    public StoryCardDto(int cardId, int folderId, int userId, String dataType, String imageUrl,String memoText, int userGood, int partnerGood) {
+    public StoryCardDto(int cardId, int folderId, int userId, String dataType, String image,String memo, int userGood, int partnerGood) {
         this.cardId = cardId;
         this.folderId = folderId;
         this.userId = userId;
         this.dataType = dataType;
-        this.imageUrl = imageUrl;
-        this.memoText = memoText;
+        this.image = image;
+        this.memo = memo;
         this.userGood = userGood;
         this.partnerGood = partnerGood;
     }
@@ -67,12 +67,12 @@ public class StoryCardDto {
         this.userId = userId;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getImage() {
+        return image;
     }
 
-    public void setImageUrl(String contents) {
-        this.imageUrl = contents;
+    public void setImage(String contents) {
+        this.image = contents;
     }
 
     public int getUserGood() {
@@ -115,12 +115,12 @@ public class StoryCardDto {
         this.dataType = dataType;
     }
 
-    public String getMemoText() {
-        return memoText;
+    public String getMemo() {
+        return memo;
     }
 
-    public void setMemoText(String memoText) {
-        this.memoText = memoText;
+    public void setMemo(String memo) {
+        this.memo = memo;
     }
 
 }

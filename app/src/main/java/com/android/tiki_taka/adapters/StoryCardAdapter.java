@@ -25,23 +25,6 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         this.storyCards = storyCards;
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-
-        public ImageViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imageView = itemView.findViewById(R.id.imageView);
-        }
-    }
-
-    public class TextViewHolder extends RecyclerView.ViewHolder{
-        TextView textView;
-
-        public TextViewHolder(View itemView){
-            super(itemView);
-            textView = itemView.findViewById(R.id.textView);
-        }
-    }
     @Override
     public int getItemViewType(int position) {
         StoryCardDto storyCardDto = storyCards.get(position);
@@ -52,6 +35,23 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 return TEXT_TYPE;
             default :
                 return -1;
+        }
+    }
+    public static class ImageViewHolder extends RecyclerView.ViewHolder {
+        ImageView imageView;
+
+        public ImageViewHolder(@NonNull View itemView) {
+            super(itemView);
+            imageView = itemView.findViewById(R.id.imageView);
+        }
+    }
+
+    public static class TextViewHolder extends RecyclerView.ViewHolder{
+        TextView textView;
+
+        public TextViewHolder(View itemView){
+            super(itemView);
+            textView = itemView.findViewById(R.id.textView);
         }
     }
 
@@ -75,13 +75,14 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         
         if (holder.getItemViewType() == IMAGE_TYPE){
             ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
-            Glide.with(holder.itemView.getContext())
-                    .load(card.getImageUrl())
-                    .into(((ImageViewHolder) holder).imageView);
+            Glide.with(imageViewHolder.itemView.getContext())
+                    .load(card.getImage())
+                    .into((imageViewHolder).imageView);
             
-        } else if (holder.getItemViewType() == TEXT_TYPE) {
+        }
+        else if (holder.getItemViewType() == TEXT_TYPE) {
             TextViewHolder textViewHolder = (TextViewHolder) holder;
-            textViewHolder.textView.setText(card.getMemoText());
+            textViewHolder.textView.setText(card.getMemo());
         }
     }
 

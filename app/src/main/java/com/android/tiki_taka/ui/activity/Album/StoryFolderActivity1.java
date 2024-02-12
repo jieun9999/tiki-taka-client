@@ -149,7 +149,7 @@ public class StoryFolderActivity1 extends AppCompatActivity {
         thumbLocView.setText(storyFolderDto.getLocation());
         // 이미지는 글라이드로 할당
         Glide.with(getApplicationContext())
-                .load(storyFolderDto.getDisplayImageUrl())
+                .load(storyFolderDto.getDisplayImage())
                 .into(thumbBackImgView);
 
         String message = storyFolderResponse.getMessage();
