@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -21,7 +20,6 @@ import com.android.tiki_taka.models.dtos.StoryCardDto;
 import com.android.tiki_taka.models.dtos.StoryFolderDto;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
-import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.DateUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -38,7 +36,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class StoryFolderActivity1 extends AppCompatActivity {
+public class StoryFolderActivity extends AppCompatActivity {
     int folderId;
     StoryApiService service;
     int userId;

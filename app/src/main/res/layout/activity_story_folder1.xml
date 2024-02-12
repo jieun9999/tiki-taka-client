@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#D9D9D9"
-    tools:context=".ui.activity.Album.StoryFolderActivity1">
+    android:background="?attr/colorPrimary"
+    tools:context=".ui.activity.Album.StoryFolderActivity">
     <!-- 커스텀 툴바 포함 -->
 
     <!-- 스토리 상세 레이아웃 포함 -->
@@ -28,9 +28,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

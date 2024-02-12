@@ -21,7 +21,7 @@ import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.StoryFolderDto;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity1;
+import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -136,7 +136,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
     public void onItemClick(int position) {
         StoryFolderDto clickedItem = adapter.getItem(position);
 
-        Intent intent = new Intent(getContext(), StoryFolderActivity1.class);
+        Intent intent = new Intent(getContext(), StoryFolderActivity.class);
         intent.putExtra("CLICKED_ITEM_ID", clickedItem.getFolderId());
         startActivity(intent);
     }

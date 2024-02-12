@@ -14,9 +14,9 @@
 
         <ImageView
             android:id="@+id/imageView36"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="13dp"
             app:srcCompat="@drawable/ion_arrow_back" />
 
         <ImageView
