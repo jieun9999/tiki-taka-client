@@ -20,6 +20,8 @@ public class StoryCardDto {
     private String memo;
     @SerializedName("video")
     private String video;
+    @SerializedName("video_thumbnail")
+    private String videoThumbnail;
     @SerializedName("user_good")
     private int userGood;
     @SerializedName("partner_good")
@@ -34,7 +36,7 @@ public class StoryCardDto {
     //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱
 
     // 생성자
-    public StoryCardDto(int cardId, int folderId, int userId, String dataType, String image,String memo, String video,int userGood, int partnerGood) {
+    public StoryCardDto(int cardId, int folderId, int userId, String dataType, String image,String memo, String video,String videoThumbnail,int userGood, int partnerGood) {
         this.cardId = cardId;
         this.folderId = folderId;
         this.userId = userId;
@@ -42,6 +44,7 @@ public class StoryCardDto {
         this.image = image;
         this.memo = memo;
         this.video = video;
+        this.videoThumbnail = videoThumbnail;
         this.userGood = userGood;
         this.partnerGood = partnerGood;
     }
@@ -132,5 +135,13 @@ public class StoryCardDto {
 
     public void setVideo(String video) {
         this.video = video;
+    }
+
+    public String getVideoThumbnail() {
+        return videoThumbnail;
+    }
+
+    public void setVideoThumbnail(String videoThumbnail) {
+        this.videoThumbnail = videoThumbnail;
     }
 }

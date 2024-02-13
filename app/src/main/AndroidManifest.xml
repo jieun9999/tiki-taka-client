@@ -23,6 +23,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Album.StoryWritingActivity1"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.Album.VideoPlayerActivity"
             android:exported="false" />
         <activity
