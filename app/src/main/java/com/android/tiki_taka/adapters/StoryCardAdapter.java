@@ -1,6 +1,7 @@
 package com.android.tiki_taka.adapters;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,15 @@ import java.util.List;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.StoryCardDto;
+import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity;
+import com.android.tiki_taka.ui.activity.Album.VideoPlayerActivity;
+import com.android.tiki_taka.utils.VideoUtils;
 import com.bumptech.glide.Glide;
 
 public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int IMAGE_TYPE = 1;
     private static final int TEXT_TYPE = 2;
+    private static final int VIDEO_TYPE = 3;
 
     private final List<StoryCardDto> storyCards;
     public StoryCardAdapter(List<StoryCardDto> storyCards) {
@@ -33,6 +38,8 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 return IMAGE_TYPE;
             case "text" :
                 return TEXT_TYPE;
+            case "video":
+                return VIDEO_TYPE;
             default :
                 return -1;
         }
@@ -42,7 +49,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imageView);
+            imageView = itemView.findViewById(R.id.imageview);
         }
     }
 
@@ -52,6 +59,17 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         public TextViewHolder(View itemView){
             super(itemView);
             textView = itemView.findViewById(R.id.textView);
+        }
+    }
+
+    public static class VideoViewHolder extends RecyclerView.ViewHolder{
+        ImageView imageView;
+        ImageView playBtn;
+
+        public VideoViewHolder(@NonNull View itemView) {
+            super(itemView);
+            imageView = itemView.findViewById(R.id.imageview);
+            playBtn = itemView.findViewById(R.id.playBtn);
         }
     }
 
@@ -65,6 +83,11 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else if (viewType == TEXT_TYPE) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_card_memo, parent, false);
             return new TextViewHolder(view);
+
+        }else if(viewType == VIDEO_TYPE){
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_card_video,parent,false);
+            return new VideoViewHolder(view);
+
         }
         return null;
     }
@@ -77,12 +100,31 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
             Glide.with(imageViewHolder.itemView.getContext())
                     .load(card.getImage())
-                    .into((imageViewHolder).imageView);
+                    .into(imageViewHolder.imageView);
             
         }
         else if (holder.getItemViewType() == TEXT_TYPE) {
             TextViewHolder textViewHolder = (TextViewHolder) holder;
             textViewHolder.textView.setText(card.getMemo());
+
+        } else if (holder.getItemViewType() == VIDEO_TYPE) {
+            VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
+            String videoId = VideoUtils.extractYoutubeVideoId(card.getVideo());
+            String thumbnailUrl = "https://img.youtube.com/vi/" + videoId + "/0.jpg"; // 썸네일 URL 생성
+
+            Glide.with(videoViewHolder.itemView.getContext())
+                    .asBitmap()
+                    .load(thumbnailUrl)
+                    .into(videoViewHolder.imageView);
+
+            videoViewHolder.playBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(videoViewHolder.itemView.getContext(), VideoPlayerActivity.class);
+                    intent.putExtra("VIDEO_ID", videoId);
+                    videoViewHolder.itemView.getContext().startActivity(intent);
+                }
+            });
         }
     }
 

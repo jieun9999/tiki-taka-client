@@ -51,5 +51,6 @@ dependencies {
     // 글라이드
     implementation ("com.github.bumptech.glide:glide:4.12.0") //Glide 라이브러리의 핵심 기능을 포함
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0") //커스텀 Glide 모듈 지원
-
+    // 유튜브 동영상 재생 라이브러리
+    implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 }

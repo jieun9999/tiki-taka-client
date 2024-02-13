@@ -59,9 +59,7 @@ public class StoryFolderActivity extends AppCompatActivity {
             }
         });
 
-        // url설정한 Retrofit 인스턴스를 사용하기 위해 호출
         Retrofit retrofit = RetrofitClient.getClient();
-        // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
@@ -72,22 +70,16 @@ public class StoryFolderActivity extends AppCompatActivity {
         adapter = new StoryCardAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
-        // Intent에서 아이템 ID 가져오기
-        Intent intent = getIntent(); // 현재 액티비티로 전달된 Intent를 가져옴
+        Intent intent = getIntent();
         folderId = intent.getIntExtra("CLICKED_ITEM_ID", -1); // "CLICKED_ITEM_ID" 키로 저장된 int 값을 가져옴
 
         // 가져온 아이템 ID를 사용하여 세부 정보를 표시하거나 데이터를 로드
         if (folderId != -1) {
-
-            //1. 대표사진 가져오기 (storyFolder 테이블에서)
             loadThumbNail();
-
-            //2. 리사이클러뷰에 들어가는 데이터 가져오기 (storyCard 테이블에서)
             loadStoryCards();
 
         } else {
-            // ID가 유효하지 않은 경우의 처리
-            Log.e("Error", "서버에서 불러오기에 실패ID가 유효하지 않습니다.");
+            Log.e("Error", "서버에서 불러오기에 실패: ID가 유효하지 않습니다.");
         }
 
     }
@@ -195,18 +187,17 @@ public class StoryFolderActivity extends AppCompatActivity {
 
     //"오버로딩(Overloading)"이라고 합니다. 함수 오버로딩은 같은 이름의 함수가 서로 다른 매개변수를 가질 수 있도록 허용
     private void updateUIonSuccess(StoryCardsResponse storyCardsResponse){
-        //success가 true인 경우,
+
         List<StoryCardDto> storyCardDtos = storyCardsResponse.getStoryCards();
 
         // 서버에서 가져온 리스트를 어댑터에 추가함
         adapter.setData(storyCardDtos);
-
         String message = storyCardsResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     private void handleFailure(StoryCardsResponse storyCardsResponse){
-        //success가 false인 경우,
+
         String message = storyCardsResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
