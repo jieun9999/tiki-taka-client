@@ -1,26 +1,26 @@
 package com.android.tiki_taka.models.dtos;
 
-public class HomeProfilesDto {
-    private UserProfileDto userProfile;
-    private PartnerProfileDto partnerProfile;
+public class HomeProfiles {
+    private UserProfile userProfile;
+    private PartnerProfile partnerProfile;
 
     // UserProfile 객체를 반환하는 메서드
-    public UserProfileDto getUserProfile() {
+    public UserProfile getUserProfile() {
         return userProfile;
     }
 
     // UserProfile 객체를 설정하는 메서드
-    public void setUserProfile(UserProfileDto userProfileDTO) {
+    public void setUserProfile(UserProfile userProfileDTO) {
         this.userProfile = userProfileDTO;
     }
 
     // PartnerProfile 객체를 반환하는 메서드
-    public PartnerProfileDto getPartnerProfile() {
+    public PartnerProfile getPartnerProfile() {
         return partnerProfile;
     }
 
     // PartnerProfile 객체를 설정하는 메서드
-    public void setPartnerProfile(PartnerProfileDto partnerProfile) {
+    public void setPartnerProfile(PartnerProfile partnerProfile) {
         this.partnerProfile = partnerProfile;
     }
 

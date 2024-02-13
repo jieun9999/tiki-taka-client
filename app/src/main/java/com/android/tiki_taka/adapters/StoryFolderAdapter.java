@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.utils.DateUtils;
 import com.bumptech.glide.Glide;
 
@@ -22,17 +22,17 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private static final int IMAGE_TYPE = 1;
     private static final int TEXT_TYPE = 2;
 
-    private List<StoryFolderDto> storyFolders;
+    private List<StoryFolder> storyFolders;
     private ItemClickListener itemClickListener;
 
-    public StoryFolderAdapter(List<StoryFolderDto> storyFolders, ItemClickListener itemClickListener) {
+    public StoryFolderAdapter(List<StoryFolder> storyFolders, ItemClickListener itemClickListener) {
         this.storyFolders = storyFolders;
         this.itemClickListener = itemClickListener;
     }
 
     @Override
     public int getItemViewType(int position) {
-        StoryFolderDto storyFolderDto = storyFolders.get(position);
+        StoryFolder storyFolderDto = storyFolders.get(position);
         switch (storyFolderDto.getDataType()){
             case "image" :
                 return IMAGE_TYPE;
@@ -86,7 +86,7 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        StoryFolderDto folder = storyFolders.get(position);
+        StoryFolder folder = storyFolders.get(position);
 
         if(holder.getItemViewType() == IMAGE_TYPE){
             ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
@@ -131,14 +131,14 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     // 데이터를 설정하는 setData 메서드 추가
     @SuppressLint("NotifyDataSetChanged")
-    public void setData(List<StoryFolderDto> newData){
+    public void setData(List<StoryFolder> newData){
         storyFolders.clear(); // 기존 데이터를 모두 제거
         storyFolders.addAll(newData); // 새 데이터를 추가
         notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알림
     }
 
     //  아이템의 ID 가져오는 getItem 메서드 추가
-    public StoryFolderDto getItem(int position){
+    public StoryFolder getItem(int position){
         return storyFolders.get(position);
     }
     // return 값의 형태가 StoryFolder라서 메서드 앞부분에 적어줌

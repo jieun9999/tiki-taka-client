@@ -1,9 +1,6 @@
 package com.android.tiki_taka.ui.fragment;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -19,7 +16,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryFolderAdapter;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.SelectionActivity1;
@@ -120,7 +117,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
 
     private void updateUIOnSuccess(StoryFoldersResponse storyFoldersResponse){
 
-        List<StoryFolderDto> storyFolderDtos = storyFoldersResponse.getStoryFolders();
+        List<StoryFolder> storyFolderDtos = storyFoldersResponse.getStoryFolders();
 
         adapter.setData(storyFolderDtos);
 
@@ -135,7 +132,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
 
     @Override
     public void onItemClick(int position) {
-        StoryFolderDto clickedItem = adapter.getItem(position);
+        StoryFolder clickedItem = adapter.getItem(position);
 
         Intent intent = new Intent(getContext(), StoryFolderActivity.class);
         intent.putExtra("CLICKED_ITEM_ID", clickedItem.getFolderId());

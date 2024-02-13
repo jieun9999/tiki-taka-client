@@ -2,7 +2,7 @@ package com.android.tiki_taka.models.dtos;
 
 import com.google.gson.annotations.SerializedName;
 
-public class StoryFolderDto {
+public class StoryFolder {
     // JSON 키와 Java 클래스의 변수명이 다를 경우에도 올바르게 매핑하기 위해서 @SerializedName 어노테이션을 사용
     @SerializedName("folder_id")
     private int folderId;
@@ -30,7 +30,7 @@ public class StoryFolderDto {
     // 생성자 함수를 작성할 때, 날짜 항목을 빼고 클래스의 인스턴스를 생성한뒤, 서버로 보냄
     // createdAt 및 updatedAt 필드는 데이터베이스에 삽입 또는 수정 쿼리를 사용할 때 자동으로 설정됨
     // 대신 서버에서 데이터를 받아올 때 해당 필드들이 포함된 객체를 사용하여 정보를 표시
-    public StoryFolderDto(int folderId, int userId, String dataType, String displayImage, String memo, String title, String location) {
+    public StoryFolder(int folderId, int userId, String dataType, String displayImage, String memo, String title, String location) {
         this.dataType = dataType;
         this.folderId = folderId;
         this.userId = userId;

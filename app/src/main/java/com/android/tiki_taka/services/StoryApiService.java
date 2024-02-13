@@ -1,14 +1,15 @@
 package com.android.tiki_taka.services;
 
-import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.dtos.PhotoUriRequest;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 
-import java.util.List;
-
+import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface StoryApiService {
@@ -21,5 +22,8 @@ public interface StoryApiService {
 
     @GET("Story/getStoryCards.php")
     Call<StoryCardsResponse> getStoryCards(@Query("folderId") int folderId);
+
+    @POST("Story/savePhotoUris.php")
+    Call<ResponseBody> savePhotoUris(@Body PhotoUriRequest photoUriRequest);
 
 }

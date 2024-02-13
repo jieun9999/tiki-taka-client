@@ -24,13 +24,14 @@
         tools:targetApi="31">
         <activity
             android:name=".ui.activity.Album.StoryWritingActivity1"
-            android:exported="false" />
+            android:exported="true"
+            android:theme="@style/NoActionBar"/>
         <activity
             android:name=".ui.activity.Album.VideoPlayerActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".ui.activity.Album.SelectionActivity1"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".ui.activity.Album.StoryFolderActivity"
             android:exported="true"

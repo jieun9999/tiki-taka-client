@@ -1,11 +1,11 @@
 package com.android.tiki_taka.models.responses;
 
-import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.dtos.StoryFolder;
 
 public class StoryFolderResponse {
     private boolean success;
     private String message;
-    private StoryFolderDto storyFolder;
+    private StoryFolder storyFolder;
 
     public boolean isSuccess() {
         return success;
@@ -23,11 +23,11 @@ public class StoryFolderResponse {
         this.message = message;
     }
 
-    public StoryFolderDto getStoryFolder() {
+    public StoryFolder getStoryFolder() {
         return storyFolder;
     }
 
-    public void setStoryFolder(StoryFolderDto storyFolder) {
+    public void setStoryFolder(StoryFolder storyFolder) {
         this.storyFolder = storyFolder;
     }
 }

@@ -16,8 +16,8 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
-import com.android.tiki_taka.models.dtos.StoryCardDto;
-import com.android.tiki_taka.models.dtos.StoryFolderDto;
+import com.android.tiki_taka.models.dtos.StoryCard;
+import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
@@ -119,7 +119,7 @@ public class StoryFolderActivity extends AppCompatActivity {
 
     private void updateUIOnSuccess(StoryFolderResponse storyFolderResponse){
         //success가 true인 경우,
-        StoryFolderDto storyFolderDto = storyFolderResponse.getStoryFolder();
+        StoryFolder storyFolderDto = storyFolderResponse.getStoryFolder();
 
         //썸네일 뷰 할당하기
         TextView thumbDateView = findViewById(R.id.textView26);
@@ -188,7 +188,7 @@ public class StoryFolderActivity extends AppCompatActivity {
     //"오버로딩(Overloading)"이라고 합니다. 함수 오버로딩은 같은 이름의 함수가 서로 다른 매개변수를 가질 수 있도록 허용
     private void updateUIonSuccess(StoryCardsResponse storyCardsResponse){
 
-        List<StoryCardDto> storyCardDtos = storyCardsResponse.getStoryCards();
+        List<StoryCard> storyCardDtos = storyCardsResponse.getStoryCards();
 
         // 서버에서 가져온 리스트를 어댑터에 추가함
         adapter.setData(storyCardDtos);

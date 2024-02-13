@@ -6,8 +6,8 @@
     android:layout_marginRight="5dp">
 
     <FrameLayout
-        android:layout_width="95dp"
-        android:layout_height="95dp"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -15,17 +15,18 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_launcher_background" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/ic_launcher_background"
+            android:scaleType="centerCrop" />
 
         <ImageView
             android:id="@+id/imageView42"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="end|bottom"
-            android:layout_marginBottom="5dp"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
             app:srcCompat="@drawable/mingcute_pencil_fill" />
 
     </FrameLayout>

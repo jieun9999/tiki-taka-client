@@ -14,8 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.StoryCardDto;
-import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity;
+import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.ui.activity.Album.VideoPlayerActivity;
 import com.android.tiki_taka.utils.VideoUtils;
 import com.bumptech.glide.Glide;
@@ -25,14 +24,14 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private static final int TEXT_TYPE = 2;
     private static final int VIDEO_TYPE = 3;
 
-    private final List<StoryCardDto> storyCards;
-    public StoryCardAdapter(List<StoryCardDto> storyCards) {
+    private final List<StoryCard> storyCards;
+    public StoryCardAdapter(List<StoryCard> storyCards) {
         this.storyCards = storyCards;
     }
 
     @Override
     public int getItemViewType(int position) {
-        StoryCardDto storyCardDto = storyCards.get(position);
+        StoryCard storyCardDto = storyCards.get(position);
         switch (storyCardDto.getDataType()){
             case "image" :
                 return IMAGE_TYPE;
@@ -94,7 +93,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        StoryCardDto card = storyCards.get(position);
+        StoryCard card = storyCards.get(position);
         
         if (holder.getItemViewType() == IMAGE_TYPE){
             ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
@@ -135,7 +134,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     // 데이터를 설정하는 setData 메서드 추가
     @SuppressLint("NotifyDataSetChanged")
-    public void setData(List<StoryCardDto> newData){
+    public void setData(List<StoryCard> newData){
         storyCards.clear(); //기존 데이터 모두 제거
         storyCards.addAll(newData); //새 데이터를 추가
         notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알림

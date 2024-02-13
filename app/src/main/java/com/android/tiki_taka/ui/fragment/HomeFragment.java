@@ -28,9 +28,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.HomeProfilesDto;
-import com.android.tiki_taka.models.dtos.PartnerProfileDto;
-import com.android.tiki_taka.models.dtos.UserProfileDto;
+import com.android.tiki_taka.models.dtos.HomeProfiles;
+import com.android.tiki_taka.models.dtos.PartnerProfile;
+import com.android.tiki_taka.models.dtos.UserProfile;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.DateUtils;
@@ -164,29 +164,29 @@ public class HomeFragment extends Fragment {
 
     private void getHomeProfile(){
         // 1. 유저 프로필 정보 가져오기
-        Call<HomeProfilesDto> call = service.getHomeProfile(userId);
-        call.enqueue(new Callback<HomeProfilesDto>() {
+        Call<HomeProfiles> call = service.getHomeProfile(userId);
+        call.enqueue(new Callback<HomeProfiles>() {
             @Override
-            public void onResponse(Call<HomeProfilesDto> call, Response<HomeProfilesDto> response) {
+            public void onResponse(Call<HomeProfiles> call, Response<HomeProfiles> response) {
                 processHomeProfileResponse(response);
 
             }
 
             @Override
-            public void onFailure(Call<HomeProfilesDto> call, Throwable t) {
+            public void onFailure(Call<HomeProfiles> call, Throwable t) {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
 
-    private void processHomeProfileResponse(Response<HomeProfilesDto> response){
+    private void processHomeProfileResponse(Response<HomeProfiles> response){
         if (response.isSuccessful() && response.body() != null) {
             //서버에서 홈프로필 정보를 가져옴
-            HomeProfilesDto homeProfiles = response.body();
+            HomeProfiles homeProfiles = response.body();
             // 유저 프로필 정보 처리
-            UserProfileDto userProfile = homeProfiles.getUserProfile();
+            UserProfile userProfile = homeProfiles.getUserProfile();
             // 파트너 프로필 정보 처리
-            PartnerProfileDto partnerProfile = homeProfiles.getPartnerProfile();
+            PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
 
             updateViewWithUserProfile(userProfile);
             updateViewWithPartnerProfile(partnerProfile);
@@ -195,7 +195,7 @@ public class HomeFragment extends Fragment {
             Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
         }
     }
-    private void updateViewWithUserProfile(UserProfileDto userProfile){
+    private void updateViewWithUserProfile(UserProfile userProfile){
         //나의 프로필 교체
         String myName = userProfile.getName();
         name2.setText(myName);
@@ -220,7 +220,7 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void updateViewWithPartnerProfile(PartnerProfileDto partnerProfile){
+    private void updateViewWithPartnerProfile(PartnerProfile partnerProfile){
         //파트너 프로필 교체
         // 예: 이름, 프로필 사진을 홈 액티비티의 뷰에 설정
         String myName2 = partnerProfile.getName();

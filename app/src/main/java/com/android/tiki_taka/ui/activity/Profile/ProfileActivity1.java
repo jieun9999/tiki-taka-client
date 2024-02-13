@@ -284,7 +284,7 @@ public class ProfileActivity1 extends AppCompatActivity {
     private void getDataResponseProcess(Response<ResponseBody> response){
         if(response.isSuccessful()){
             try {
-                handleSuccessfulResponse(response);
+                handleResponse(response);
 
             } catch (IOException | JSONException e) {
                 throw new RuntimeException(e);
@@ -296,7 +296,7 @@ public class ProfileActivity1 extends AppCompatActivity {
         }
     }
 
-    private void handleSuccessfulResponse(Response<ResponseBody> response) throws JSONException, IOException {
+    private void handleResponse(Response<ResponseBody> response) throws JSONException, IOException {
         // 서버로부터 응답 본문을 문자열로 변환
         String responseString = response.body().string();
         //문자열을 JSON객체로 변환

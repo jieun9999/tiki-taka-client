@@ -2,9 +2,7 @@ package com.android.tiki_taka.models.dtos;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.time.LocalDateTime;
-
-public class StoryCardDto {
+public class StoryCard {
     // JSON 키와 Java 클래스의 변수명이 다를 경우에도 올바르게 매핑하기 위해서 @SerializedName 어노테이션을 사용
     @SerializedName("card_id")
     private int cardId;
@@ -36,7 +34,7 @@ public class StoryCardDto {
     //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱
 
     // 생성자
-    public StoryCardDto(int cardId, int folderId, int userId, String dataType, String image,String memo, String video,String videoThumbnail,int userGood, int partnerGood) {
+    public StoryCard(int cardId, int folderId, int userId, String dataType, String image, String memo, String video, String videoThumbnail, int userGood, int partnerGood) {
         this.cardId = cardId;
         this.folderId = folderId;
         this.userId = userId;
