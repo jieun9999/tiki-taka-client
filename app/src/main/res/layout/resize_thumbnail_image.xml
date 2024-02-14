@@ -5,7 +5,7 @@
     android:layout_height="200dp">
 
     <ImageView
-        android:id="@+id/quick_start_cropped_image"
+        android:id="@+id/cropped_image"
         android:layout_width="0dp"
         android:layout_height="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -27,23 +27,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-    <ImageView
-        android:id="@+id/editBtn"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginEnd="15dp"
-        android:layout_marginBottom="15dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/group_13" />
-
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginTop="40dp"
         android:background="#30E3DF"
-        android:text="두 손가락으로 크기 및 위치 조정"
+        android:text="클릭하여 사진 자르기"
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"

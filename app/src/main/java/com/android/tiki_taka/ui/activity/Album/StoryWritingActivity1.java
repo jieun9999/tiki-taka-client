@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,8 +18,6 @@ import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.models.dtos.PhotoUriRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
-import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
-import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.NavigationHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -41,6 +40,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     int userId;
     ArrayList<Uri> selectedUris;
     PhotoUriRequest photoRequest;
+    int folderId;
+    Uri lastUri;
+    String dateText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +53,6 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
-
         RecyclerView recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
@@ -60,23 +61,31 @@ public class StoryWritingActivity1 extends AppCompatActivity {
 
         ImageView thumbnail = findViewById(R.id.imageView26);
         renderThumbnail(thumbnail);
+        TextView dateView = findViewById(R.id.textView26);
+        dateText = dateView.getText().toString();
 
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener(v -> finish());
         TextView uploadBtn = findViewById(R.id.textView34);
         uploadBtn.setOnClickListener(v -> savePhotoCards());
         ImageView editBtn = findViewById(R.id.editBtn);
-        editBtn.setOnClickListener(v -> NavigationHelper.navigateToActivity(this, StoryWritingActivity2.class,null));
-
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               Bundle bundle = storyWritingBundle();
+               NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle);
+            }
+        });
     }
 
     private void renderThumbnail(ImageView imageView){
         if(selectedUris != null && !selectedUris.isEmpty()){
-            Uri lastUri = selectedUris.get(selectedUris.size() -1);
+            lastUri = selectedUris.get(selectedUris.size() -1);
             ImageUtils.loadImage(lastUri.toString(),imageView, this);
         }
 
     }
+
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
         insertStoryCardsInDB();
@@ -139,6 +148,10 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
         String responseJson = response.body().string();
         JSONObject jsonObject = new JSONObject(responseJson);
+
+        if(jsonObject.getBoolean("success")){
+            folderId = jsonObject.getInt("folderId");
+        }
         return jsonObject.getString("message");
     }
 
@@ -149,6 +162,14 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         // HomeActivity를 새 태스크로 시작하고, 이전에 있던 모든 액티비티를 클리어
         intent.putExtra("OPEN_FRAGMENT", "ALBUM_FRAGMENT"); // 추가 정보
         startActivity(intent);
+    }
+
+    private Bundle storyWritingBundle(){
+        Bundle bundle = new Bundle();
+        bundle.putInt("folderId", folderId);
+        bundle.putString("thumbnailUri", lastUri.toString());
+        bundle.putString("date", dateText);
+        return bundle;
     }
 
 }

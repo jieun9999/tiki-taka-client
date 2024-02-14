@@ -17,7 +17,7 @@
     <include
         android:id="@+id/include2"
         layout="@layout/resize_thumbnail_image"
-        android:layout_width="match_parent"
+        android:layout_width="412dp"
         android:layout_height="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
