@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,8 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.models.dtos.PhotoUriRequest;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
+import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -61,6 +64,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
         insertStoryCardsInDB();
+        InitializeStackAndNavigateToAlbumFragment();
     }
 
     private void convertUrisToStringListAndWrap(){
@@ -121,5 +125,15 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         JSONObject jsonObject = new JSONObject(responseJson);
         return jsonObject.getString("message");
     }
+
+    private void InitializeStackAndNavigateToAlbumFragment(){
+        // AlbumFragment로 이동면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), AlbumFragment.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+
 
 }
