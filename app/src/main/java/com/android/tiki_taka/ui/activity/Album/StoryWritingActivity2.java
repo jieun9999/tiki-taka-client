@@ -1,6 +1,8 @@
 package com.android.tiki_taka.ui.activity.Album;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -13,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.adapters.StoryWritingAdapter;
+import com.android.tiki_taka.adapters.thumbnailCheckAdapter;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -20,6 +24,7 @@ import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import retrofit2.Retrofit;
 
@@ -32,6 +37,7 @@ public class StoryWritingActivity2 extends AppCompatActivity {
     Uri sourceUri; // 소스 이미지의 Uri
     Uri destinationUri; // 크롭된 이미지를 저장할 Uri
     ImageView imageViewToCrop;
+    ArrayList<Uri> selectedUris;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +61,12 @@ public class StoryWritingActivity2 extends AppCompatActivity {
             sourceUri = Uri.parse(thumbnailUriString);
             destinationUri = Uri.fromFile(new File(getCacheDir(), "cropped")); //임시 저장 경로 설정
 
+            selectedUris = extras.getParcelableArrayList("selectedUris");
         }
+
+        RecyclerView recyclerView = findViewById(R.id.checkCardRecyclerView);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.setAdapter(new thumbnailCheckAdapter(selectedUris, this));
 
         EditText editTextStoryTitle = findViewById(R.id.editTextStoryTitle);
         TextView textViewStoryTitleCount = findViewById(R.id.textViewStoryTitleCount);
@@ -125,8 +136,6 @@ public class StoryWritingActivity2 extends AppCompatActivity {
             Log.e("UCropError", "Crop error: ", cropError);
         }
     }
-
-
 
 
 }

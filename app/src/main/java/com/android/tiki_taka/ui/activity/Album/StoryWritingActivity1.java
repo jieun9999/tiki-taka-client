@@ -53,16 +53,15 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerView2);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-
-        selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
-        recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this));
-
         ImageView thumbnail = findViewById(R.id.imageView26);
+        selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
         renderThumbnail(thumbnail);
         TextView dateView = findViewById(R.id.textView26);
         dateText = dateView.getText().toString();
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerView2);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this));
 
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener(v -> finish());
@@ -169,6 +168,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         bundle.putInt("folderId", folderId);
         bundle.putString("thumbnailUri", lastUri.toString());
         bundle.putString("date", dateText);
+        bundle.putParcelableArrayList("selectedUris", selectedUris);
         return bundle;
     }
 
