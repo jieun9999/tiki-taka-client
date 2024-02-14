@@ -19,6 +19,7 @@ import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
+import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.NavigationHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -57,6 +58,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
         recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this));
 
+        ImageView thumbnail = findViewById(R.id.imageView26);
+        renderThumbnail(thumbnail);
+
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener(v -> finish());
         TextView uploadBtn = findViewById(R.id.textView34);
@@ -66,6 +70,13 @@ public class StoryWritingActivity1 extends AppCompatActivity {
 
     }
 
+    private void renderThumbnail(ImageView imageView){
+        if(selectedUris != null && !selectedUris.isEmpty()){
+            Uri lastUri = selectedUris.get(selectedUris.size() -1);
+            ImageUtils.loadImage(lastUri.toString(),imageView, this);
+        }
+
+    }
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
         insertStoryCardsInDB();
