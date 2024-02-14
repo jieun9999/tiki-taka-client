@@ -16,6 +16,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.models.dtos.PhotoUriRequest;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.utils.NavigationHelper;
@@ -131,13 +132,12 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     }
 
     private void InitializeStackAndNavigateToAlbumFragment(){
-        // AlbumFragment로 이동면서 스택 초기화
-        Intent intent = new Intent(getApplicationContext(), AlbumFragment.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        // (HomeActivity.class) AlbumFragment로 이동면서 스택 초기화
+        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        // HomeActivity를 새 태스크로 시작하고, 이전에 있던 모든 액티비티를 클리어
+        intent.putExtra("OPEN_FRAGMENT", "ALBUM_FRAGMENT"); // 추가 정보
         startActivity(intent);
-        finish();
     }
-
-
 
 }

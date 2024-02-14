@@ -53,4 +53,7 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0") //커스텀 Glide 모듈 지원
     // 유튜브 동영상 재생 라이브러리
     implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+    // 사진 확대 후 크롭 라이브러리
+    implementation ("com.github.yalantis:ucrop:2.2.8-native")
+
 }

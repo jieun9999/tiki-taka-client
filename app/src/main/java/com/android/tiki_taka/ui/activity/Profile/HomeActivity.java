@@ -64,9 +64,18 @@ public class HomeActivity extends AppCompatActivity {
         alarmFragment = new AlarmFragment();
         videochatFragment = new VideochatFragment();
 
-        //초기 프래그먼트 설정
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.fragment_layout, homeFragment).commitAllowingStateLoss();
+        // 인텐트에서 추가 정보 확인
+        String openFragment = getIntent().getStringExtra("OPEN_FRAGMENT");
+        if ("ALBUM_FRAGMENT".equals(openFragment)) {
+            // AlbumFragment 열기
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_layout, albumFragment).commitAllowingStateLoss();
+        } else {
+            // 초기 프래그먼트 설정
+            // 기본 homeFragment
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_layout, homeFragment).commitAllowingStateLoss();
+        }
 
         // BottomNavigationView 설정
         BottomNavigationView bottomNavigationView = findViewById(R.id.menu_bottom_navigation);
