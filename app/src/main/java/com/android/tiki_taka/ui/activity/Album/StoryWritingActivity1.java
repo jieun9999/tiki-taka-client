@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import com.android.tiki_taka.models.dtos.PhotoUriRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Sign.SigninActivity1;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
+import com.android.tiki_taka.utils.NavigationHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -57,7 +59,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener(v -> finish());
         TextView uploadBtn = findViewById(R.id.textView34);
-        uploadBtn.setOnClickListener( v -> savePhotoCards());
+        uploadBtn.setOnClickListener(v -> savePhotoCards());
+        ImageView editBtn = findViewById(R.id.editBtn);
+        editBtn.setOnClickListener(v -> NavigationHelper.navigateToActivity(this, StoryWritingActivity2.class,null));
 
     }
 

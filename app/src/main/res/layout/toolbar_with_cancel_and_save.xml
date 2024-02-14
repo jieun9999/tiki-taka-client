@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="게시"
+            android:text="저장"
             android:textColor="@color/blue"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -37,11 +37,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="스토리 작성"
+            android:text="스토리 정보 추가"
             android:textColor="@color/blue"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
     </RelativeLayout>
 </androidx.appcompat.widget.Toolbar>
-

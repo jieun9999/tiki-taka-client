@@ -23,9 +23,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".ui.activity.Album.StoryWritingActivity1"
+            android:name=".ui.activity.Album.StoryWritingActivity2"
             android:exported="true"
             android:theme="@style/NoActionBar"/>
+        <activity
+            android:name=".ui.activity.Album.StoryWritingActivity1"
+            android:exported="true"
+            android:theme="@style/NoActionBar" />
         <activity
             android:name=".ui.activity.Album.VideoPlayerActivity"
             android:exported="true" />
