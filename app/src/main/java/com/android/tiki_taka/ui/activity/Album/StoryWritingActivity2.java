@@ -16,12 +16,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.adapters.thumbnailCheckAdapter;
 import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
-import com.android.tiki_taka.utils.NavigationHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.yalantis.ucrop.UCrop;
@@ -44,7 +42,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     String newTitleText;
     String newLocationText;
     String croppedimageUriString;
-    TextView dateView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +54,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
 
         TextView cancelBtn = findViewById(R.id.textView33);
         TextView saveBtn = findViewById(R.id.textView34);
-        dateView = findViewById(R.id.textView26);
 
         cancelBtn.setOnClickListener(v -> finish());
         saveBtn.setOnClickListener(new View.OnClickListener() {
@@ -78,9 +74,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         if (extras != null) {
             folderId = extras.getInt("folderId");
             String thumbnailUriString = extras.getString("thumbnailUri");
-            String dateText = extras.getString("date");
             ImageUtils.loadImage(thumbnailUriString, imageViewToCrop, this);
-            dateView.setText(dateText);
 
             sourceUri = Uri.parse(thumbnailUriString);
             destinationUri = createUniqueDestinationUri();

@@ -42,15 +42,10 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     PhotoUriRequest photoRequest;
     int folderId;
     Uri lastUri;
-    String dateText;
-    String croppedThumbnailUri;
-    String storyTitle;
-    String location;
     ImageView thumbnailView;
     private static final int REQUEST_CODE = 123;
     TextView locationView;
     TextView titleView;
-    TextView dateView;
 
 
     @Override
@@ -65,10 +60,8 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         thumbnailView = findViewById(R.id.imageView26);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
         renderThumbnail(thumbnailView);
-        dateView = findViewById(R.id.textView26);
         locationView = findViewById(R.id.textView28);
         titleView = findViewById(R.id.textView27);
-        dateText = dateView.getText().toString();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -93,9 +86,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         if(requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null){
                 Bundle extras = data.getExtras();
                 if (extras != null) {
-                    croppedThumbnailUri = extras.getString("croppedThumbnailUri");
-                    storyTitle = extras.getString("storyTitle");
-                    location = extras.getString("location");
+                    String croppedThumbnailUri = extras.getString("croppedThumbnailUri");
+                    String storyTitle = extras.getString("storyTitle");
+                    String location = extras.getString("location");
 
                     ImageUtils.loadImage(croppedThumbnailUri, thumbnailView, this);
                     titleView.setText(storyTitle);
@@ -196,7 +189,6 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putInt("folderId", folderId);
         bundle.putString("thumbnailUri", lastUri.toString());
-        bundle.putString("date", dateText);
         bundle.putParcelableArrayList("selectedUris", selectedUris);
         return bundle;
     }
