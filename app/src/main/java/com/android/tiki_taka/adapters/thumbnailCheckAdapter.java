@@ -28,6 +28,10 @@ public class thumbnailCheckAdapter extends RecyclerView.Adapter<thumbnailCheckAd
         this.uriList = uriList;
         this.context = context;
         this.thumbnailUpdateListener =thumbnailUpdateListener;
+
+        if(!uriList.isEmpty()){
+            currentPosition = uriList.size() -1; // 초기 체크박스 설정
+        }
     }
 
     @Override
