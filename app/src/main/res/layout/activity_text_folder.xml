@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorPrimary"
-    tools:context=".ui.activity.Album.StoryFolderActivity">
+    tools:context=".ui.activity.Album.ImageFolderActivity">
 
     <include
         android:id="@+id/include"
@@ -15,7 +15,7 @@
 
     <include
         android:id="@+id/include3"
-        layout="@layout/item_thumbnail_image"
+        layout="@layout/item_thumbnail_memo"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         app:layout_constraintTop_toBottomOf="@+id/include"
@@ -28,7 +28,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
-        android:background="@color/white"
+        android:background="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

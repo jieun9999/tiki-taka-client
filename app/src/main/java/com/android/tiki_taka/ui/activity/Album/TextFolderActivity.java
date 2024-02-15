@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -30,13 +29,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class StoryFolderActivity extends AppCompatActivity {
+public class TextFolderActivity extends AppCompatActivity {
     int folderId;
     StoryApiService service;
     int userId;
@@ -46,7 +44,7 @@ public class StoryFolderActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_story_folder1);
+        setContentView(R.layout.activity_text_folder);
 
         // 커스텀 툴바 설정
         Toolbar toolbar = findViewById(R.id.custom_toolbar);
@@ -122,10 +120,8 @@ public class StoryFolderActivity extends AppCompatActivity {
         StoryFolder storyFolderDto = storyFolderResponse.getStoryFolder();
 
         //썸네일 뷰 할당하기
-        TextView thumbDateView = findViewById(R.id.textView26);
-        TextView thumbTitleView = findViewById(R.id.textView27);
-        TextView thumbLocView = findViewById(R.id.textView28);
-        ImageView thumbBackImgView = findViewById(R.id.imageView26);
+        TextView thumbDateView = findViewById(R.id.textView28);
+        TextView thumbTextView = findViewById(R.id.textView27);
 
         // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
         String inputDateString = storyFolderDto.getUpdatedAt();
@@ -135,12 +131,7 @@ public class StoryFolderActivity extends AppCompatActivity {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        thumbTitleView.setText(storyFolderDto.getTitle());
-        thumbLocView.setText(storyFolderDto.getLocation());
-        // 이미지는 글라이드로 할당
-        Glide.with(getApplicationContext())
-                .load(storyFolderDto.getDisplayImage())
-                .into(thumbBackImgView);
+        thumbTextView.setText(storyFolderDto.getMemo());
 
         String message = storyFolderResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
@@ -201,4 +192,5 @@ public class StoryFolderActivity extends AppCompatActivity {
         String message = storyCardsResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
 }

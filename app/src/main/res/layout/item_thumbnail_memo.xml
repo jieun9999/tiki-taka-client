@@ -9,7 +9,7 @@
         android:id="@+id/textView28"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="50dp"
         android:text="날짜"
         android:textColor="#969696"
         android:textSize="16sp"
@@ -22,7 +22,7 @@
         android:id="@+id/textView27"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="30dp"
         android:ellipsize="end"
         android:maxLines="2"
         android:text="메모 내용1"
@@ -36,8 +36,8 @@
 
     <ImageView
         android:id="@+id/editBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
         app:layout_constraintBottom_toBottomOf="parent"

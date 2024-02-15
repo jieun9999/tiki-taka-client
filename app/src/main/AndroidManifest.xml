@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 외부 저장소 접근 권한 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -24,13 +23,17 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Album.TextFolderActivity"
+            android:exported="true"
+            android:theme="@style/NoActionBar" />
+        <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".ui.activity.Album.StoryWritingActivity2"
             android:exported="true"
-            android:theme="@style/NoActionBar"/>
+            android:theme="@style/NoActionBar" />
         <activity
             android:name=".ui.activity.Album.StoryWritingActivity1"
             android:exported="true"
@@ -42,7 +45,7 @@
             android:name=".ui.activity.Album.SelectionActivity1"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.Album.StoryFolderActivity"
+            android:name=".ui.activity.Album.ImageFolderActivity"
             android:exported="true"
             android:theme="@style/NoActionBar" />
         <activity

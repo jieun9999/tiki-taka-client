@@ -20,7 +20,8 @@ import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.SelectionActivity1;
-import com.android.tiki_taka.ui.activity.Album.StoryFolderActivity;
+import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;
+import com.android.tiki_taka.ui.activity.Album.TextFolderActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -134,8 +135,18 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
     public void onItemClick(int position) {
         StoryFolder clickedItem = adapter.getItem(position);
 
-        Intent intent = new Intent(getContext(), StoryFolderActivity.class);
-        intent.putExtra("CLICKED_ITEM_ID", clickedItem.getFolderId());
-        startActivity(intent);
+        // dataType에 따라 다른 액티비티로 이동
+        if("text".equals(clickedItem.getDataType())){
+            // Text 데이터 타입일 경우의 액티비티
+            Intent intent = new Intent(getContext(), TextFolderActivity.class);
+            intent.putExtra("CLICKED_ITEM_ID", clickedItem.getFolderId());
+            startActivity(intent);
+
+        }else {
+            // Image 데이터 타입일 경우의 액티비티
+            Intent intent = new Intent(getContext(), ImageFolderActivity.class);
+            intent.putExtra("CLICKED_ITEM_ID", clickedItem.getFolderId());
+            startActivity(intent);
+        }
     }
 }
