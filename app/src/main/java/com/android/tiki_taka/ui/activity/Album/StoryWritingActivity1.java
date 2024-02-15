@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
-import com.android.tiki_taka.models.dtos.PhotoUriRequest;
+import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.utils.ImageUtils;
@@ -39,13 +39,16 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     StoryApiService service;
     int userId;
     ArrayList<Uri> selectedUris;
-    PhotoUriRequest photoRequest;
+    StoryCardRequest cardRequest;
     int folderId;
     Uri lastUri;
     ImageView thumbnailView;
     private static final int REQUEST_CODE = 123;
     TextView locationView;
     TextView titleView;
+    String croppedThumbnailUri;
+    String storyTitle;
+    String location;
 
 
     @Override
@@ -86,9 +89,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         if(requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null){
                 Bundle extras = data.getExtras();
                 if (extras != null) {
-                    String croppedThumbnailUri = extras.getString("croppedThumbnailUri");
-                    String storyTitle = extras.getString("storyTitle");
-                    String location = extras.getString("location");
+                    croppedThumbnailUri = extras.getString("croppedThumbnailUri");
+                    storyTitle = extras.getString("storyTitle");
+                    location = extras.getString("location");
 
                     ImageUtils.loadImage(croppedThumbnailUri, thumbnailView, this);
                     titleView.setText(storyTitle);
@@ -96,8 +99,6 @@ public class StoryWritingActivity1 extends AppCompatActivity {
                 }
         }
     }
-
-
 
     private void renderThumbnail(ImageView imageView){
         if(selectedUris != null && !selectedUris.isEmpty()){
@@ -118,11 +119,11 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         for (Uri uri : selectedUris) {
             uriStrings.add(uri.toString());
         }
-        photoRequest = new PhotoUriRequest(userId, uriStrings);
+        cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, croppedThumbnailUri);
     }
 
     private void insertStoryCardsInDB(){
-        service.savePhotoUris(photoRequest).enqueue(new Callback<ResponseBody>() {
+        service.saveStoryCards(cardRequest).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 ProcessInsertingCardsResponse(response);
@@ -169,10 +170,6 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
         String responseJson = response.body().string();
         JSONObject jsonObject = new JSONObject(responseJson);
-
-        if(jsonObject.getBoolean("success")){
-            folderId = jsonObject.getInt("folderId");
-        }
         return jsonObject.getString("message");
     }
 

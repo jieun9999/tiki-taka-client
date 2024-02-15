@@ -1,6 +1,6 @@
 package com.android.tiki_taka.services;
 
-import com.android.tiki_taka.models.dtos.PhotoUriRequest;
+import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
@@ -23,7 +23,7 @@ public interface StoryApiService {
     @GET("Story/getStoryCards.php")
     Call<StoryCardsResponse> getStoryCards(@Query("folderId") int folderId);
 
-    @POST("Story/savePhotoUris.php")
-    Call<ResponseBody> savePhotoUris(@Body PhotoUriRequest photoUriRequest);
+    @POST("Story/saveStoryCards.php")
+    Call<ResponseBody> saveStoryCards(@Body StoryCardRequest cardRequest);
 
 }
