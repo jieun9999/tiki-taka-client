@@ -47,6 +47,11 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     String storyTitle;
     String location;
     ImageView thumbnailView;
+    private static final int REQUEST_CODE = 123;
+    TextView locationView;
+    TextView titleView;
+    TextView dateView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +65,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         thumbnailView = findViewById(R.id.imageView26);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
         renderThumbnail(thumbnailView);
-        TextView dateView = findViewById(R.id.textView26);
+        dateView = findViewById(R.id.textView26);
+        locationView = findViewById(R.id.textView28);
+        titleView = findViewById(R.id.textView27);
         dateText = dateView.getText().toString();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView2);
@@ -76,22 +83,28 @@ public class StoryWritingActivity1 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                Bundle bundle = storyWritingBundle();
-               NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle);
+               NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE);
             }
         });
     }
 
-//    protected void onResume() {
-//        super.onResume();
-//        Bundle extras = getIntent().getExtras();
-//        if (extras != null) {
-//            croppedThumbnailUri = extras.getString("croppedThumbnailUri");
-//            storyTitle = extras.getString("storyTitle");
-//            location = extras.getString("location");
-//
-//            ImageUtils.loadImage(croppedThumbnailUri, thumbnailView, this);
-//        }
-//    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null){
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    croppedThumbnailUri = extras.getString("croppedThumbnailUri");
+                    storyTitle = extras.getString("storyTitle");
+                    location = extras.getString("location");
+
+                    ImageUtils.loadImage(croppedThumbnailUri, thumbnailView, this);
+                    titleView.setText(storyTitle);
+                    locationView.setText(location);
+                }
+        }
+    }
+
+
 
     private void renderThumbnail(ImageView imageView){
         if(selectedUris != null && !selectedUris.isEmpty()){

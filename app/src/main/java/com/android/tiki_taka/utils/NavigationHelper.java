@@ -1,5 +1,6 @@
 package com.android.tiki_taka.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,13 +11,13 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 public class NavigationHelper {
-    // 액티비티 -> 액티비티 이동
-    public static void navigateToActivity(Context context, Class<?> targetActivity, Bundle bundle) {
-        Intent intent = new Intent(context, targetActivity);
+    // 액티비티 -> 액티비티 이동, 결과를 받기 위한 메서드
+    public static void navigateToActivity(Activity activity, Class<?> targetActivity, Bundle bundle, int requestCode) {
+        Intent intent = new Intent(activity, targetActivity);
         if (bundle != null) {
             intent.putExtras(bundle);
         }
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, requestCode);
     }
 
     // 액티비티 -> 프래그먼트 이동

@@ -44,6 +44,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     String newTitleText;
     String newLocationText;
     String croppedimageUriString;
+    TextView dateView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,18 +57,23 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
 
         TextView cancelBtn = findViewById(R.id.textView33);
         TextView saveBtn = findViewById(R.id.textView34);
+        dateView = findViewById(R.id.textView26);
 
         cancelBtn.setOnClickListener(v -> finish());
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // 데이터 설정 및 결과 반환
+                Intent resultIntent = new Intent();
                 Bundle bundle = folderWritingBundle();
-                NavigationHelper.navigateToActivity(StoryWritingActivity2.this, StoryWritingActivity1.class, bundle);
+                resultIntent.putExtras(bundle);
+                setResult(RESULT_OK, resultIntent);
+                finish();
+
             }
         });
 
         imageViewToCrop = findViewById(R.id.cropped_image);
-        TextView dateView = findViewById(R.id.textView26);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             folderId = extras.getInt("folderId");
@@ -127,15 +133,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
 
     }
 
-    private Bundle folderWritingBundle(){
-        Bundle bundle = new Bundle();
-        // croppedThumbnailUri, storyTitle, location
-        bundle.putString("croppedThumbnailUri", croppedimageUriString);
-        bundle.putString("storyTitle", newTitleText);
-        bundle.putString("location", newLocationText);
-        return bundle;
-    }
-
     private void UCorpSettings(Uri sourceUri, Uri destinationUri){
 
         int maxWidthPx = dpToPx(412); // 412dp를 픽셀로 변환
@@ -182,6 +179,15 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         File outFile = new File(getExternalFilesDir(null), fileName);
         return Uri.fromFile(outFile);
         // 만약 destinationUri가 크롭 작업마다 동일하게 설정된다면, 이전의 크롭 결과를 덮어쓰게 되어 항상 같은 resultUri를 얻게 될 수 있습니다.
+    }
+
+    private Bundle folderWritingBundle(){
+        Bundle bundle = new Bundle();
+        // croppedThumbnailUri, storyTitle, location
+        bundle.putString("croppedThumbnailUri", croppedimageUriString);
+        bundle.putString("storyTitle", newTitleText);
+        bundle.putString("location", newLocationText);
+        return bundle;
     }
 
 }
