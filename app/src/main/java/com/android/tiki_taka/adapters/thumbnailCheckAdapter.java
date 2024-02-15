@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
 import com.android.tiki_taka.utils.ImageUtils;
 
 import java.util.ArrayList;
@@ -21,12 +22,14 @@ public class thumbnailCheckAdapter extends RecyclerView.Adapter<thumbnailCheckAd
     private ArrayList<Uri> uriList;
     private Context context;
     private int currentPosition = -1; // 어댑터 수준에서 현재 선택된 위치 관리
+    private ThumbnailUpdateListener thumbnailUpdateListener;
 
-    public thumbnailCheckAdapter(ArrayList<Uri> uriList, Context context) {
+    public thumbnailCheckAdapter(ArrayList<Uri> uriList, Context context,  ThumbnailUpdateListener thumbnailUpdateListener) {
         this.uriList = uriList;
         this.context = context;
+        this.thumbnailUpdateListener =thumbnailUpdateListener;
     }
-    @NonNull
+
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -47,6 +50,10 @@ public class thumbnailCheckAdapter extends RecyclerView.Adapter<thumbnailCheckAd
                 currentPosition = position;
                 notifyItemChanged(previousPosition); // 이전 선택 해제
                 notifyItemChanged(currentPosition); // 현재 선택
+                // 썸네일 업데이트 콜백 호출
+                if(thumbnailUpdateListener != null){
+                    thumbnailUpdateListener.onUpdateThumbnail(uri);
+                }
             } else {
                 currentPosition = -1; // 선택 해제
             }

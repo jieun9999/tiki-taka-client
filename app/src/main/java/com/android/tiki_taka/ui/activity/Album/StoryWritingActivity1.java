@@ -43,6 +43,10 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     int folderId;
     Uri lastUri;
     String dateText;
+    String croppedThumbnailUri;
+    String storyTitle;
+    String location;
+    ImageView thumbnailView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +57,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
-        ImageView thumbnail = findViewById(R.id.imageView26);
+        thumbnailView = findViewById(R.id.imageView26);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
-        renderThumbnail(thumbnail);
+        renderThumbnail(thumbnailView);
         TextView dateView = findViewById(R.id.textView26);
         dateText = dateView.getText().toString();
 
@@ -76,6 +80,18 @@ public class StoryWritingActivity1 extends AppCompatActivity {
             }
         });
     }
+
+//    protected void onResume() {
+//        super.onResume();
+//        Bundle extras = getIntent().getExtras();
+//        if (extras != null) {
+//            croppedThumbnailUri = extras.getString("croppedThumbnailUri");
+//            storyTitle = extras.getString("storyTitle");
+//            location = extras.getString("location");
+//
+//            ImageUtils.loadImage(croppedThumbnailUri, thumbnailView, this);
+//        }
+//    }
 
     private void renderThumbnail(ImageView imageView){
         if(selectedUris != null && !selectedUris.isEmpty()){

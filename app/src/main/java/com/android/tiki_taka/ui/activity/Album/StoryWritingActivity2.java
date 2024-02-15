@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,8 +18,10 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.adapters.thumbnailCheckAdapter;
+import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.NavigationHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.yalantis.ucrop.UCrop;
@@ -29,7 +32,7 @@ import java.util.ArrayList;
 import retrofit2.Retrofit;
 
 
-public class StoryWritingActivity2 extends AppCompatActivity {
+public class StoryWritingActivity2 extends AppCompatActivity implements ThumbnailUpdateListener {
 
     StoryApiService service;
     int userId;
@@ -38,6 +41,9 @@ public class StoryWritingActivity2 extends AppCompatActivity {
     Uri destinationUri; // 크롭된 이미지를 저장할 Uri
     ImageView imageViewToCrop;
     ArrayList<Uri> selectedUris;
+    String newTitleText;
+    String newLocationText;
+    String croppedimageUriString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,18 @@ public class StoryWritingActivity2 extends AppCompatActivity {
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+
+        TextView cancelBtn = findViewById(R.id.textView33);
+        TextView saveBtn = findViewById(R.id.textView34);
+
+        cancelBtn.setOnClickListener(v -> finish());
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = folderWritingBundle();
+                NavigationHelper.navigateToActivity(StoryWritingActivity2.this, StoryWritingActivity1.class, bundle);
+            }
+        });
 
         imageViewToCrop = findViewById(R.id.cropped_image);
         TextView dateView = findViewById(R.id.textView26);
@@ -59,14 +77,14 @@ public class StoryWritingActivity2 extends AppCompatActivity {
             dateView.setText(dateText);
 
             sourceUri = Uri.parse(thumbnailUriString);
-            destinationUri = Uri.fromFile(new File(getCacheDir(), "cropped")); //임시 저장 경로 설정
+            destinationUri = createUniqueDestinationUri();
 
             selectedUris = extras.getParcelableArrayList("selectedUris");
         }
 
         RecyclerView recyclerView = findViewById(R.id.checkCardRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new thumbnailCheckAdapter(selectedUris, this));
+        recyclerView.setAdapter(new thumbnailCheckAdapter(selectedUris, this, this));
 
         EditText editTextStoryTitle = findViewById(R.id.editTextStoryTitle);
         TextView textViewStoryTitleCount = findViewById(R.id.textViewStoryTitleCount);
@@ -81,8 +99,8 @@ public class StoryWritingActivity2 extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                String text = s.toString();
-                textViewStoryTitleCount.setText(text.length() + "/50");
+                newTitleText = s.toString();
+                textViewStoryTitleCount.setText(newTitleText.length() + "/50");
             }
 
         });
@@ -100,12 +118,22 @@ public class StoryWritingActivity2 extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                String text = s.toString();
-                textViewLocationCount.setText(text.length() + "/30");
+                newLocationText = s.toString();
+                textViewLocationCount.setText(newLocationText.length() + "/30");
             }
         });
-        imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
 
+       imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
+
+    }
+
+    private Bundle folderWritingBundle(){
+        Bundle bundle = new Bundle();
+        // croppedThumbnailUri, storyTitle, location
+        bundle.putString("croppedThumbnailUri", croppedimageUriString);
+        bundle.putString("storyTitle", newTitleText);
+        bundle.putString("location", newLocationText);
+        return bundle;
     }
 
     private void UCorpSettings(Uri sourceUri, Uri destinationUri){
@@ -127,9 +155,9 @@ public class StoryWritingActivity2 extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP && data != null) {
-            final Uri resultUri = UCrop.getOutput(data);
-            String imageUriString = resultUri.toString();
-            ImageUtils.loadImage(imageUriString, imageViewToCrop, this);
+            Uri resultUri = UCrop.getOutput(data);
+            croppedimageUriString = resultUri.toString();
+            ImageUtils.loadImage(croppedimageUriString, imageViewToCrop, this);
 
         } else if (resultCode == UCrop.RESULT_ERROR) {
             final Throwable cropError = UCrop.getError(data);
@@ -137,5 +165,23 @@ public class StoryWritingActivity2 extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onUpdateThumbnail(Uri uri) {
+        // 썸네일뷰 업데이트 로직
+        ImageUtils.loadImage(String.valueOf(uri), imageViewToCrop, this);
+        sourceUri = uri; // sourceUri 업데이트
+
+        destinationUri = createUniqueDestinationUri();
+        // 새로운 destinationUri 생성
+        imageViewToCrop.setOnClickListener(v -> UCorpSettings(sourceUri, destinationUri));
+        // imageViewToCrop의 클릭 리스너를 업데이트된 sourceUri를 사용하여 재설정
+    }
+
+    private Uri createUniqueDestinationUri() {
+        String fileName = "cropped_" + System.currentTimeMillis() + ".jpg";
+        File outFile = new File(getExternalFilesDir(null), fileName);
+        return Uri.fromFile(outFile);
+        // 만약 destinationUri가 크롭 작업마다 동일하게 설정된다면, 이전의 크롭 결과를 덮어쓰게 되어 항상 같은 resultUri를 얻게 될 수 있습니다.
+    }
 
 }
