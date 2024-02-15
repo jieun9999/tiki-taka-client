@@ -42,7 +42,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     ArrayList<Uri> selectedUris;
     StoryCardRequest cardRequest;
     int folderId;
-    Uri lastUri;
+    Uri firstUri;
     ImageView thumbnailView;
     private static final int REQUEST_CODE = 123;
     TextView locationView;
@@ -103,8 +103,8 @@ public class StoryWritingActivity1 extends AppCompatActivity {
 
     private void renderThumbnail(ImageView imageView){
         if(selectedUris != null && !selectedUris.isEmpty()){
-            lastUri = selectedUris.get(selectedUris.size() -1);
-            ImageUtils.loadImage(lastUri.toString(),imageView, this);
+            firstUri = selectedUris.get(0);
+            ImageUtils.loadImage(firstUri.toString(),imageView, this);
         }
 
     }
@@ -121,7 +121,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
             uriStrings.add(uri.toString());
         }
         // 아예, 편집을 하지 않은 경우와 다음 액티비티에서 편집을 해온 경우의 차이
-        String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? lastUri.toString() : editedThumbnailUri;
+        String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
         cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri);
     }
 
@@ -188,7 +188,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     private Bundle temporarystoryWritingBundle(){
         Bundle bundle = new Bundle();
         bundle.putInt("folderId", folderId);
-        bundle.putString("thumbnailUri", lastUri.toString());
+        bundle.putString("thumbnailUri", firstUri.toString());
         bundle.putParcelableArrayList("selectedUris", selectedUris);
         return bundle;
     }

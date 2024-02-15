@@ -30,7 +30,7 @@ public class thumbnailCheckAdapter extends RecyclerView.Adapter<thumbnailCheckAd
         this.thumbnailUpdateListener =thumbnailUpdateListener;
 
         if(!uriList.isEmpty()){
-            currentPosition = uriList.size() -1; // 초기 체크박스 설정
+            currentPosition = 0; // 초기 체크박스 설정
         }
     }
 
