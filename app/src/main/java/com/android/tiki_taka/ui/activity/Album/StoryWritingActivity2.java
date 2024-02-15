@@ -1,13 +1,16 @@
 package com.android.tiki_taka.ui.activity.Album;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -41,6 +44,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     ArrayList<Uri> selectedUris;
     String newTitleText;
     String newLocationText;
+    String uncroppedimageUriString;
     String croppedimageUriString;
 
     @Override
@@ -59,13 +63,17 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 데이터 설정 및 결과 반환
-                Intent resultIntent = new Intent();
-                Bundle bundle = folderWritingBundle();
-                resultIntent.putExtras(bundle);
-                setResult(RESULT_OK, resultIntent);
-                finish();
 
+                if(TextUtils.isEmpty(croppedimageUriString)){
+                    cropAlertDialog();
+
+                }else {
+                    Intent resultIntent = new Intent();
+                    Bundle bundle = writtenFolderWritingBundle();
+                    resultIntent.putExtras(bundle);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                }
             }
         });
 
@@ -73,10 +81,10 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             folderId = extras.getInt("folderId");
-            String thumbnailUriString = extras.getString("thumbnailUri");
-            ImageUtils.loadImage(thumbnailUriString, imageViewToCrop, this);
+            uncroppedimageUriString = extras.getString("thumbnailUri");
+            ImageUtils.loadImage(uncroppedimageUriString, imageViewToCrop, this);
 
-            sourceUri = Uri.parse(thumbnailUriString);
+            sourceUri = Uri.parse(uncroppedimageUriString);
             destinationUri = createUniqueDestinationUri();
 
             selectedUris = extras.getParcelableArrayList("selectedUris");
@@ -127,6 +135,18 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
 
     }
 
+    private void cropAlertDialog(){
+        // 크롭되지 않았다면 사용자에게 알림창 표시
+        AlertDialog.Builder builder = new AlertDialog.Builder(StoryWritingActivity2.this);
+        builder.setMessage("사진을 크롭하세요")
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
     private void UCorpSettings(Uri sourceUri, Uri destinationUri){
 
         int maxWidthPx = dpToPx(412); // 412dp를 픽셀로 변환
@@ -175,7 +195,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         // 만약 destinationUri가 크롭 작업마다 동일하게 설정된다면, 이전의 크롭 결과를 덮어쓰게 되어 항상 같은 resultUri를 얻게 될 수 있습니다.
     }
 
-    private Bundle folderWritingBundle(){
+    private Bundle writtenFolderWritingBundle(){
         Bundle bundle = new Bundle();
         // croppedThumbnailUri, storyTitle, location
         bundle.putString("croppedThumbnailUri", croppedimageUriString);

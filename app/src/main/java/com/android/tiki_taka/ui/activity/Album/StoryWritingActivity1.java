@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -46,7 +47,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     private static final int REQUEST_CODE = 123;
     TextView locationView;
     TextView titleView;
-    String croppedThumbnailUri;
+    String editedThumbnailUri;
     String storyTitle;
     String location;
 
@@ -78,7 +79,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               Bundle bundle = storyWritingBundle();
+               Bundle bundle = temporarystoryWritingBundle();
                NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE);
             }
         });
@@ -89,11 +90,11 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         if(requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null){
                 Bundle extras = data.getExtras();
                 if (extras != null) {
-                    croppedThumbnailUri = extras.getString("croppedThumbnailUri");
+                    editedThumbnailUri = extras.getString("croppedThumbnailUri");
                     storyTitle = extras.getString("storyTitle");
                     location = extras.getString("location");
 
-                    ImageUtils.loadImage(croppedThumbnailUri, thumbnailView, this);
+                    ImageUtils.loadImage(editedThumbnailUri, thumbnailView, this);
                     titleView.setText(storyTitle);
                     locationView.setText(location);
                 }
@@ -119,7 +120,9 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         for (Uri uri : selectedUris) {
             uriStrings.add(uri.toString());
         }
-        cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, croppedThumbnailUri);
+        // 아예, 편집을 하지 않은 경우와 다음 액티비티에서 편집을 해온 경우의 차이
+        String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? lastUri.toString() : editedThumbnailUri;
+        cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri);
     }
 
     private void insertStoryCardsInDB(){
@@ -182,7 +185,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private Bundle storyWritingBundle(){
+    private Bundle temporarystoryWritingBundle(){
         Bundle bundle = new Bundle();
         bundle.putInt("folderId", folderId);
         bundle.putString("thumbnailUri", lastUri.toString());

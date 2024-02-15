@@ -13,7 +13,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_background" />
+        app:srcCompat="@drawable/ic_launcher_background"
+        android:scaleType = "centerCrop"/>
 
     <TextView
         android:id="@+id/textView"
@@ -21,7 +22,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="40dp"
         android:background="#30E3DF"
-        android:text="클릭하여 사진 자르기"
+        android:text="클릭하여 사진을 자르세요."
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
