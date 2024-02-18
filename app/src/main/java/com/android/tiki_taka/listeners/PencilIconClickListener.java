@@ -5,5 +5,5 @@ import android.net.Uri;
 import java.util.ArrayList;
 
 public interface PencilIconClickListener {
-    void pencilIconClicked(ArrayList<Uri> uriList);
+    void pencilIconClicked(ArrayList<Uri> uriList, int position);
 }

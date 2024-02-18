@@ -1,5 +1,6 @@
 package com.android.tiki_taka.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -49,14 +50,14 @@ public class StoryWritingAdapter extends RecyclerView.Adapter<StoryWritingAdapte
     // 각 항목을 화면에 표시할 준비가 될 때마다 이 메소드가 호출되며, 호출될 때마다 하나의 항목에 대한 데이터를 뷰 홀더와 연결하는 역할을 합니다
     //onBindViewHolder에서 클릭 리스너를 설정하면, 뷰 홀더가 재사용될 때마다 리스너가 새롭게 설정되므로, 현재 위치(position)에 대한 정확한 참조를 유지하는 데 유리
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Uri uri = uriList.get(position);
         ImageUtils.loadImage(String.valueOf(uri), holder.imageView, context);
         holder.pencilIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(listener != null){
-                    listener.pencilIconClicked(uriList);
+                    listener.pencilIconClicked(uriList, position);
                 }
             }
         });

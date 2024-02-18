@@ -179,7 +179,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     private void InitializeStackAndNavigateToAlbumFragment(){
         // (HomeActivity.class) AlbumFragment로 이동면서 스택 초기화
-        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+        Intent intent = new Intent(this, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         // HomeActivity를 새 태스크로 시작하고, 이전에 있던 모든 액티비티를 클리어
         intent.putExtra("OPEN_FRAGMENT", "ALBUM_FRAGMENT"); // 추가 정보
@@ -195,9 +195,12 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     @Override
-    public void pencilIconClicked(ArrayList<Uri> uriList) {
-        Intent intent = new Intent(getApplicationContext(), StoryWritingActivity3.class);
+    public void pencilIconClicked(ArrayList<Uri> uriList, int position) {
+        Intent intent = new Intent(this, StoryWritingActivity3.class);
+        // UI 작업과 관련된 맥락에서는 액티비티 컨텍스트(getApplicationContext() 보다)가 액티비티의 생명 주기를 반영할 수 있어 더 적합
+        // this는 클래스의 어느 위치에서든 사용할 수 있으며 this 키워드는 현재 인스턴스를 참조
         intent.putParcelableArrayListExtra("selectedImages", uriList);
+        intent.putExtra("scrollToPosition", position);
         startActivityForResult(intent, REQUEST_CODE_IMAGE_COMMENT_INPUT);
     }
 }
