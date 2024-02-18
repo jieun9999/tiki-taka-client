@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,24 +20,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.adapters.thumbnailCheckAdapter;
+import com.android.tiki_taka.adapters.ThumbnailCheckAdapter;
 import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
-import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
-import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import retrofit2.Retrofit;
-
 
 public class StoryWritingActivity2 extends AppCompatActivity implements ThumbnailUpdateListener {
 
-    StoryApiService service;
-    int userId;
     int folderId;
     Uri sourceUri; // 소스 이미지의 Uri
     Uri destinationUri; // 크롭된 이미지를 저장할 Uri
@@ -51,10 +45,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_writing2);
-
-        Retrofit retrofit = RetrofitClient.getClient();
-        service = retrofit.create(StoryApiService.class);
-        userId = SharedPreferencesHelper.getUserId(this);
 
         TextView cancelBtn = findViewById(R.id.textView33);
         TextView saveBtn = findViewById(R.id.textView34);
@@ -92,7 +82,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
 
         RecyclerView recyclerView = findViewById(R.id.checkCardRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new thumbnailCheckAdapter(selectedUris, this, this));
+        recyclerView.setAdapter(new ThumbnailCheckAdapter(selectedUris, this, this));
 
         EditText editTextStoryTitle = findViewById(R.id.editTextStoryTitle);
         TextView textViewStoryTitleCount = findViewById(R.id.textViewStoryTitleCount);
@@ -105,6 +95,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void afterTextChanged(Editable s) {
                 newTitleText = s.toString();
@@ -124,6 +115,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void afterTextChanged(Editable s) {
                 newLocationText = s.toString();

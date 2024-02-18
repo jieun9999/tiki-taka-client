@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
+import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
@@ -36,7 +37,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class StoryWritingActivity1 extends AppCompatActivity {
+public class StoryWritingActivity1 extends AppCompatActivity implements PencilIconClickListener {
     StoryApiService service;
     int userId;
     ArrayList<Uri> selectedUris;
@@ -44,13 +45,13 @@ public class StoryWritingActivity1 extends AppCompatActivity {
     int folderId;
     Uri firstUri;
     ImageView thumbnailView;
-    private static final int REQUEST_CODE = 123;
+    private static final int REQUEST_CODE_STORY_FOLDER_EDIT = 123;
     TextView locationView;
     TextView titleView;
     String editedThumbnailUri;
     String storyTitle;
     String location;
-
+    private static final int REQUEST_CODE_IMAGE_COMMENT_INPUT = 456;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +70,7 @@ public class StoryWritingActivity1 extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this));
+        recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
 
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener(v -> finish());
@@ -80,14 +81,14 @@ public class StoryWritingActivity1 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                Bundle bundle = temporarystoryWritingBundle();
-               NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE);
+               NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE_STORY_FOLDER_EDIT);
             }
         });
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null){
+        if(requestCode == REQUEST_CODE_STORY_FOLDER_EDIT && resultCode == RESULT_OK && data != null){
                 Bundle extras = data.getExtras();
                 if (extras != null) {
                     editedThumbnailUri = extras.getString("croppedThumbnailUri");
@@ -193,4 +194,10 @@ public class StoryWritingActivity1 extends AppCompatActivity {
         return bundle;
     }
 
+    @Override
+    public void pencilIconClicked(ArrayList<Uri> uriList) {
+        Intent intent = new Intent(getApplicationContext(), StoryWritingActivity3.class);
+        intent.putParcelableArrayListExtra("selectedImages", uriList);
+        startActivityForResult(intent, REQUEST_CODE_IMAGE_COMMENT_INPUT);
+    }
 }

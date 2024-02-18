@@ -2,7 +2,6 @@ package com.android.tiki_taka.adapters;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,18 +11,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.utils.ImageUtils;
 
 import java.util.ArrayList;
 
 public class StoryWritingAdapter extends RecyclerView.Adapter<StoryWritingAdapter.ViewHolder> {
-
     private ArrayList<Uri> uriList;
     private Context context;
+    private PencilIconClickListener listener;
 
-    public StoryWritingAdapter(ArrayList<Uri> uriList, Context context) {
+    public StoryWritingAdapter(ArrayList<Uri> uriList, Context context, PencilIconClickListener listener) {
         this.uriList = uriList;
         this.context = context;
+        this.listener = listener;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
@@ -33,7 +34,7 @@ public class StoryWritingAdapter extends RecyclerView.Adapter<StoryWritingAdapte
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageView);
-            pencilIcon = imageView.findViewById(R.id.imageView42);
+            pencilIcon = itemView.findViewById(R.id.imageView42);
         }
     }
 
@@ -46,10 +47,19 @@ public class StoryWritingAdapter extends RecyclerView.Adapter<StoryWritingAdapte
     }
 
     // 각 항목을 화면에 표시할 준비가 될 때마다 이 메소드가 호출되며, 호출될 때마다 하나의 항목에 대한 데이터를 뷰 홀더와 연결하는 역할을 합니다
+    //onBindViewHolder에서 클릭 리스너를 설정하면, 뷰 홀더가 재사용될 때마다 리스너가 새롭게 설정되므로, 현재 위치(position)에 대한 정확한 참조를 유지하는 데 유리
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Uri uri = uriList.get(position);
         ImageUtils.loadImage(String.valueOf(uri), holder.imageView, context);
+        holder.pencilIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(listener != null){
+                    listener.pencilIconClicked(uriList);
+                }
+            }
+        });
     }
 
     @Override

@@ -18,13 +18,13 @@ import com.android.tiki_taka.utils.ImageUtils;
 
 import java.util.ArrayList;
 
-public class thumbnailCheckAdapter extends RecyclerView.Adapter<thumbnailCheckAdapter.ViewHolder> {
+public class ThumbnailCheckAdapter extends RecyclerView.Adapter<ThumbnailCheckAdapter.ViewHolder> {
     private ArrayList<Uri> uriList;
     private Context context;
     private int currentPosition = -1; // 어댑터 수준에서 현재 선택된 위치 관리
     private ThumbnailUpdateListener thumbnailUpdateListener;
 
-    public thumbnailCheckAdapter(ArrayList<Uri> uriList, Context context,  ThumbnailUpdateListener thumbnailUpdateListener) {
+    public ThumbnailCheckAdapter(ArrayList<Uri> uriList, Context context,  ThumbnailUpdateListener thumbnailUpdateListener) {
         this.uriList = uriList;
         this.context = context;
         this.thumbnailUpdateListener =thumbnailUpdateListener;

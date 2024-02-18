@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/story_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_launcher_background" />
+
+    <EditText
+        android:id="@+id/story_comment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:hint="댓글을 입력해주세요."
+        android:inputType="textMultiLine"
+        android:maxLines="2147483647"
+        android:minLines="3"
+        android:padding="16dp"
+        android:scrollbars="vertical"
+        android:textColorHint="@color/light_gray" />
+
+</LinearLayout>
