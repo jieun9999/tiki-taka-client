@@ -47,16 +47,6 @@
         app:layout_constraintTop_toBottomOf="@+id/frameLayout4"
         app:srcCompat="@drawable/group_58" />
 
-    <ImageView
-        android:id="@+id/imageView33"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        app:layout_constraintStart_toEndOf="@+id/imageView32"
-        app:layout_constraintTop_toBottomOf="@+id/frameLayout4"
-        app:srcCompat="@drawable/majesticons_chat_line" />
-
     <!-- 여기에 구분선 추가 -->
 
     <ImageView
