@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="380dp"
+    android:layout_width="412dp"
     android:layout_height="wrap_content">
 
     <ImageView
@@ -10,9 +10,9 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:srcCompat="@drawable/ph_user_circle_plus_duotone"
         tools:layout_editor_absoluteY="10dp" />
 
@@ -23,8 +23,10 @@
         android:layout_marginStart="15dp"
         android:layout_marginTop="17dp"
         android:maxWidth="250dp"
-        android:text="댓글1"
+        android:text="글쓴이"
+        android:textColor="@color/blue"
         android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/imageView41"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -35,7 +37,7 @@
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="16dp"
-        android:text="몇 초전"
+        android:text="날짜와 시간"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageView41"
         app:layout_constraintTop_toBottomOf="@+id/textView37"
@@ -46,9 +48,9 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ph_x_bold"
-        tools:layout_editor_absoluteY="30dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:srcCompat="@drawable/ph_x_bold"
+        tools:layout_editor_absoluteY="30dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
