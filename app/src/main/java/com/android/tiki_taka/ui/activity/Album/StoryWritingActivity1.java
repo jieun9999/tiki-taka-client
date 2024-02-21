@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
+import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
@@ -52,6 +53,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     String storyTitle;
     String location;
     private static final int REQUEST_CODE_IMAGE_COMMENT_INPUT = 456;
+    ArrayList<String> comments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +101,9 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                     titleView.setText(storyTitle);
                     locationView.setText(location);
                 }
+        } else if (requestCode == REQUEST_CODE_IMAGE_COMMENT_INPUT && resultCode == RESULT_OK && data != null) {
+            comments = data.getStringArrayListExtra("comments");
+
         }
     }
 
@@ -123,7 +128,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
         // 아예, 편집을 하지 않은 경우와 다음 액티비티에서 편집을 해온 경우의 차이
         String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
-        cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri);
+        cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri, comments);
     }
 
     private void insertStoryCardsInDB(){
