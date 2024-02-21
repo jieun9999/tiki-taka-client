@@ -13,21 +13,21 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.CommentItem;
+import com.android.tiki_taka.models.dtos.CommentText;
 import com.android.tiki_taka.utils.ImageUtils;
 
 import java.util.ArrayList;
 
 public class CommentInputAdapter extends RecyclerView.Adapter<CommentInputAdapter.CommentViewHolder> {
     private ArrayList<Uri> selectedUris;
-    private ArrayList<CommentItem> commentItems;
+    private ArrayList<CommentText> commentItems;
 
     public CommentInputAdapter(ArrayList<Uri> selectedUris) {
         this.selectedUris = selectedUris;
         this.commentItems = new ArrayList<>();
         //초기 댓글 아이템 리스트를 설정
         for(int i = 0; i < selectedUris.size(); i++){
-            commentItems.add(new CommentItem(""));
+            commentItems.add(new CommentText(""));
         }
         // commentItems 리스트에 CommentItem 객체를 미리 추가함으로써,
         // onBindViewHolder에서 각 뷰 홀더의 위치(position)에 해당하는 CommentItem 객체에 접근할 때 항상 유효한 객체를 얻을 수 있습니다.
@@ -68,7 +68,7 @@ public class CommentInputAdapter extends RecyclerView.Adapter<CommentInputAdapte
 
             @Override
             public void afterTextChanged(Editable s) {
-                CommentItem commentItem = commentItems.get(holder.getAdapterPosition());
+                CommentText commentItem = commentItems.get(holder.getAdapterPosition());
                 commentItem.setCommentText(s.toString());
             }
         };
@@ -105,7 +105,7 @@ public class CommentInputAdapter extends RecyclerView.Adapter<CommentInputAdapte
     // 사용자 댓글 입력을 수집하는 메소드
     public ArrayList<String> collectCommentText(){
         ArrayList<String> commentTexts = new ArrayList<>();
-        for(CommentItem commentItem : commentItems){
+        for(CommentText commentItem : commentItems){
             commentTexts.add(commentItem.getCommentText());
         }
         return commentTexts;

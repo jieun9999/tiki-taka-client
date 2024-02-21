@@ -11,9 +11,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.listeners.ItemClickListener;
+import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.ui.activity.Album.VideoPlayerActivity;
 import com.android.tiki_taka.utils.VideoUtils;
@@ -25,8 +28,11 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private static final int VIDEO_TYPE = 3;
 
     private final List<StoryCard> storyCards;
-    public StoryCardAdapter(List<StoryCard> storyCards) {
+    private static ItemClickListener itemClickListener;
+
+    public StoryCardAdapter(List<StoryCard> storyCards,  ItemClickListener itemClickListener) {
         this.storyCards = storyCards;
+        this.itemClickListener = itemClickListener;
     }
 
     @Override
@@ -45,11 +51,25 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
+        TextView allCommentsView;
 
-        public ImageViewHolder(@NonNull View itemView) {
+        public ImageViewHolder(@NonNull View itemView, final ItemClickListener itemClickListener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageview);
+            allCommentsView = itemView.findViewById(R.id.all_comments);
+
+            // 클릭 리스너 설정
+            allCommentsView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION){
+                        itemClickListener.onItemClick(position);
+                    }
+                }
+            });
         }
+
     }
 
     public static class TextViewHolder extends RecyclerView.ViewHolder{
@@ -77,7 +97,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == IMAGE_TYPE) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_card_image, parent, false);
-            return new ImageViewHolder(view);
+            return new ImageViewHolder(view, itemClickListener);
 
         } else if (viewType == TEXT_TYPE) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_card_memo, parent, false);
@@ -134,9 +154,10 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     // 데이터를 설정하는 setData 메서드 추가
     @SuppressLint("NotifyDataSetChanged")
-    public void setData(List<StoryCard> newData){
+    public void setCardsData(List<StoryCard> newData){
         storyCards.clear(); //기존 데이터 모두 제거
         storyCards.addAll(newData); //새 데이터를 추가
         notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알림
     }
+
 }

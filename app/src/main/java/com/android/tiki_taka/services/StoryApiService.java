@@ -1,9 +1,12 @@
 package com.android.tiki_taka.services;
 
+import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.models.responses.StoryFoldersResponse;
+
+import java.util.List;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -25,5 +28,8 @@ public interface StoryApiService {
 
     @POST("Story/saveStoryCards.php")
     Call<ResponseBody> saveStoryCards(@Body StoryCardRequest cardRequest);
+
+    @GET("Story/getComments.php")
+    Call<List<CommentItem>> getComments(@Query("cardId") int cardId);
 
 }

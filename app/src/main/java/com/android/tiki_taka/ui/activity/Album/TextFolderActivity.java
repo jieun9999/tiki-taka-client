@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
+import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
@@ -34,7 +35,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class TextFolderActivity extends AppCompatActivity {
+public class TextFolderActivity extends AppCompatActivity implements ItemClickListener {
     int folderId;
     StoryApiService service;
     int userId;
@@ -65,7 +66,7 @@ public class TextFolderActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //빈 어댑터 사용
-        adapter = new StoryCardAdapter(new ArrayList<>());
+        adapter = new StoryCardAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
         Intent intent = getIntent();
@@ -182,7 +183,7 @@ public class TextFolderActivity extends AppCompatActivity {
         List<StoryCard> storyCardDtos = storyCardsResponse.getStoryCards();
 
         // 서버에서 가져온 리스트를 어댑터에 추가함
-        adapter.setData(storyCardDtos);
+        adapter.setCardsData(storyCardDtos);
         String message = storyCardsResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
@@ -193,4 +194,8 @@ public class TextFolderActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onItemClick(int position) {
+
+    }
 }

@@ -16,12 +16,14 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
+import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.DateUtils;
+import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.bumptech.glide.Glide;
@@ -36,12 +38,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class ImageFolderActivity extends AppCompatActivity {
+public class ImageFolderActivity extends AppCompatActivity implements ItemClickListener {
     int folderId;
     StoryApiService service;
     int userId;
+    int clickedCardId;
     StoryCardAdapter adapter;
     RecyclerView recyclerView;
+    private static final int REQUEST_CODE_SEE_ALL_COMMENTS = 111;
+    List<StoryCard> storyCards;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +72,7 @@ public class ImageFolderActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //빈 어댑터 사용
-        adapter = new StoryCardAdapter(new ArrayList<>());
+        adapter = new StoryCardAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
         Intent intent = getIntent();
@@ -188,10 +193,10 @@ public class ImageFolderActivity extends AppCompatActivity {
     //"오버로딩(Overloading)"이라고 합니다. 함수 오버로딩은 같은 이름의 함수가 서로 다른 매개변수를 가질 수 있도록 허용
     private void updateUIonSuccess(StoryCardsResponse storyCardsResponse){
 
-        List<StoryCard> storyCardDtos = storyCardsResponse.getStoryCards();
+        storyCards = storyCardsResponse.getStoryCards();
 
         // 서버에서 가져온 리스트를 어댑터에 추가함
-        adapter.setData(storyCardDtos);
+        adapter.setCardsData(storyCards);
         String message = storyCardsResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
@@ -201,4 +206,13 @@ public class ImageFolderActivity extends AppCompatActivity {
         String message = storyCardsResponse.getMessage();
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void onItemClick(int position) {
+        //클릭된 아이템과 그 아이디를 가져옴
+        StoryCard clickedCard = storyCards.get(position);
+        clickedCardId = clickedCard.getCardId();
+        IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+    }
+
 }

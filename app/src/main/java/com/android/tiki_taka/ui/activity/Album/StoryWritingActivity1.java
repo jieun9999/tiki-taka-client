@@ -17,12 +17,11 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
-import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.utils.ImageUtils;
-import com.android.tiki_taka.utils.NavigationHelper;
+import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -83,7 +82,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             @Override
             public void onClick(View v) {
                Bundle bundle = temporarystoryWritingBundle();
-               NavigationHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE_STORY_FOLDER_EDIT);
+               IntentHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE_STORY_FOLDER_EDIT);
             }
         });
     }

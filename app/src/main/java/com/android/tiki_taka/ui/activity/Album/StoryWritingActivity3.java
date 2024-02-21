@@ -9,13 +9,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.CommentInputAdapter;
-import com.android.tiki_taka.models.dtos.CommentItem;
 
 import java.util.ArrayList;
 

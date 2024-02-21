@@ -17,7 +17,7 @@
         android:id="@+id/include2"
         layout="@layout/item_story_card_image"
         android:layout_width="match_parent"
-        android:layout_height="460dp"
+        android:layout_height="505dp"
         app:layout_constraintEnd_toEndOf="@id/include"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,30 +27,13 @@
         android:id="@+id/commentRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/include3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_comment_more" />
-
-    <TextView
-        android:id="@+id/tv_comment_more"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@drawable/comment_more_border"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="댓글 더보기"
-        android:textColor="#9E9E9E"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@+id/commentRecyclerView"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/include2" />
 
     <include
-        android:id="@+id/include3"
+        android:id="@+id/include4"
         layout="@layout/item_comment_inputbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
