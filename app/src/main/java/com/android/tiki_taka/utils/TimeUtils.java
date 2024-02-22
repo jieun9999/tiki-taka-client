@@ -1,16 +1,15 @@
 package com.android.tiki_taka.utils;
 
 import android.annotation.SuppressLint;
+import android.text.format.DateUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
 
-public class DateUtils {
+public class TimeUtils {
     public static long calculateDaysSince(String startDateStr) {
         if (startDateStr == null || startDateStr.trim().isEmpty()) {
             return -1;
@@ -49,6 +48,20 @@ public class DateUtils {
         return formatDate(date);
     }
 
+    //2024-01-31 12:24:40 형식을 몇 초전, 몇 시간전, 몇 일전으로 변환함
+    public static String toRelativeTimeFromDb(String dateTimeString) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        try {
+            Date commentDate = sdf.parse(dateTimeString);
+            if (commentDate != null) {
+                long now = System.currentTimeMillis();
+                return DateUtils.getRelativeTimeSpanString(commentDate.getTime(), now, DateUtils.MINUTE_IN_MILLIS).toString();
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return ""; // 파싱 실패 시 빈 문자열 반환
+    }
 
 }
 

@@ -21,10 +21,9 @@ import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.utils.DateUtils;
+import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
-import com.bumptech.glide.Glide;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -127,7 +126,7 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
         String inputDateString = storyFolderDto.getUpdatedAt();
         try {
-            String outputDateString = DateUtils.convertDateString(inputDateString);
+            String outputDateString = TimeUtils.convertDateString(inputDateString);
             thumbDateView.setText(outputDateString);
         } catch (ParseException e) {
             throw new RuntimeException(e);

@@ -14,6 +14,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard1;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         CommentItem comment = commentItems.get(position);
         ImageUtils.loadImage(comment.getUserProfile(), holder.userImgView, holder.itemView.getContext());
         holder.commentTextView.setText(comment.getCommentText());
-        holder.createdAtTextView.setText(comment.getCreatedAt());
+        // 상대적인 시간으로 변환
+        String relativeTime = TimeUtils.toRelativeTimeFromDb(comment.getCreatedAt());
+        holder.createdAtTextView.setText(relativeTime);
 
     }
 

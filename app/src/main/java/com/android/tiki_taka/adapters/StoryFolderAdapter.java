@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.StoryFolder;
-import com.android.tiki_taka.utils.DateUtils;
+import com.android.tiki_taka.utils.TimeUtils;
 import com.bumptech.glide.Glide;
 
 import java.text.ParseException;
@@ -93,7 +93,7 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
             String inputDateString = folder.getCreatedAt();
             try {
-                String outputDateString = DateUtils.convertDateString(inputDateString);
+                String outputDateString = TimeUtils.convertDateString(inputDateString);
                 imageViewHolder.date.setText(outputDateString);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
@@ -110,7 +110,7 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             textViewHolder.memo.setText(folder.getMemo());
             String inputDateString = folder.getCreatedAt();
             try {
-                String outputDateString = DateUtils.convertDateString(inputDateString);
+                String outputDateString = TimeUtils.convertDateString(inputDateString);
                 textViewHolder.date.setText(outputDateString);
             } catch (ParseException e) {
                 throw new RuntimeException(e);

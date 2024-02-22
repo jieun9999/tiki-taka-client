@@ -33,7 +33,7 @@ import com.android.tiki_taka.models.dtos.PartnerProfile;
 import com.android.tiki_taka.models.dtos.UserProfile;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
-import com.android.tiki_taka.utils.DateUtils;
+import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -204,7 +204,7 @@ public class HomeFragment extends Fragment {
 
         String firstDateStr = userProfile.getMeetingDay();
         //사귄 날짜부터 지난 일수 계산
-        long daysTogether = DateUtils.calculateDaysSince(firstDateStr);
+        long daysTogether = TimeUtils.calculateDaysSince(firstDateStr);
         // 이 데이터를 홈 액티비티의 뷰에 설정하는 로직 구현
 
         if (daysTogether >= 0) {
