@@ -36,4 +36,7 @@ public interface StoryApiService {
     @POST("Story/postComment.php")
     Call<ApiResponse> postComment(@Body CommentItem commentItem);
 
+    @GET("Story/deleteComment.php")
+    Call<ApiResponse> deleteComment(@Query("commentId") int commentId);
+
 }

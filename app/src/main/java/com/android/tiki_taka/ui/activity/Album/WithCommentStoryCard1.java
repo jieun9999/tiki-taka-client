@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.CommentAdapter;
+import com.android.tiki_taka.listeners.DeleteCommentListener;
 import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.responses.ApiResponse;
 import com.android.tiki_taka.services.StoryApiService;
@@ -32,7 +33,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class WithCommentStoryCard1 extends AppCompatActivity {
+public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCommentListener {
     StoryApiService service;
     int userId;
     int cardId;
@@ -56,7 +57,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity {
         // 어댑터 설정 이후 데이터 로드
         // 1.빈 어댑터로 초기화
         commentList = new ArrayList<>();
-        adapter = new CommentAdapter(commentList);
+        adapter = new CommentAdapter(commentList,this);
         recyclerView.setAdapter(adapter);
 
         // 2.데이터를 비동기적으로 가져오는 메서드 호출
@@ -125,11 +126,38 @@ public class WithCommentStoryCard1 extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    // 네트워크 오류 처리
                     Log.e("ERROR", "네트워크 오류");
                 }
 
             });
         }
+    }
+
+    @Override
+    public void onDeleteClick(int position) {
+        CommentItem commentItemToDelete = commentList.get(position);
+        deleteCommentFromServer(commentItemToDelete.getCommentId());
+    }
+
+    private void deleteCommentFromServer(int commentId){
+        service.deleteComment(commentId).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        // success가 true일 때의 처리
+                        loadComments();
+                    }
+                }else {
+                    // success가 false일 때의 처리
+                    Log.e("ERROR", "댓글 업로드 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.e("ERROR", "네트워크 오류");
+            }
+        });
     }
 }

@@ -11,6 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.listeners.DeleteCommentListener;
+import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard1;
 import com.android.tiki_taka.utils.ImageUtils;
@@ -23,9 +25,11 @@ import java.util.List;
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
     private ArrayList<CommentItem> commentItems;
     private int currentUserId;
+    private static DeleteCommentListener deleteCommentListener;
 
-    public CommentAdapter(ArrayList<CommentItem> commentItems) {
+    public CommentAdapter(ArrayList<CommentItem> commentItems, DeleteCommentListener deleteCommentListener) {
         this.commentItems = commentItems;
+        this.deleteCommentListener = deleteCommentListener;
     }
 
     @NonNull
@@ -70,6 +74,18 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             commentTextView = itemView.findViewById(R.id.textView37);
             createdAtTextView = itemView.findViewById(R.id.textView38);
             deleteCommentButton = itemView.findViewById(R.id.imageView43);
+
+            deleteCommentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(deleteCommentListener != null){
+                        int position = getAdapterPosition();
+                        if(position != RecyclerView.NO_POSITION){
+                            deleteCommentListener.onDeleteClick(position);
+                        }
+                    }
+                }
+            });
         }
     }
     @SuppressLint("NotifyDataSetChanged")
