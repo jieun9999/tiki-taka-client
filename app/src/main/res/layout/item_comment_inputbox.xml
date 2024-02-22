@@ -10,21 +10,22 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:hint="댓글을 입력하세요..."
         android:background="@drawable/comment_input_box_rounded_background"
+        android:hint="댓글을 입력하세요..."
         android:inputType="textMultiLine"
-        android:minHeight="48dp"
-        android:paddingStart="16dp"/>
+        android:minHeight="30dp"
+        android:paddingStart="16dp"
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/send_comment_view"
         android:layout_width="70dp"
         android:layout_height="match_parent"
         android:layout_marginStart="8dp"
+        android:gravity="center"
         android:text="전송"
         android:textColor="#6C6C6C"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"/>
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

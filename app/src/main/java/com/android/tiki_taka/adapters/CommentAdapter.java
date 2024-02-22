@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.CommentItem;
+import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard1;
+import com.android.tiki_taka.utils.ImageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentAdapter.CommentViewHolder holder, int position) {
         CommentItem comment = commentItems.get(position);
-        //유저 이미지 뷰 렌더링
+        ImageUtils.loadImage(comment.getUserProfile(), holder.userImgView, holder.itemView.getContext());
         holder.commentTextView.setText(comment.getCommentText());
         holder.createdAtTextView.setText(comment.getCreatedAt());
 
@@ -55,7 +57,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             userImgView = itemView.findViewById(R.id.imageView41);
             commentTextView = itemView.findViewById(R.id.textView37);
             createdAtTextView = itemView.findViewById(R.id.textView38);
-
         }
     }
     @SuppressLint("NotifyDataSetChanged")

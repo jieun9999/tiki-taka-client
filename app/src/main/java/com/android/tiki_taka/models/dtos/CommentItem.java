@@ -10,16 +10,19 @@ public class CommentItem{
     private int cardId;
     @SerializedName("user_id")
     private int userId;
+    @SerializedName("profile_image")
+    private String userProfile;
+
     @SerializedName("comment_text")
     private String commentText;
     @SerializedName("created_at")
     private String createdAt;
 
-    public CommentItem(String commentText, int commentId, int cardId, int userId, String commentText1, String createdAt) {
+    public CommentItem(int commentId, int cardId, int userId, String commentText, String createdAt) {
         this.commentId = commentId;
         this.cardId = cardId;
         this.userId = userId;
-        this.commentText = commentText1;
+        this.commentText = commentText;
         this.createdAt = createdAt;
     }
 
@@ -61,5 +64,13 @@ public class CommentItem{
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getUserProfile() {
+        return userProfile;
+    }
+
+    public void setUserProfile(String userProfile) {
+        this.userProfile = userProfile;
     }
 }
