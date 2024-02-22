@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class TimeUtils {
     public static long calculateDaysSince(String startDateStr) {
@@ -48,14 +49,26 @@ public class TimeUtils {
         return formatDate(date);
     }
 
-    //2024-01-31 12:24:40 형식을 몇 초전, 몇 시간전, 몇 일전으로 변환함
+    // 2024-01-31 12:24:40 형식을 몇 초전, 몇 시간전, 몇 일전으로 변환함
+    // 서버와 클라이언트 간의 시간 계산을 일관된 시간대(예: UTC)를 사용하여 처리
     public static String toRelativeTimeFromDb(String dateTimeString) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // 시간대를 UTC로 설정
+
         try {
             Date commentDate = sdf.parse(dateTimeString);
             if (commentDate != null) {
                 long now = System.currentTimeMillis();
-                return DateUtils.getRelativeTimeSpanString(commentDate.getTime(), now, DateUtils.MINUTE_IN_MILLIS).toString();
+                long difference = now - commentDate.getTime();
+
+                // 1분 미만 차이일 경우 "방금 전" 반환
+                if (difference < DateUtils.MINUTE_IN_MILLIS) {
+                    return "방금 전";
+                }
+
+                // 그렇지 않으면 상대적 시간 문자열 반환
+                Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                return DateUtils.getRelativeTimeSpanString(commentDate.getTime(), cal.getTimeInMillis(), DateUtils.MINUTE_IN_MILLIS).toString();
             }
         } catch (ParseException e) {
             e.printStackTrace();
