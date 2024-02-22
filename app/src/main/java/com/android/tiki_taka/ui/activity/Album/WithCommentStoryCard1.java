@@ -11,6 +11,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
@@ -69,6 +70,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity {
                 postComment();
             }
         });
+
     }
 
     private void loadComments(){
