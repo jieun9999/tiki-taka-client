@@ -60,8 +60,9 @@ public class TimeUtils {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return ""; // 파싱 실패 시 빈 문자열 반환
+        return "";
     }
+    // "방금 전", "x분 전", "x시간 전", "x일 전" 등의 텍스트를 생성
 
 }
 

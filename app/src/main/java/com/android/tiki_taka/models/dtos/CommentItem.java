@@ -3,7 +3,8 @@ package com.android.tiki_taka.models.dtos;
 import com.google.gson.annotations.SerializedName;
 
 public class CommentItem{
-
+    //SerializedName 어노테이션을 사용하는 것은 서버에서 데이터를 받아올때,
+    // 서버 칼럼명이 아닌, 클래스의 멤버변수 명을 그대로 사용하고 싶어서 사용하는 것임
     @SerializedName("comment_id")
     private int commentId;
     @SerializedName("card_id")
@@ -18,12 +19,10 @@ public class CommentItem{
     @SerializedName("created_at")
     private String createdAt;
 
-    public CommentItem(int commentId, int cardId, int userId, String commentText, String createdAt) {
-        this.commentId = commentId;
+    public CommentItem(int cardId, int userId, String commentText) {
         this.cardId = cardId;
         this.userId = userId;
         this.commentText = commentText;
-        this.createdAt = createdAt;
     }
 
     public int getCommentId() {
