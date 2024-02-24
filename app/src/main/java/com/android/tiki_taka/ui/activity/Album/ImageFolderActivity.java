@@ -148,13 +148,13 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
                 .into(thumbBackImgView);
 
         String message = storyFolderResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        Log.d("success", message);
     }
 
     private void handleFailure(StoryFolderResponse storyFolderResponse){
         //success가 false인 경우,
         String message = storyFolderResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        Log.d("fail",message);
     }
 
     private void loadStoryCards(){
@@ -198,13 +198,13 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         // 서버에서 가져온 리스트를 어댑터에 추가함
         adapter.setCardsData(storyCards);
         String message = storyCardsResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        Log.d("success",message);
     }
 
     private void handleFailure(StoryCardsResponse storyCardsResponse){
 
         String message = storyCardsResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        Log.d("fail",message);
     }
 
     @Override
@@ -212,7 +212,17 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         //클릭된 아이템과 그 아이디를 가져옴
         StoryCard clickedCard = storyCards.get(position);
         clickedCardId = clickedCard.getCardId();
-        IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+
+        // 스토리 폴더 아래에 있는 스토리 카드가 이미지, 메모, 동영상 3가지 형식이 있기 때문에
+        // data_type에 따라 나눠서 다른 액티비티로 이동함
+        if("image".equals(clickedCard.getDataType())){
+            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+        } else if ("text".equals(clickedCard.getDataType())) {
+            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard2.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+        } else if ("video".equals(clickedCard.getDataType())) {
+            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+        }
+
     }
 
 }

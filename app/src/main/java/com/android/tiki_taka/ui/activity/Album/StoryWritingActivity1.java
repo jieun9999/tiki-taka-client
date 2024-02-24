@@ -159,7 +159,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         if (response.isSuccessful()) {
             try {
                 String message = parseResponseData(response);
-                showToast(message);
+                Log.d("success",message);
 
             } catch (JSONException | IOException e) {
                 // JSON 파싱 오류 처리 , IOException 처리
@@ -171,9 +171,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
-    private void showToast(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-    }
 
     private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
         String responseJson = response.body().string();

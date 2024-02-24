@@ -12,18 +12,23 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.CommentAdapter;
 import com.android.tiki_taka.listeners.DeleteCommentListener;
 import com.android.tiki_taka.models.dtos.CommentItem;
+import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.models.responses.ApiResponse;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.android.tiki_taka.utils.TimeUtils;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +53,9 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-
         cardId = IntentHelper.getId(this);
+
+        loadCardDetails();
 
         recyclerView = findViewById(R.id.commentRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -63,7 +69,6 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         // 2.데이터를 비동기적으로 가져오는 메서드 호출
         loadComments();
 
-
         TextView sendCommentButton = findViewById(R.id.send_comment_view);
         sendCommentButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +77,58 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             }
         });
 
+    }
+    private void loadCardDetails(){
+        service.getCardDetails(cardId).enqueue(new Callback<StoryCard>() {
+            @Override
+            public void onResponse(Call<StoryCard> call, Response<StoryCard> response) {
+                try {
+                    processCardDetailsResponse(response);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StoryCard> call, Throwable t) {
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void processCardDetailsResponse(Response<StoryCard> response) throws ParseException {
+        if(response.isSuccessful() && response.body() != null){
+            StoryCard storyCard = response.body();
+
+            // 상단바
+            ImageView profileImgView = findViewById(R.id.imageView41);
+            TextView nameView = findViewById(R.id.textView37);
+            TextView timeView = findViewById(R.id.textView38);
+            ImageUtils.loadImage(storyCard.getUserProfile(), profileImgView, this);
+            nameView.setText(storyCard.getUserName());
+            String outputDateString = TimeUtils.convertDateString(storyCard.getCreatedAt());
+            timeView.setText(outputDateString);
+
+            // 본문
+            ImageView cardImgView = findViewById(R.id.imageview);
+            ImageView myLikesView = findViewById(R.id.imageView31);
+            ImageView partnerLikesView = findViewById(R.id.imageView32);
+            Log.d("storyCard.getImage()", storyCard.getImage());
+            Log.d(" cardImgView", String.valueOf(cardImgView));
+            ImageUtils.loadImage(storyCard.getImage(), cardImgView, this);
+
+            int myLikes = storyCard.getUserGood();
+            int partnerLikes = storyCard.getPartnerGood();
+            if(myLikes == 0){
+                ImageUtils.loadDrawableIntoView(this, myLikesView, "akar_icons_heart");
+            }
+            if(partnerLikes == 0){
+                partnerLikesView.setVisibility(View.GONE);
+            }
+
+        }else {
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
     }
 
     private void loadComments(){
