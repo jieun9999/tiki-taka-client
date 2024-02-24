@@ -32,6 +32,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         this.deleteCommentListener = deleteCommentListener;
     }
 
+    public CommentAdapter(ArrayList<CommentItem> commentItems) {
+        this.commentItems = commentItems;
+    }
+
     @NonNull
     @Override
     public CommentAdapter.CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

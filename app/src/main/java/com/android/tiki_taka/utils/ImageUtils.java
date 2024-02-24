@@ -1,5 +1,6 @@
 package com.android.tiki_taka.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -64,5 +65,13 @@ public class ImageUtils {
                     .into(imageView);
         }
     }
+
+    public static void loadDrawableIntoView(Context context, ImageView imageView, String drawableName) {
+        @SuppressLint("DiscouragedApi") int resourceId = context.getResources().getIdentifier(drawableName, "drawable", context.getPackageName());
+        Glide.with(context)
+                .load(resourceId)
+                .into(imageView);
+    }
+
 
 }

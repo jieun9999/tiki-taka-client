@@ -123,12 +123,12 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
         adapter.setData(storyFolderDtos);
 
         String message = storyFoldersResponse.getMessage();
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        Log.d("success", message);
     }
 
     private void handleFailure(StoryFoldersResponse storyFoldersResponse){
         String message = storyFoldersResponse.getMessage();
-        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        Log.d("fail", message);
     }
 
     @Override

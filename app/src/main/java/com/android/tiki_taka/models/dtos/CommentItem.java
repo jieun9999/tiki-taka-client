@@ -13,7 +13,6 @@ public class CommentItem{
     private int userId;
     @SerializedName("profile_image")
     private String userProfile;
-
     @SerializedName("comment_text")
     private String commentText;
     @SerializedName("created_at")

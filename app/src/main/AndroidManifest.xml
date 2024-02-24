@@ -23,6 +23,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Album.WithCommentStoryCard3"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.Album.WithCommentStoryCard2"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.Album.WithCommentStoryCard1"
             android:exported="true"
             android:theme="@style/NoActionBar" />

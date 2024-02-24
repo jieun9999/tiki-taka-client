@@ -134,13 +134,13 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         thumbTextView.setText(storyFolderDto.getMemo());
 
         String message = storyFolderResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        Log.d("success",message);
     }
 
     private void handleFailure(StoryFolderResponse storyFolderResponse){
         //success가 false인 경우,
         String message = storyFolderResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        Log.d("fail",message);
     }
 
     private void loadStoryCards(){
@@ -184,13 +184,13 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         // 서버에서 가져온 리스트를 어댑터에 추가함
         adapter.setCardsData(storyCardDtos);
         String message = storyCardsResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        Log.d("success", message);
     }
 
     private void handleFailure(StoryCardsResponse storyCardsResponse){
 
         String message = storyCardsResponse.getMessage();
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        Log.d("fail", message);
     }
 
     @Override

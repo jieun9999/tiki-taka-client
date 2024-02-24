@@ -2,6 +2,7 @@ package com.android.tiki_taka.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -18,9 +20,16 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.StoryCard;
+import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.VideoPlayerActivity;
+import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.VideoUtils;
 import com.bumptech.glide.Glide;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int IMAGE_TYPE = 1;
@@ -52,11 +61,14 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         TextView allCommentsView;
+        RecyclerView commentRecyclerView;
+        CommentAdapter commentAdapter;
 
         public ImageViewHolder(@NonNull View itemView, final ItemClickListener itemClickListener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageview);
             allCommentsView = itemView.findViewById(R.id.all_comments);
+            commentRecyclerView = itemView.findViewById(R.id.recyclerView3);
 
             // 클릭 리스너 설정
             allCommentsView.setOnClickListener(new View.OnClickListener() {
@@ -68,6 +80,12 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     }
                 }
             });
+
+            // commentRecyclerView 설정
+            commentRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+            commentAdapter = new CommentAdapter(new ArrayList<>());
+            commentRecyclerView.setAdapter(commentAdapter);
+
         }
 
     }
@@ -120,6 +138,9 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             Glide.with(imageViewHolder.itemView.getContext())
                     .load(card.getImage())
                     .into(imageViewHolder.imageView);
+
+            // 비동기적으로 댓글 데이터 요청
+            loadPreviewComments(card.getCardId(), imageViewHolder.commentAdapter);
             
         }
         else if (holder.getItemViewType() == TEXT_TYPE) {
@@ -145,6 +166,24 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 }
             });
         }
+    }
+
+    public static void loadPreviewComments(int cardId, CommentAdapter commentAdapter){
+        StoryApiService service = RetrofitClient.getClient().create(StoryApiService.class);
+        service.getPreviewComments(cardId).enqueue(new Callback<List<CommentItem>>() {
+            @Override
+            public void onResponse(Call<List<CommentItem>> call, Response<List<CommentItem>> response) {
+                if(response.isSuccessful()){
+                    List<CommentItem> comments = response.body();
+                    commentAdapter.setCommentsData(comments);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<CommentItem>> call, Throwable t) {
+                Log.e("loadCommentsAsync", "댓글 데이터 요청 실패: " + t.getMessage());
+            }
+        });
     }
 
     @Override

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="413dp"
-    android:layout_height="460dp">
+    android:layout_height="wrap_content">
 
     <FrameLayout
         android:id="@+id/frameLayout4"
@@ -17,14 +17,14 @@
             android:id="@+id/imageview"
             android:layout_width="match_parent"
             android:layout_height="400dp"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop" />
 
         <ImageView
             android:id="@+id/playBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/octicon_play_16"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            app:srcCompat="@drawable/octicon_play_16" />
     </FrameLayout>
 
     <ImageView
@@ -59,13 +59,34 @@
         app:layout_constraintTop_toBottomOf="@+id/frameLayout4"
         app:srcCompat="@drawable/pepicons_pencil_dots_y" />
 
+    <include
+        android:id="@+id/include5"
+        layout="@layout/item_see_all_comments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView31" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/include5"
+        tools:layout_editor_absoluteX="1dp">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
     <View
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="15dp"
         android:background="?attr/colorPrimary"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recyclerView3" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

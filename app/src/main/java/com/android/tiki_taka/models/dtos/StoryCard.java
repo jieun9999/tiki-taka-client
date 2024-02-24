@@ -10,6 +10,10 @@ public class StoryCard {
     private int folderId;
     @SerializedName("user_id")
     private int userId;
+    @SerializedName("profile_image")
+    private String userProfile;
+    @SerializedName("name")
+    private String userName;
     @SerializedName("data_type")
     private String dataType;
     @SerializedName("image")
@@ -141,5 +145,21 @@ public class StoryCard {
 
     public void setVideoThumbnail(String videoThumbnail) {
         this.videoThumbnail = videoThumbnail;
+    }
+
+    public String getUserProfile() {
+        return userProfile;
+    }
+
+    public void setUserProfile(String userProfile) {
+        this.userProfile = userProfile;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }
