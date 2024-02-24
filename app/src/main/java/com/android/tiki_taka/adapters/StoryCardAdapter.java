@@ -92,21 +92,64 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     public static class TextViewHolder extends RecyclerView.ViewHolder{
         TextView textView;
+        TextView allCommentsView;
+        RecyclerView commentRecyclerView;
+        CommentAdapter commentAdapter;
 
         public TextViewHolder(View itemView){
             super(itemView);
             textView = itemView.findViewById(R.id.editBtn);
+            allCommentsView = itemView.findViewById(R.id.all_comments);
+            commentRecyclerView = itemView.findViewById(R.id.recyclerView3);
+
+            // 클릭 리스너 설정
+            allCommentsView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION){
+                        itemClickListener.onItemClick(position);
+                    }
+                }
+            });
+
+            // commentRecyclerView 설정
+            commentRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+            commentAdapter = new CommentAdapter(new ArrayList<>());
+            commentRecyclerView.setAdapter(commentAdapter);
+
         }
     }
 
     public static class VideoViewHolder extends RecyclerView.ViewHolder{
         ImageView imageView;
         ImageView playBtn;
+        TextView allCommentsView;
+        RecyclerView commentRecyclerView;
+        CommentAdapter commentAdapter;
 
         public VideoViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageview);
             playBtn = itemView.findViewById(R.id.playBtn);
+            allCommentsView = itemView.findViewById(R.id.all_comments);
+            commentRecyclerView = itemView.findViewById(R.id.recyclerView3);
+
+            // 클릭 리스너 설정
+            allCommentsView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION){
+                        itemClickListener.onItemClick(position);
+                    }
+                }
+            });
+
+            // commentRecyclerView 설정
+            commentRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+            commentAdapter = new CommentAdapter(new ArrayList<>());
+            commentRecyclerView.setAdapter(commentAdapter);
         }
     }
 
@@ -147,6 +190,9 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             TextViewHolder textViewHolder = (TextViewHolder) holder;
             textViewHolder.textView.setText(card.getMemo());
 
+            // 비동기적으로 댓글 데이터 요청
+            loadPreviewComments(card.getCardId(), textViewHolder.commentAdapter);
+
         } else if (holder.getItemViewType() == VIDEO_TYPE) {
             VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
             String videoId = VideoUtils.extractYoutubeVideoId(card.getVideo());
@@ -165,7 +211,11 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     videoViewHolder.itemView.getContext().startActivity(intent);
                 }
             });
+
+            // 비동기적으로 댓글 데이터 요청
+            loadPreviewComments(card.getCardId(), videoViewHolder.commentAdapter);
         }
+
     }
 
     public static void loadPreviewComments(int cardId, CommentAdapter commentAdapter){
@@ -175,7 +225,11 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             public void onResponse(Call<List<CommentItem>> call, Response<List<CommentItem>> response) {
                 if(response.isSuccessful()){
                     List<CommentItem> comments = response.body();
-                    commentAdapter.setCommentsData(comments);
+                    if (!comments.isEmpty()) {
+                        commentAdapter.setCommentsData(comments);
+                    } else {
+                        // 예를 들어, 사용자에게 "댓글이 없습니다" 메시지를 표시할 수 있습니다.
+                    }
                 }
             }
 

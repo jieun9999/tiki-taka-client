@@ -21,6 +21,7 @@ import com.android.tiki_taka.models.dtos.StoryFolder;
 import com.android.tiki_taka.models.responses.StoryCardsResponse;
 import com.android.tiki_taka.models.responses.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -38,8 +39,11 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
     int folderId;
     StoryApiService service;
     int userId;
+    int clickedCardId;
     StoryCardAdapter adapter;
     RecyclerView recyclerView;
+    List<StoryCard> storyCards;
+    private static final int REQUEST_CODE_SEE_ALL_COMMENTS = 111;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,6 +199,18 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
 
     @Override
     public void onItemClick(int position) {
+        //클릭된 아이템과 그 아이디를 가져옴
+        StoryCard clickedCard = storyCards.get(position);
+        clickedCardId = clickedCard.getCardId();
 
+        // 스토리 폴더 아래에 있는 스토리 카드가 이미지, 메모, 동영상 3가지 형식이 있기 때문에
+        // data_type에 따라 나눠서 다른 액티비티로 이동함
+        if("image".equals(clickedCard.getDataType())){
+            IntentHelper.navigateToActivity(TextFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+        } else if ("text".equals(clickedCard.getDataType())) {
+            IntentHelper.navigateToActivity(TextFolderActivity.this, WithCommentStoryCard2.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+        } else if ("video".equals(clickedCard.getDataType())) {
+            IntentHelper.navigateToActivity(TextFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+        }
     }
 }
