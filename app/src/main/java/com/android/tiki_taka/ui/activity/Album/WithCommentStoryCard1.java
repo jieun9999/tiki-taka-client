@@ -64,17 +64,11 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         cardId = IntentHelper.getId(this);
 
         loadCardDetails();
-
         recyclerView = findViewById(R.id.commentRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // 어댑터 설정 이후 데이터 로드
-        // 1.빈 어댑터로 초기화
         commentList = new ArrayList<>();
         adapter = new CommentAdapter(commentList,this);
         recyclerView.setAdapter(adapter);
-
-        // 2.데이터를 비동기적으로 가져오는 메서드 호출
         loadComments();
 
         TextView sendCommentButton = findViewById(R.id.send_comment_view);
