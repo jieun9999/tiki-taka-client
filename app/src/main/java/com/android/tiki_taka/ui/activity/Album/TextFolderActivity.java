@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
@@ -121,21 +120,21 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
 
     private void updateUIOnSuccess(StoryFolderResponse storyFolderResponse){
         //success가 true인 경우,
-        StoryFolder storyFolderDto = storyFolderResponse.getStoryFolder();
+        StoryFolder storyFolder = storyFolderResponse.getStoryFolder();
 
         //썸네일 뷰 할당하기
         TextView thumbDateView = findViewById(R.id.textView28);
         TextView thumbTextView = findViewById(R.id.textView27);
 
         // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
-        String inputDateString = storyFolderDto.getUpdatedAt();
+        String inputDateString = storyFolder.getUpdatedAt();
         try {
             String outputDateString = TimeUtils.convertDateString(inputDateString);
             thumbDateView.setText(outputDateString);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        thumbTextView.setText(storyFolderDto.getMemo());
+        thumbTextView.setText(storyFolder.getMemo());
 
         String message = storyFolderResponse.getMessage();
         Log.d("success",message);
@@ -183,10 +182,10 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
     //"오버로딩(Overloading)"이라고 합니다. 함수 오버로딩은 같은 이름의 함수가 서로 다른 매개변수를 가질 수 있도록 허용
     private void updateUIonSuccess(StoryCardsResponse storyCardsResponse){
 
-        List<StoryCard> storyCardDtos = storyCardsResponse.getStoryCards();
+        storyCards = storyCardsResponse.getStoryCards();
 
         // 서버에서 가져온 리스트를 어댑터에 추가함
-        adapter.setCardsData(storyCardDtos);
+        adapter.setCardsData(storyCards);
         String message = storyCardsResponse.getMessage();
         Log.d("success", message);
     }
@@ -201,6 +200,7 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
     public void onItemClick(int position) {
         //클릭된 아이템과 그 아이디를 가져옴
         StoryCard clickedCard = storyCards.get(position);
+        Log.d("clickedCardId", String.valueOf(clickedCardId));
         clickedCardId = clickedCard.getCardId();
 
         // 스토리 폴더 아래에 있는 스토리 카드가 이미지, 메모, 동영상 3가지 형식이 있기 때문에

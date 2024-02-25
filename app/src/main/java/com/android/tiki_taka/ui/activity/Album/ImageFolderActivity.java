@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
@@ -124,7 +123,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
 
     private void updateUIOnSuccess(StoryFolderResponse storyFolderResponse){
         //success가 true인 경우,
-        StoryFolder storyFolderDto = storyFolderResponse.getStoryFolder();
+        StoryFolder storyFolder = storyFolderResponse.getStoryFolder();
 
         //썸네일 뷰 할당하기
         TextView thumbDateView = findViewById(R.id.textView26);
@@ -133,18 +132,18 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         ImageView thumbBackImgView = findViewById(R.id.imageView26);
 
         // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
-        String inputDateString = storyFolderDto.getUpdatedAt();
+        String inputDateString = storyFolder.getUpdatedAt();
         try {
             String outputDateString = TimeUtils.convertDateString(inputDateString);
             thumbDateView.setText(outputDateString);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        thumbTitleView.setText(storyFolderDto.getTitle());
-        thumbLocView.setText(storyFolderDto.getLocation());
+        thumbTitleView.setText(storyFolder.getTitle());
+        thumbLocView.setText(storyFolder.getLocation());
         // 이미지는 글라이드로 할당
         Glide.with(getApplicationContext())
-                .load(storyFolderDto.getDisplayImage())
+                .load(storyFolder.getDisplayImage())
                 .into(thumbBackImgView);
 
         String message = storyFolderResponse.getMessage();
