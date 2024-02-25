@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.HomeProfiles;
+import com.android.tiki_taka.models.dtos.PartnerIdManager;
 import com.android.tiki_taka.models.dtos.PartnerProfile;
 import com.android.tiki_taka.models.dtos.UserProfile;
 import com.android.tiki_taka.services.ProfileApiService;
@@ -187,6 +188,9 @@ public class HomeFragment extends Fragment {
             UserProfile userProfile = homeProfiles.getUserProfile();
             // 파트너 프로필 정보 처리
             PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
+
+            //파트너 아이디 static 설정
+            PartnerIdManager.setPartnerId(partnerProfile.getUserId());
 
             updateViewWithUserProfile(userProfile);
             updateViewWithPartnerProfile(partnerProfile);

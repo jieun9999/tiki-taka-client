@@ -1,6 +1,8 @@
 package com.android.tiki_taka.services;
 
+import com.android.tiki_taka.models.dtos.CommentIdRequest;
 import com.android.tiki_taka.models.dtos.CommentItem;
+import com.android.tiki_taka.models.dtos.LikeStatusRequest;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.models.responses.ApiResponse;
@@ -35,7 +37,7 @@ public interface StoryApiService {
     Call<StoryCard> getCardDetails(@Query("cardId") int cardId);
 
    @GET("Story/getPreviewComments.php")
-   Call<List<CommentItem>> getPreviewComments(@Query("cardId") int cardId);
+    Call<List<CommentItem>> getPreviewComments(@Query("cardId") int cardId);
 
     @GET("Story/getComments.php")
     Call<List<CommentItem>> getComments(@Query("cardId") int cardId);
@@ -43,8 +45,11 @@ public interface StoryApiService {
     @POST("Story/postComment.php")
     Call<ApiResponse> postComment(@Body CommentItem commentItem);
 
-    @GET("Story/deleteComment.php")
-    Call<ApiResponse> deleteComment(@Query("commentId") int commentId);
+    @POST("Story/deleteComment.php")
+    Call<ApiResponse> deleteComment(@Body CommentIdRequest commentIdRequest);
+
+    @POST("Story/updateLikeStatus.php")
+    Call<ApiResponse> updateLikeStatus(@Body LikeStatusRequest likeStatusRequest);
 
 
 

@@ -24,10 +24,10 @@ public class StoryCard {
     private String video;
     @SerializedName("video_thumbnail")
     private String videoThumbnail;
-    @SerializedName("user_good")
-    private int userGood;
-    @SerializedName("partner_good")
-    private int partnerGood;
+    @SerializedName("user_a_likes")
+    private int userALikes;
+    @SerializedName("user_b_likes")
+    private int userBLikes;
 
     // 클라이언트 측에서 createdAt과 updatedAt을 직접 만들 필요가 없는 경우라도,
     // 서버로부터 해당 정보를 받아와서 클라이언트 측에서 사용하고자 한다면 클래스의 멤버 변수로 선언해 주는 것이 좋습니다. (데이터 동기화)
@@ -37,19 +37,6 @@ public class StoryCard {
     private String updatedAt;
     //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱
 
-    // 생성자
-    public StoryCard(int cardId, int folderId, int userId, String dataType, String image, String memo, String video, String videoThumbnail, int userGood, int partnerGood) {
-        this.cardId = cardId;
-        this.folderId = folderId;
-        this.userId = userId;
-        this.dataType = dataType;
-        this.image = image;
-        this.memo = memo;
-        this.video = video;
-        this.videoThumbnail = videoThumbnail;
-        this.userGood = userGood;
-        this.partnerGood = partnerGood;
-    }
 
     public int getCardId() {
         return cardId;
@@ -83,20 +70,20 @@ public class StoryCard {
         this.image = contents;
     }
 
-    public int getUserGood() {
-        return userGood;
+    public int getUserALikes() {
+        return userALikes;
     }
 
-    public void setUserGood(int userGood) {
-        this.userGood = userGood;
+    public void setUserALikes(int userALikes) {
+        this.userALikes = userALikes;
     }
 
-    public int getPartnerGood() {
-        return partnerGood;
+    public int getUserBLikes() {
+        return userBLikes;
     }
 
-    public void setPartnerGood(int partnerGood) {
-        this.partnerGood = partnerGood;
+    public void setUserBLikes(int userBLikes) {
+        this.userBLikes = userBLikes;
     }
 
     public String getCreatedAt() {
