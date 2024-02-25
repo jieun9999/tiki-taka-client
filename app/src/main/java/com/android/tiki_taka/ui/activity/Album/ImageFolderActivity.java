@@ -1,5 +1,6 @@
 package com.android.tiki_taka.ui.activity.Album;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -44,7 +45,10 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     int clickedCardId;
     StoryCardAdapter adapter;
     RecyclerView recyclerView;
-    private static final int REQUEST_CODE_SEE_ALL_COMMENTS = 111;
+    private static final int REQUEST_CODE_IMAGE_CARD = 111;
+    private static final int REQUEST_CODE_TEXT_CARD = 222;
+    private static final int REQUEST_CODE_VIDEO_CARD = 333;
+
     List<StoryCard> storyCards;
 
     @Override
@@ -191,7 +195,6 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
 
     //"오버로딩(Overloading)"이라고 합니다. 함수 오버로딩은 같은 이름의 함수가 서로 다른 매개변수를 가질 수 있도록 허용
     private void updateUIonSuccess(StoryCardsResponse storyCardsResponse){
-
         storyCards = storyCardsResponse.getStoryCards();
 
         // 서버에서 가져온 리스트를 어댑터에 추가함
@@ -201,7 +204,6 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     }
 
     private void handleFailure(StoryCardsResponse storyCardsResponse){
-
         String message = storyCardsResponse.getMessage();
         Log.d("fail",message);
     }
@@ -215,13 +217,23 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         // 스토리 폴더 아래에 있는 스토리 카드가 이미지, 메모, 동영상 3가지 형식이 있기 때문에
         // data_type에 따라 나눠서 다른 액티비티로 이동함
         if("image".equals(clickedCard.getDataType())){
-            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_IMAGE_CARD);
         } else if ("text".equals(clickedCard.getDataType())) {
-            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard2.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard2.class, clickedCardId, REQUEST_CODE_TEXT_CARD);
         } else if ("video".equals(clickedCard.getDataType())) {
-            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_SEE_ALL_COMMENTS);
+            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_VIDEO_CARD);
         }
 
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_IMAGE_CARD && resultCode == RESULT_OK) {
+            loadStoryCards();
+        }
+    }
+
+
 
 }

@@ -34,7 +34,6 @@ import com.bumptech.glide.Glide;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int IMAGE_TYPE = 1;
@@ -275,9 +274,13 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         int partnerLikes = likes.second;
         if(myLikes == 0){
             ImageUtils.loadDrawableIntoView(myLikesImageView.getContext(), myLikesImageView, "akar_icons_heart");
+        }else if(myLikes == 1){
+            ImageUtils.loadDrawableIntoView(myLikesImageView.getContext(), myLikesImageView, "fluent_emoji_flat_red_heart");
         }
         if(partnerLikes == 0){
             partnerLikesImageView.setVisibility(View.GONE);
+        } else if (partnerLikes == 1) {
+            partnerLikesImageView.setVisibility(View.VISIBLE);
         }
     }
 

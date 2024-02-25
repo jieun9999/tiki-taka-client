@@ -5,15 +5,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
@@ -37,13 +35,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCommentListener {
+public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCommentListener{
     StoryApiService service;
     int userId;
     int partnerId;
@@ -273,4 +270,15 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             }
         });
     }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void onBackPressed() {
+        // 뒤로가기를 누를 때마다 상태 변경 결과를 알림
+        Intent resultIntent = new Intent();
+        setResult(RESULT_OK, resultIntent);
+        finish();
+    }
+
+
 }
