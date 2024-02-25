@@ -227,13 +227,12 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                     List<CommentItem> comments = response.body();
                     if (!comments.isEmpty()) {
                         commentAdapter.setCommentsData(comments);
-                    } else {
-                        // 예를 들어, 사용자에게 "댓글이 없습니다" 메시지를 표시할 수 있습니다.
                     }
                 }
             }
 
             @Override
+            // 서버 응답이 비어있거나, 서버에서 오류가 발생했을 때
             public void onFailure(Call<List<CommentItem>> call, Throwable t) {
                 Log.e("loadCommentsAsync", "댓글 데이터 요청 실패: " + t.getMessage());
             }
