@@ -56,37 +56,20 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_with_comment_story_card1);
 
+        setupNetworkAndRetrieveIds();
+        loadCardDetails();
+        setRecyclerView();
+        loadComments();
+        setupSendCommentButtonClickListener();
+        setupLikeImageViewClickListener();
+
+    }
+
+    private void setupNetworkAndRetrieveIds(){
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
         cardId = IntentHelper.getId(this);
-
-        loadCardDetails();
-        recyclerView = findViewById(R.id.commentRecyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        commentList = new ArrayList<>();
-        adapter = new CommentAdapter(commentList,this);
-        recyclerView.setAdapter(adapter);
-        loadComments();
-
-        TextView sendCommentButton = findViewById(R.id.send_comment_view);
-        sendCommentButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                postComment();
-            }
-        });
-
-        ImageView myLikesView = findViewById(R.id.imageView31);
-        myLikesView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                isLiked = !isLiked;
-                updateHeartIcon(myLikesView, isLiked);
-                updateLikeStatusOnServer(isLiked);
-
-            }
-        });
     }
 
     private void loadCardDetails(){
@@ -152,7 +135,13 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         }
     }
 
-
+    private void setRecyclerView(){
+        recyclerView = findViewById(R.id.commentRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        commentList = new ArrayList<>();
+        adapter = new CommentAdapter(commentList,this);
+        recyclerView.setAdapter(adapter);
+    }
 
     private void loadComments(){
         service.getComments(cardId).enqueue(new Callback<List<CommentItem>>() {
@@ -242,6 +231,27 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         });
     }
 
+    private void setupSendCommentButtonClickListener(){
+        TextView sendCommentButton = findViewById(R.id.send_comment_view);
+        sendCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                postComment();
+            }
+        });
+    }
+    private void setupLikeImageViewClickListener(){
+        ImageView myLikesView = findViewById(R.id.imageView31);
+        myLikesView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isLiked = !isLiked;
+                updateHeartIcon(myLikesView, isLiked);
+                updateLikeStatusOnServer(isLiked);
+
+            }
+        });
+    }
     private void updateHeartIcon(ImageView heartView, boolean isLiked){
         if(isLiked){
             ImageUtils.loadDrawableIntoView(this, heartView, "fluent_emoji_flat_red_heart");
@@ -275,6 +285,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             }
         });
     }
+
 
     @SuppressLint("MissingSuperCall")
     @Override
