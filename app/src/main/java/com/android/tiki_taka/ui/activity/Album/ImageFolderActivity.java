@@ -45,11 +45,11 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     int clickedCardId;
     StoryCardAdapter adapter;
     RecyclerView recyclerView;
+    List<StoryCard> storyCards;
     private static final int REQUEST_CODE_IMAGE_CARD = 111;
     private static final int REQUEST_CODE_TEXT_CARD = 222;
     private static final int REQUEST_CODE_VIDEO_CARD = 333;
 
-    List<StoryCard> storyCards;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -230,6 +230,10 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_IMAGE_CARD && resultCode == RESULT_OK) {
+            loadStoryCards();
+        } else if (requestCode == REQUEST_CODE_TEXT_CARD && resultCode == RESULT_OK) {
+            loadStoryCards();
+        } else if (requestCode == REQUEST_CODE_VIDEO_CARD && resultCode == RESULT_OK) {
             loadStoryCards();
         }
     }

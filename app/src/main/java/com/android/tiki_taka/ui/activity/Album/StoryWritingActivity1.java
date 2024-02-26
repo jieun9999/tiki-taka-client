@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
@@ -77,7 +76,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         cancelBtn.setOnClickListener(v -> finish());
         TextView uploadBtn = findViewById(R.id.textView34);
         uploadBtn.setOnClickListener(v -> savePhotoCards());
-        ImageView editBtn = findViewById(R.id.editBtn);
+        ImageView editBtn = findViewById(R.id.memoView);
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

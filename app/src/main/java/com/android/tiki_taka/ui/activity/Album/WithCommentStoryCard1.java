@@ -106,7 +106,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             // 본문
             ImageView cardImgView = findViewById(R.id.imageview);
             ImageView myLikesView = findViewById(R.id.imageView31);
-            FrameLayout partnerLikesView = findViewById(R.id.frameLayout5);
+            FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);
             Log.d("storyCard.getImage()", storyCard.getImage());
             Log.d(" cardImgView", String.valueOf(cardImgView));
@@ -169,39 +169,6 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         }
     }
 
-    private void postComment(){
-        EditText inputCommentView = findViewById(R.id.inputbox_comment);
-        String inputText = inputCommentView.getText().toString();
-        Log.d("inputText", inputText);
-
-        if(!inputText.isEmpty()){
-            //새 댓글 객체 생성
-            CommentItem newComment = new CommentItem(cardId, userId, inputText);
-            service.postComment(newComment).enqueue(new Callback<ApiResponse>() {
-                @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if(response.isSuccessful() && response.body() != null){
-                        if(response.body().isSuccess()){
-                            // success가 true일 때의 처리
-                            // 댓글 업로드 성공 후 전체 댓글 목록 새로고침
-                            loadComments();
-                            inputCommentView.setText("");
-                        }
-                    }else {
-                        // success가 false일 때의 처리
-                        Log.e("ERROR", "댓글 업로드 실패");
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Log.e("ERROR", "네트워크 오류");
-                }
-
-            });
-        }
-    }
-
     @Override
     public void onDeleteClick(int position) {
         CommentItem commentItemToDelete = commentList.get(position);
@@ -240,6 +207,40 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             }
         });
     }
+
+    private void postComment(){
+        EditText inputCommentView = findViewById(R.id.inputbox_comment);
+        String inputText = inputCommentView.getText().toString();
+        Log.d("inputText", inputText);
+
+        if(!inputText.isEmpty()){
+            //새 댓글 객체 생성
+            CommentItem newComment = new CommentItem(cardId, userId, inputText);
+            service.postComment(newComment).enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if(response.isSuccessful() && response.body() != null){
+                        if(response.body().isSuccess()){
+                            // success가 true일 때의 처리
+                            // 댓글 업로드 성공 후 전체 댓글 목록 새로고침
+                            loadComments();
+                            inputCommentView.setText("");
+                        }
+                    }else {
+                        // success가 false일 때의 처리
+                        Log.e("ERROR", "댓글 업로드 실패");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Log.e("ERROR", "네트워크 오류");
+                }
+
+            });
+        }
+    }
+
     private void setupLikeImageViewClickListener(){
         ImageView myLikesView = findViewById(R.id.imageView31);
         myLikesView.setOnClickListener(new View.OnClickListener() {

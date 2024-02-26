@@ -94,7 +94,7 @@
         app:srcCompat="@drawable/group_12" />
 
     <TextView
-        android:id="@+id/editBtn"
+        android:id="@+id/memoView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="174dp"
@@ -115,7 +115,7 @@
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editBtn" />
+        app:layout_constraintTop_toBottomOf="@+id/memoView" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout"

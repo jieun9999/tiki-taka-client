@@ -113,7 +113,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         public TextViewHolder(View itemView){
             super(itemView);
-            textView = itemView.findViewById(R.id.editBtn);
+            textView = itemView.findViewById(R.id.memoView);
             myLikesView = itemView.findViewById(R.id.imageView31);
             partnerLikesProfileView = itemView.findViewById(R.id.imageView33);
             partnerLikesView = itemView.findViewById(R.id.frameLayout9);
@@ -278,7 +278,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         });
     }
 
-    private void renderLikes(ImageView myLikesImageView,FrameLayout partnerLikesView,  ImageView partnerLikesProfileView, Pair<Integer, Integer> likes, String partnerImg){
+    private void renderLikes(ImageView myLikesImageView, FrameLayout partnerLikesView,  ImageView partnerLikesProfileView, Pair<Integer, Integer> likes, String partnerImg){
         int myLikes = likes.first;
         int partnerLikes = likes.second;
         if(myLikes == 0){
