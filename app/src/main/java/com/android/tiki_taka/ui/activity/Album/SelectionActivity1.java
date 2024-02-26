@@ -18,12 +18,16 @@ import com.android.tiki_taka.utils.ImageUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class SelectionActivity1 extends AppCompatActivity {
 
     private static final int PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE = 1 ;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
+    private static final int REQUEST_NOTEPAD = 3;
+
     private Uri imageUri; //카메라 앱이 전달받을 파일경로
     ArrayList<Uri> selectedUris = new ArrayList<>();
 
@@ -34,11 +38,15 @@ public class SelectionActivity1 extends AppCompatActivity {
 
         //카메라
         ImageView cameraIcon = findViewById(R.id.imageView30);
-        cameraIcon.setOnClickListener( v -> openCamera());
+        cameraIcon.setOnClickListener(v -> openCamera());
 
         //사진
         ImageView photoIcon = findViewById(R.id.imageView35);
         photoIcon.setOnClickListener(v -> launchPhotoPickerInMultiSelectedMode());
+
+        //메모
+        ImageView memoIcon = findViewById(R.id.imageView38);
+        memoIcon.setOnClickListener(v -> openNotePad());
 
         ImageView xBtn = findViewById(R.id.imageView40);
         xBtn.setOnClickListener(v -> dismissActivity());
@@ -67,7 +75,7 @@ public class SelectionActivity1 extends AppCompatActivity {
         }
     }
 
-
+    // 갤러리 다중 선택을 허용하는 인텐트를 연다
     @SuppressLint("IntentReset")
     private void launchPhotoPickerInMultiSelectedMode(){
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -75,6 +83,15 @@ public class SelectionActivity1 extends AppCompatActivity {
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(Intent.createChooser(intent, "Select Pictures"), PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE);
+    }
+
+    // 메모장 액티비티를 시작
+    public void openNotePad() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy년 MM월 dd일");
+        String currentDate = dateFormat.format(new Date());
+        Intent intent = new Intent(this, StoryWritingActivity4.class);
+        intent.putExtra("currentDate", currentDate);
+        startActivityForResult(intent, REQUEST_NOTEPAD);
     }
 
     private void dismissActivity(){
@@ -118,6 +135,10 @@ public class SelectionActivity1 extends AppCompatActivity {
                 intent.putParcelableArrayListExtra("selectedUris", selectedUris);
                 startActivity(intent);
             }
+
+        } else if (requestCode == REQUEST_NOTEPAD && resultCode == RESULT_OK && data != null) {
+            String result = data.getStringExtra("result");
+            
         }
     }
 
