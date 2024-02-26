@@ -46,15 +46,28 @@
                 app:layout_constraintTop_toBottomOf="@+id/imageview"
                 app:srcCompat="@drawable/fluent_emoji_flat_red_heart" />
 
-            <ImageView
-                android:id="@+id/imageView32"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+            <FrameLayout
+                android:id="@+id/frameLayout5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
                 app:layout_constraintStart_toEndOf="@+id/imageView31"
-                app:layout_constraintTop_toBottomOf="@+id/imageview"
-                app:srcCompat="@drawable/group_58" />
+                app:layout_constraintTop_toBottomOf="@+id/imageview">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/imageView33"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp" />
+
+                <ImageView
+                    android:id="@+id/imageView44"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="15dp"
+                    app:srcCompat="@drawable/fluent_emoji_flat_red_heart" />
+            </FrameLayout>
 
             <ImageView
                 android:id="@+id/imageView34"
@@ -70,11 +83,11 @@
                 android:id="@+id/commentRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="15dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageView31" />
+                app:layout_constraintTop_toBottomOf="@+id/imageView34" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,7 +21,7 @@ import com.android.tiki_taka.listeners.DeleteCommentListener;
 import com.android.tiki_taka.models.dtos.CommentIdRequest;
 import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.LikeStatusRequest;
-import com.android.tiki_taka.models.dtos.PartnerIdManager;
+import com.android.tiki_taka.models.dtos.PartnerDataManager;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.models.responses.ApiResponse;
 import com.android.tiki_taka.services.StoryApiService;
@@ -122,13 +123,15 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             // 본문
             ImageView cardImgView = findViewById(R.id.imageview);
             ImageView myLikesView = findViewById(R.id.imageView31);
-            ImageView partnerLikesView = findViewById(R.id.imageView32);
+            FrameLayout partnerLikesView = findViewById(R.id.frameLayout5);
+            ImageView partnerLikesProfileView = findViewById(R.id.imageView33);
             Log.d("storyCard.getImage()", storyCard.getImage());
             Log.d(" cardImgView", String.valueOf(cardImgView));
             ImageUtils.loadImage(storyCard.getImage(), cardImgView, this);
 
-            //파트너 아이디 가져오기
-            partnerId = PartnerIdManager.getPartnerId();
+            //파트너 아이디와 이미지 가져오기
+            partnerId = PartnerDataManager.getPartnerId();
+            String partnerImg = PartnerDataManager.getPartnerImg();
             Pair<Integer, Integer> likes = LikesUtils.getLikesFor2Users(storyCard, userId, partnerId);
             int myLikes = likes.first;
             int partnerLikes = likes.second;
@@ -140,6 +143,8 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             }
             if(partnerLikes == 0){
                 partnerLikesView.setVisibility(View.GONE);
+            }else {
+                ImageUtils.loadImage(partnerImg, partnerLikesProfileView, this);
             }
 
         }else {

@@ -7,6 +7,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,7 +21,7 @@ import java.util.List;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dtos.CommentItem;
-import com.android.tiki_taka.models.dtos.PartnerIdManager;
+import com.android.tiki_taka.models.dtos.PartnerDataManager;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.VideoPlayerActivity;
@@ -64,16 +65,19 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         ImageView myLikesView;
-        ImageView partnerLikesView;
+        ImageView partnerLikesProfileView;
+        FrameLayout partnerLikesView;
         TextView allCommentsView;
         RecyclerView commentRecyclerView;
         CommentAdapter commentAdapter;
+
 
         public ImageViewHolder(@NonNull View itemView, final ItemClickListener itemClickListener) {
             super(itemView);
             imageView = itemView.findViewById(R.id.imageview);
             myLikesView = itemView.findViewById(R.id.imageView31);
-            partnerLikesView = itemView.findViewById(R.id.imageView32);
+            partnerLikesProfileView = itemView.findViewById(R.id.imageView33);
+            partnerLikesView = itemView.findViewById(R.id.frameLayout9);
 
             allCommentsView = itemView.findViewById(R.id.all_comments);
             commentRecyclerView = itemView.findViewById(R.id.recyclerView3);
@@ -102,7 +106,8 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         TextView textView;
         TextView allCommentsView;
         ImageView myLikesView;
-        ImageView partnerLikesView;
+        ImageView partnerLikesProfileView;
+        FrameLayout partnerLikesView;
         RecyclerView commentRecyclerView;
         CommentAdapter commentAdapter;
 
@@ -110,7 +115,8 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             super(itemView);
             textView = itemView.findViewById(R.id.editBtn);
             myLikesView = itemView.findViewById(R.id.imageView31);
-            partnerLikesView = itemView.findViewById(R.id.imageView32);
+            partnerLikesProfileView = itemView.findViewById(R.id.imageView33);
+            partnerLikesView = itemView.findViewById(R.id.frameLayout9);
             allCommentsView = itemView.findViewById(R.id.all_comments);
             commentRecyclerView = itemView.findViewById(R.id.recyclerView3);
 
@@ -136,7 +142,8 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public static class VideoViewHolder extends RecyclerView.ViewHolder{
         ImageView imageView;
         ImageView myLikesView;
-        ImageView partnerLikesView;
+        ImageView partnerLikesProfileView;
+        FrameLayout partnerLikesView;
         ImageView playBtn;
         TextView allCommentsView;
         RecyclerView commentRecyclerView;
@@ -146,7 +153,8 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             super(itemView);
             imageView = itemView.findViewById(R.id.imageview);
             myLikesView = itemView.findViewById(R.id.imageView31);
-            partnerLikesView = itemView.findViewById(R.id.imageView32);
+            partnerLikesProfileView = itemView.findViewById(R.id.imageView33);
+            partnerLikesView = itemView.findViewById(R.id.frameLayout9);
             playBtn = itemView.findViewById(R.id.playBtn);
             allCommentsView = itemView.findViewById(R.id.all_comments);
             commentRecyclerView = itemView.findViewById(R.id.recyclerView3);
@@ -192,7 +200,8 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         StoryCard card = storyCards.get(position);
         int userId = SharedPreferencesHelper.getUserId(holder.itemView.getContext());
-        int partnerId = PartnerIdManager.getPartnerId();
+        int partnerId = PartnerDataManager.getPartnerId();
+        String partnerImg = PartnerDataManager.getPartnerImg();
         
         if (holder.getItemViewType() == IMAGE_TYPE){
             ImageViewHolder imageViewHolder = (ImageViewHolder) holder;
@@ -202,7 +211,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             //나와 상대방의 좋아요 상태 렌더링
             Pair<Integer, Integer> likes = LikesUtils.getLikesFor2Users(card, userId, partnerId);
-            renderLikes( imageViewHolder.myLikesView, imageViewHolder.partnerLikesView, likes);
+            renderLikes( imageViewHolder.myLikesView, imageViewHolder.partnerLikesView, imageViewHolder.partnerLikesProfileView, likes, partnerImg);
 
             // 비동기적으로 댓글 데이터 요청
             loadPreviewComments(card.getCardId(), imageViewHolder.commentAdapter);
@@ -214,7 +223,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             //나와 상대방의 좋아요 상태 렌더링
             Pair<Integer, Integer> likes = LikesUtils.getLikesFor2Users(card, userId, partnerId);
-            renderLikes( textViewHolder.myLikesView, textViewHolder.partnerLikesView, likes);
+            renderLikes(textViewHolder.myLikesView, textViewHolder.partnerLikesView, textViewHolder.partnerLikesProfileView, likes, partnerImg);
 
             // 비동기적으로 댓글 데이터 요청
             loadPreviewComments(card.getCardId(), textViewHolder.commentAdapter);
@@ -240,7 +249,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             //나와 상대방의 좋아요 상태 렌더링
             Pair<Integer, Integer> likes = LikesUtils.getLikesFor2Users(card, userId, partnerId);
-            renderLikes( videoViewHolder.myLikesView, videoViewHolder.partnerLikesView, likes);
+            renderLikes( videoViewHolder.myLikesView, videoViewHolder.partnerLikesView, videoViewHolder.partnerLikesProfileView, likes, partnerImg);
 
             // 비동기적으로 댓글 데이터 요청
             loadPreviewComments(card.getCardId(), videoViewHolder.commentAdapter);
@@ -269,7 +278,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         });
     }
 
-    private void renderLikes(ImageView myLikesImageView, ImageView partnerLikesImageView, Pair<Integer, Integer> likes){
+    private void renderLikes(ImageView myLikesImageView,FrameLayout partnerLikesView,  ImageView partnerLikesProfileView, Pair<Integer, Integer> likes, String partnerImg){
         int myLikes = likes.first;
         int partnerLikes = likes.second;
         if(myLikes == 0){
@@ -277,10 +286,11 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         }else if(myLikes == 1){
             ImageUtils.loadDrawableIntoView(myLikesImageView.getContext(), myLikesImageView, "fluent_emoji_flat_red_heart");
         }
+        ImageUtils.loadImage(partnerImg, partnerLikesProfileView, partnerLikesProfileView.getContext());
         if(partnerLikes == 0){
-            partnerLikesImageView.setVisibility(View.GONE);
+            partnerLikesView.setVisibility(View.GONE);
         } else if (partnerLikes == 1) {
-            partnerLikesImageView.setVisibility(View.VISIBLE);
+            partnerLikesView.setVisibility(View.VISIBLE);
         }
     }
 
