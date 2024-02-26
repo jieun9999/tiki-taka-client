@@ -108,8 +108,6 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             ImageView myLikesView = findViewById(R.id.imageView31);
             FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);
-            Log.d("storyCard.getImage()", storyCard.getImage());
-            Log.d(" cardImgView", String.valueOf(cardImgView));
             ImageUtils.loadImage(storyCard.getImage(), cardImgView, this);
 
             //파트너 아이디와 이미지 가져오기
