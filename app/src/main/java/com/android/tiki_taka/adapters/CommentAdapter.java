@@ -26,14 +26,17 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private ArrayList<CommentItem> commentItems;
     private int currentUserId;
     private static DeleteCommentListener deleteCommentListener;
+    private boolean showDeleteButton;
 
-    public CommentAdapter(ArrayList<CommentItem> commentItems, DeleteCommentListener deleteCommentListener) {
+    public CommentAdapter(ArrayList<CommentItem> commentItems, boolean showDeleteButton) {
         this.commentItems = commentItems;
-        this.deleteCommentListener = deleteCommentListener;
+        this.showDeleteButton = showDeleteButton;
     }
 
-    public CommentAdapter(ArrayList<CommentItem> commentItems) {
+    public CommentAdapter(ArrayList<CommentItem> commentItems, DeleteCommentListener deleteCommentListener, boolean showDeleteButton) {
         this.commentItems = commentItems;
+        this.deleteCommentListener = deleteCommentListener;
+        this.showDeleteButton = showDeleteButton;
     }
 
     @NonNull
@@ -52,12 +55,19 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         String relativeTime = TimeUtils.toRelativeTimeFromDb(comment.getCreatedAt());
         holder.createdAtTextView.setText(relativeTime);
 
-        currentUserId = SharedPreferencesHelper.getUserId(holder.itemView.getContext());
+        if(showDeleteButton){
+
+            currentUserId = SharedPreferencesHelper.getUserId(holder.itemView.getContext());
             if(comment.getUserId() == currentUserId){
                 holder.deleteCommentButton.setVisibility(View.VISIBLE);
             }else {
                 holder.deleteCommentButton.setVisibility(View.GONE);
             }
+
+        }else {
+            holder.deleteCommentButton.setVisibility(View.GONE);
+        }
+
 
     }
 

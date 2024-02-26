@@ -136,7 +136,7 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
         recyclerView = findViewById(R.id.commentRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         commentList = new ArrayList<>();
-        adapter = new CommentAdapter(commentList,this);
+        adapter = new CommentAdapter(commentList,this, true);
         recyclerView.setAdapter(adapter);
     }
 

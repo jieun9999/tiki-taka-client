@@ -95,7 +95,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             // commentRecyclerView 설정
             commentRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
-            commentAdapter = new CommentAdapter(new ArrayList<>());
+            commentAdapter = new CommentAdapter(new ArrayList<>(),false);
             commentRecyclerView.setAdapter(commentAdapter);
 
         }
@@ -133,7 +133,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             // commentRecyclerView 설정
             commentRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
-            commentAdapter = new CommentAdapter(new ArrayList<>());
+            commentAdapter = new CommentAdapter(new ArrayList<>(), false);
             commentRecyclerView.setAdapter(commentAdapter);
 
         }
@@ -172,7 +172,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             // commentRecyclerView 설정
             commentRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
-            commentAdapter = new CommentAdapter(new ArrayList<>());
+            commentAdapter = new CommentAdapter(new ArrayList<>(), false);
             commentRecyclerView.setAdapter(commentAdapter);
         }
     }
