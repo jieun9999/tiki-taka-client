@@ -104,7 +104,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             timeView.setText(outputDateString);
 
             // 본문
-            ImageView cardImgView = findViewById(R.id.imageview);
+            ImageView cardImgView = findViewById(R.id.thumbnailView);
             ImageView myLikesView = findViewById(R.id.imageView31);
             FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);

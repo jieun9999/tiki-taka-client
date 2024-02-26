@@ -31,7 +31,6 @@ import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.TimeUtils;
-import com.bumptech.glide.Glide;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -105,7 +104,7 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
             timeView.setText(outputDateString);
 
             // 본문
-            ImageView cardImgView = findViewById(R.id.imageview);
+            ImageView cardImgView = findViewById(R.id.thumbnailView);
             ImageView myLikesView = findViewById(R.id.imageView31);
             FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);

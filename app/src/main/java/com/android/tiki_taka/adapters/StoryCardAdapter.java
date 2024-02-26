@@ -74,7 +74,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         public ImageViewHolder(@NonNull View itemView, final ItemClickListener itemClickListener) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imageview);
+            imageView = itemView.findViewById(R.id.thumbnailView);
             myLikesView = itemView.findViewById(R.id.imageView31);
             partnerLikesProfileView = itemView.findViewById(R.id.imageView33);
             partnerLikesView = itemView.findViewById(R.id.frameLayout9);
@@ -151,7 +151,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         public VideoViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imageview);
+            imageView = itemView.findViewById(R.id.thumbnailView);
             myLikesView = itemView.findViewById(R.id.imageView31);
             partnerLikesProfileView = itemView.findViewById(R.id.imageView33);
             partnerLikesView = itemView.findViewById(R.id.frameLayout9);

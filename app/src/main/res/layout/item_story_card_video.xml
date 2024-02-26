@@ -14,7 +14,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/imageview"
+            android:id="@+id/thumbnailView"
             android:layout_width="match_parent"
             android:layout_height="400dp"
             android:scaleType="centerCrop" />
