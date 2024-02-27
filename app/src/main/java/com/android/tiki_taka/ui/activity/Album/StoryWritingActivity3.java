@@ -28,9 +28,47 @@ public class StoryWritingActivity3 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_writing3);
 
+        setupUIListeners();
+
+        recyclerView = findViewById(R.id.commentRecyclerView);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        Intent intent = getIntent();
+        // 동영상 인지 이미지 인지 확인하고 분기해서 렌더링
+        if (intent != null) {
+            TextView imageNumView = findViewById(R.id.textView35);
+
+            if(intent.hasExtra("selectedImages")){
+                selectedUris = intent.getParcelableArrayListExtra("selectedImages");
+                String imageNum = selectedUris.size() + "장";
+                imageNumView.setText(imageNum);
+
+            } else if (intent.hasExtra("selectedVideo")) {
+                selectedUris = intent.getParcelableArrayListExtra("selectedVideo");
+                imageNumView.setText("동영상");
+
+            }
+            adapter = new CommentInputAdapter(selectedUris);
+            recyclerView.setAdapter(adapter);
+            scrollToPosition = intent.getIntExtra("scrollToPosition", -1);
+            setScrollPosition(scrollToPosition);
+        }
+
+    }
+
+    private void setScrollPosition(int position){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.scrollToPosition(position);
+            }
+        },200);
+    }
+
+    private void setupUIListeners(){
         TextView cancelBtn = findViewById(R.id.textView33);
         TextView saveBtn = findViewById(R.id.textView34);
-        TextView imageNumView = findViewById(R.id.textView35);
         cancelBtn.setOnClickListener(v -> finish());
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,30 +82,5 @@ public class StoryWritingActivity3 extends AppCompatActivity {
             }
         });
 
-        recyclerView = findViewById(R.id.commentRecyclerView);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-
-        Intent intent = getIntent();
-        if (intent != null) {
-            selectedUris = intent.getParcelableArrayListExtra("selectedImages");
-            String imageNum = selectedUris.size() + "장";
-            imageNumView.setText(imageNum);
-        }
-        adapter = new CommentInputAdapter(selectedUris);
-        recyclerView.setAdapter(adapter);
-        scrollToPosition = intent.getIntExtra("scrollToPosition", -1);
-
-        setScrollPosition(scrollToPosition);
     }
-
-    private void setScrollPosition(int position){
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                recyclerView.scrollToPosition(position);
-            }
-        },200);
-    }
-
 }

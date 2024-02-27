@@ -7,14 +7,17 @@ import androidx.core.content.FileProvider;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +29,7 @@ public class SelectionActivity1 extends AppCompatActivity {
 
     private static final int PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE = 1 ;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
+    private static final int REQUEST_VIDEO_PICK = 3;
 
     private Uri imageUri; //카메라 앱이 전달받을 파일경로
     ArrayList<Uri> selectedUris = new ArrayList<>();
@@ -46,6 +50,10 @@ public class SelectionActivity1 extends AppCompatActivity {
         //메모
         ImageView memoIcon = findViewById(R.id.imageView38);
         memoIcon.setOnClickListener(v -> openNotePad());
+
+        //동영상
+        ImageView videoIcon = findViewById(R.id.imageView37);
+        videoIcon.setOnClickListener(v -> pickVideoFromGallery());
 
         ImageView xBtn = findViewById(R.id.imageView40);
         xBtn.setOnClickListener(v -> dismissActivity());
@@ -93,6 +101,13 @@ public class SelectionActivity1 extends AppCompatActivity {
         startActivity(intent);
     }
 
+    // 동영상을 갤러리에서 선택
+    private void pickVideoFromGallery(){
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("video/*");
+        startActivityForResult(intent, REQUEST_VIDEO_PICK);
+    }
+
     private void dismissActivity(){
         finish();
     }
@@ -134,6 +149,14 @@ public class SelectionActivity1 extends AppCompatActivity {
                 intent.putParcelableArrayListExtra("selectedUris", selectedUris);
                 startActivity(intent);
             }
+
+        } else if (requestCode == REQUEST_VIDEO_PICK && resultCode == RESULT_OK) {
+            selectedUris.clear();
+            Uri selectedVideoUri = data.getData();
+            selectedUris.add(selectedVideoUri);
+            Intent intent = new Intent(SelectionActivity1.this, StoryWritingActivity1.class);
+            intent.putParcelableArrayListExtra("selectedUris", selectedUris);
+            startActivity(intent);
 
         }
     }

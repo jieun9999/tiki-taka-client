@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 
 import java.util.ArrayList;
 
@@ -52,7 +53,21 @@ public class StoryWritingAdapter extends RecyclerView.Adapter<StoryWritingAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Uri uri = uriList.get(position);
-        ImageUtils.loadImage(String.valueOf(uri), holder.imageView, context);
+
+        //onBindViewHolder 메서드 내에서 Uri의 타입을 확인하고,
+        // 해당하는 처리 방식(이미지 로드 또는 동영상 썸네일 추출 및 로드)을 적용
+        String mimeType = context.getContentResolver().getType(uri);
+        if (mimeType != null) {
+            if (mimeType.startsWith("video/")) {
+                // 동영상 썸네일 처리
+                VideoUtils.loadVideoThumbnail(context, uri, holder.imageView);
+
+            } else if (mimeType.startsWith("image/")) {
+                // 이미지 처리
+                ImageUtils.loadImage(String.valueOf(uri), holder.imageView, context);
+            }
+        }
+
         holder.pencilIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

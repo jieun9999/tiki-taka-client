@@ -1,5 +1,7 @@
 package com.android.tiki_taka.adapters;
 
+import android.content.ContentResolver;
+import android.content.Context;
 import android.net.Uri;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.CommentText;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.UriUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 
 import java.util.ArrayList;
 
@@ -45,14 +49,19 @@ public class CommentInputAdapter extends RecyclerView.Adapter<CommentInputAdapte
     // RecyclerView는 스크롤 등의 사용자 액션에 의해 새로운 아이템이 화면에 표시되어야 할 때마다 onBindViewHolder를 호출
     // 두 가지 주요 매개변수 : ViewHolder, position
     public void onBindViewHolder(@NonNull CommentInputAdapter.CommentViewHolder holder, int position) {
-
         // 이전에 설정된 TextWatcher를 제거한다
         if(holder.textWatcher != null){
             holder.storyComment.removeTextChangedListener(holder.textWatcher);
         }
 
-        Uri storyImage = selectedUris.get(position);
-        ImageUtils.loadImage(storyImage.toString(), holder.storyImage, holder.itemView.getContext());
+        Uri itemUri = selectedUris.get(position);
+        if(UriUtils.isVideoUri(itemUri, holder.itemView.getContext())){
+            // 동영상 URI인 경우 썸네일을 Glide를 사용하여 렌더링
+            VideoUtils.loadVideoThumbnail(holder.itemView.getContext(), itemUri, holder.storyImage);
+        } else if (UriUtils.isImageUri(itemUri, holder.itemView.getContext())){
+            // 이미지 URI인 경우 이미지를 그대로 렌더링
+            ImageUtils.loadImage(itemUri.toString(), holder.storyImage, holder.itemView.getContext());
+        }
 
         // 새 TextWatcher 인스턴스 생성
         TextWatcher textWatcher = new TextWatcher() {
@@ -75,7 +84,6 @@ public class CommentInputAdapter extends RecyclerView.Adapter<CommentInputAdapte
 
         // EditText에 TextWatcher 추가
         holder.storyComment.addTextChangedListener(textWatcher);
-
         // ViewHolder의 textWatcher 필드에 현재 TextWatcher 저장
         holder.textWatcher = textWatcher;
     }

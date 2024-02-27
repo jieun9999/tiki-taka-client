@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,12 +19,13 @@ import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.android.tiki_taka.utils.UriUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,28 +65,15 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
-        thumbnailView = findViewById(R.id.imageView26);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
+        thumbnailView = findViewById(R.id.imageView26);
         renderThumbnail(thumbnailView);
-        locationView = findViewById(R.id.textView28);
-        titleView = findViewById(R.id.textView27);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
 
-        TextView cancelBtn = findViewById(R.id.textView33);
-        cancelBtn.setOnClickListener(v -> finish());
-        TextView uploadBtn = findViewById(R.id.textView34);
-        uploadBtn.setOnClickListener(v -> savePhotoCards());
-        ImageView editBtn = findViewById(R.id.memoView);
-        editBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               Bundle bundle = temporarystoryWritingBundle();
-               IntentHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE_STORY_FOLDER_EDIT);
-            }
-        });
+        setupUIListeners();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -96,6 +85,8 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                     storyTitle = extras.getString("storyTitle");
                     location = extras.getString("location");
 
+                    locationView = findViewById(R.id.textView28);
+                    titleView = findViewById(R.id.textView27);
                     ImageUtils.loadImage(editedThumbnailUri, thumbnailView, this);
                     titleView.setText(storyTitle);
                     locationView.setText(location);
@@ -106,14 +97,25 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
+    // uri를 보고 동영상인지 이미지 인지 판별하여 다른 방법으로 렌더링함
     private void renderThumbnail(ImageView imageView){
+
         if(selectedUris != null && !selectedUris.isEmpty()){
             firstUri = selectedUris.get(0);
-            ImageUtils.loadImage(firstUri.toString(),imageView, this);
+
+                if(UriUtils.isImageUri(firstUri, this)){
+                    // MIME 타입이 이미지인 경우
+                    ImageUtils.loadImage(firstUri.toString(), imageView, this);
+
+                }else if(UriUtils.isVideoUri(firstUri, this)){
+                    // MIME 타입이 동영상인 경우
+                    VideoUtils.loadVideoThumbnail(this, firstUri, imageView);
+
+                }
+
+
         }
-
     }
-
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
         insertStoryCardsInDB();
@@ -126,6 +128,9 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
         // 아예, 편집을 하지 않은 경우와 다음 액티비티에서 편집을 해온 경우의 차이
         String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
+
+        //스토리 게시할때, 동영상 인지 이미지 인지에 따라 나눠야 할듯?
+        // thumbnailUri를 파일로 추출할 것인지의 문제임...
         cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri, comments);
     }
 
@@ -188,11 +193,36 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     @Override
     public void pencilIconClicked(ArrayList<Uri> uriList, int position) {
+
+        ArrayList<Uri> imageUris = new ArrayList<>();
+        ArrayList<Uri> videoUri = new ArrayList<>();
         Intent intent = new Intent(this, StoryWritingActivity3.class);
-        // UI 작업과 관련된 맥락에서는 액티비티 컨텍스트(getApplicationContext() 보다)가 액티비티의 생명 주기를 반영할 수 있어 더 적합
-        // this는 클래스의 어느 위치에서든 사용할 수 있으며 this 키워드는 현재 인스턴스를 참조
-        intent.putParcelableArrayListExtra("selectedImages", uriList);
+
+        for (Uri uri : uriList) {
+                if (UriUtils.isImageUri(uri, this)) {
+                    imageUris.add(uri);
+                    intent.putParcelableArrayListExtra("selectedImages", imageUris);
+                } else if (UriUtils.isVideoUri(uri, this)) {
+                    videoUri.add(uri);
+                    intent.putParcelableArrayListExtra("selectedVideo", videoUri);
+                }
+        }
         intent.putExtra("scrollToPosition", position);
         startActivityForResult(intent, REQUEST_CODE_IMAGE_COMMENT_INPUT);
+    }
+
+    private void setupUIListeners(){
+        TextView cancelBtn = findViewById(R.id.textView33);
+        cancelBtn.setOnClickListener(v -> finish());
+        TextView uploadBtn = findViewById(R.id.textView34);
+        uploadBtn.setOnClickListener(v -> savePhotoCards());
+        ImageView editBtn = findViewById(R.id.memoView);
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = temporarystoryWritingBundle();
+                IntentHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE_STORY_FOLDER_EDIT);
+            }
+        });
     }
 }
