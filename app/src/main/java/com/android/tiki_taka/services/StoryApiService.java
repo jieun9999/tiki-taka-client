@@ -30,8 +30,8 @@ public interface StoryApiService {
     @GET("Story/getStoryCards.php")
     Call<StoryCardsResponse> getStoryCards(@Query("folderId") int folderId);
 
-    @POST("Story/saveStoryCards.php")
-    Call<ResponseBody> saveStoryCards(@Body StoryCardRequest cardRequest);
+    @POST("Story/saveImageStoryCards.php")
+    Call<ResponseBody> saveImageStoryCards(@Body StoryCardRequest cardRequest);
 
     @GET("Story/getCardDetails.php")
     Call<StoryCard> getCardDetails(@Query("cardId") int cardId);
@@ -51,6 +51,7 @@ public interface StoryApiService {
     @POST("Story/updateLikeStatus.php")
     Call<ApiResponse> updateLikeStatus(@Body LikeStatusRequest likeStatusRequest);
 
-
+    @POST("Story/saveMemoStoryCard.php")
+    Call<ResponseBody> saveMemoStoryCard(@Body StoryCardRequest cardRequest);
 
 }

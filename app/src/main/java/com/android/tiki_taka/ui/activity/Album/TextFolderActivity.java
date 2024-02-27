@@ -135,7 +135,7 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-        thumbTextView.setText(storyFolder.getMemo());
+        thumbTextView.setText(storyFolder.getTitle());
 
         String message = storyFolderResponse.getMessage();
         Log.d("success",message);

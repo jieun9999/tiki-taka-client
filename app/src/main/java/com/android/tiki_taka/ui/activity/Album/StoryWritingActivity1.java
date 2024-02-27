@@ -130,7 +130,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     private void insertStoryCardsInDB(){
-        service.saveStoryCards(cardRequest).enqueue(new Callback<ResponseBody>() {
+        service.saveImageStoryCards(cardRequest).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 ProcessInsertingCardsResponse(response);

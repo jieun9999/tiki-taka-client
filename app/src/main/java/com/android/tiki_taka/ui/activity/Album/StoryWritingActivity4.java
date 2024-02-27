@@ -2,20 +2,41 @@ package com.android.tiki_taka.ui.activity.Album;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.dtos.StoryCardRequest;
+import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class StoryWritingActivity4 extends AppCompatActivity {
+    StoryApiService service;
+    int userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_writing4);
+
+        Retrofit retrofit = RetrofitClient.getClient();
+        service = retrofit.create(StoryApiService.class);
+        userId = SharedPreferencesHelper.getUserId(this);
 
         String currentDate = getIntent().getStringExtra("currentDate");
         TextView toolbarDateView = findViewById(R.id.textView35);
@@ -24,15 +45,76 @@ public class StoryWritingActivity4 extends AppCompatActivity {
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener( v -> finish());
         TextView uploadBtn = findViewById(R.id.textView34);
+
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent returnIntent = new Intent();
-                returnIntent.putExtra("result", "여기에 결과값 입력");
-                setResult(Activity.RESULT_OK, returnIntent);
-                finish();
+                StoryCardRequest cardRequest = createStoryCardRequestFromInput();
+                uploadMemoToServer(cardRequest);
             }
         });
+    }
 
+    private StoryCardRequest createStoryCardRequestFromInput(){
+        EditText noteEditTextView = findViewById(R.id.locationEditText);
+        String memoText = noteEditTextView.getText().toString();
+        String title = makeTitleFromTexts(memoText);
+        EditText locationView = findViewById(R.id.locationEditText);
+        String location = locationView.getText().toString();
+        StoryCardRequest cardRequest = new StoryCardRequest(userId, memoText,title, location);
+        return cardRequest;
+    }
+    private String makeTitleFromTexts(String memoText){
+        String title;
+        if (memoText.length() > 15) {
+            title = memoText.substring(0, 15);
+        } else {
+            title = memoText;
+        }
+        return title;
+    }
+    private void uploadMemoToServer(StoryCardRequest cardRequest){
+        service.saveMemoStoryCard(cardRequest).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                ProcessInsertingCardsResponse(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void ProcessInsertingCardsResponse( Response<ResponseBody> response){
+        if(response.isSuccessful()){
+            handleResponse(response);
+
+        } else {
+            // 응답 실패
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
+
+    private void handleResponse(Response<ResponseBody> response){
+        if (response.isSuccessful()) {
+            try {
+                String message = parseResponseData(response);
+                Log.d("success",message);
+
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+                Log.e("Error","catch문 오류 발생");
+            }
+        } else {
+            Log.e("Error","서버 응답 오류");
+        }
+    }
+
+    private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
+        String responseJson = response.body().string();
+        JSONObject jsonObject = new JSONObject(responseJson);
+        return jsonObject.getString("message");
     }
 }

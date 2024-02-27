@@ -26,7 +26,6 @@ public class SelectionActivity1 extends AppCompatActivity {
 
     private static final int PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE = 1 ;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
-    private static final int REQUEST_NOTEPAD = 3;
 
     private Uri imageUri; //카메라 앱이 전달받을 파일경로
     ArrayList<Uri> selectedUris = new ArrayList<>();
@@ -91,7 +90,7 @@ public class SelectionActivity1 extends AppCompatActivity {
         String currentDate = dateFormat.format(new Date());
         Intent intent = new Intent(this, StoryWritingActivity4.class);
         intent.putExtra("currentDate", currentDate);
-        startActivityForResult(intent, REQUEST_NOTEPAD);
+        startActivity(intent);
     }
 
     private void dismissActivity(){
@@ -136,9 +135,6 @@ public class SelectionActivity1 extends AppCompatActivity {
                 startActivity(intent);
             }
 
-        } else if (requestCode == REQUEST_NOTEPAD && resultCode == RESULT_OK && data != null) {
-            String result = data.getStringExtra("result");
-            
         }
     }
 

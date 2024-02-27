@@ -107,7 +107,7 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         } else if (holder.getItemViewType() == TEXT_TYPE) {
             TextViewHolder textViewHolder = (TextViewHolder) holder;
-            textViewHolder.memo.setText(folder.getMemo());
+            textViewHolder.memo.setText(folder.getTitle());
             String inputDateString = folder.getCreatedAt();
             try {
                 String outputDateString = TimeUtils.convertDateString(inputDateString);

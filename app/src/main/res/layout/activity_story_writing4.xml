@@ -15,10 +15,11 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/noteEditText"
+        android:id="@+id/memoEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
+        android:gravity="top"
         android:hint="무슨 생각하세요?"
         android:minHeight="400dp"
         android:padding="16dp"
@@ -26,6 +27,23 @@
         android:textColor="@color/black"
         android:textColorHint="#9E9E9E"
         android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locationEditText" />
+
+    <EditText
+        android:id="@+id/locationEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:hint="장소 입력하기"
+        android:minHeight="50dp"
+        android:padding="16dp"
+        android:scrollbars="vertical"
+        android:textColor="@color/grey"
+        android:textColorHint="#9E9E9E"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"

@@ -22,6 +22,7 @@ public class StoryWritingActivity3 extends AppCompatActivity {
     CommentInputAdapter adapter;
     int scrollToPosition;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
