@@ -20,6 +20,7 @@ import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -116,7 +117,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
         insertStoryCardsInDB();
-        InitializeStackAndNavigateToAlbumFragment();
     }
 
     private void convertUrisToStringListAndWrap(){
@@ -147,6 +147,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void ProcessInsertingCardsResponse( Response<ResponseBody> response){
         if(response.isSuccessful()){
             handleResponse(response);
+            InitializeStack.navigateToAlbumFragment(this);
 
         } else {
             // 응답 실패
@@ -175,15 +176,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         String responseJson = response.body().string();
         JSONObject jsonObject = new JSONObject(responseJson);
         return jsonObject.getString("message");
-    }
-
-    private void InitializeStackAndNavigateToAlbumFragment(){
-        // (HomeActivity.class) AlbumFragment로 이동면서 스택 초기화
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        // HomeActivity를 새 태스크로 시작하고, 이전에 있던 모든 액티비티를 클리어
-        intent.putExtra("OPEN_FRAGMENT", "ALBUM_FRAGMENT"); // 추가 정보
-        startActivity(intent);
     }
 
     private Bundle temporarystoryWritingBundle(){

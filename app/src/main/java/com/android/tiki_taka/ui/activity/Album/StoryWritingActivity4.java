@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dtos.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -56,18 +57,20 @@ public class StoryWritingActivity4 extends AppCompatActivity {
     }
 
     private StoryCardRequest createStoryCardRequestFromInput(){
-        EditText noteEditTextView = findViewById(R.id.locationEditText);
+        EditText noteEditTextView = findViewById(R.id.memoEditText);
         String memoText = noteEditTextView.getText().toString();
         String title = makeTitleFromTexts(memoText);
         EditText locationView = findViewById(R.id.locationEditText);
         String location = locationView.getText().toString();
         StoryCardRequest cardRequest = new StoryCardRequest(userId, memoText,title, location);
+        Log.d("memoText", memoText);
+        Log.d("title", title);
         return cardRequest;
     }
     private String makeTitleFromTexts(String memoText){
         String title;
-        if (memoText.length() > 15) {
-            title = memoText.substring(0, 15);
+        if (memoText.length() > 20) {
+            title = memoText.substring(0, 20);
         } else {
             title = memoText;
         }
@@ -102,6 +105,7 @@ public class StoryWritingActivity4 extends AppCompatActivity {
             try {
                 String message = parseResponseData(response);
                 Log.d("success",message);
+                InitializeStack.navigateToAlbumFragment(this);
 
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
