@@ -23,6 +23,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Album.LocalVideoPlayerActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.activity.Album.YoutubeVideoPlayerActivity"
+            android:exported="true" />
+        <activity
             android:name=".ui.activity.Album.StoryWritingActivity4"
             android:exported="true"
             android:theme="@style/NoActionBar" />
@@ -58,9 +64,6 @@
             android:name=".ui.activity.Album.StoryWritingActivity1"
             android:exported="true"
             android:theme="@style/NoActionBar" />
-        <activity
-            android:name=".ui.activity.Album.VideoPlayerActivity"
-            android:exported="true" />
         <activity
             android:name=".ui.activity.Album.SelectionActivity1"
             android:exported="true" />

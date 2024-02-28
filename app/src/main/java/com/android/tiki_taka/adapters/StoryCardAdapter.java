@@ -25,7 +25,8 @@ import com.android.tiki_taka.models.dtos.CommentItem;
 import com.android.tiki_taka.models.dtos.PartnerDataManager;
 import com.android.tiki_taka.models.dtos.StoryCard;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.ui.activity.Album.VideoPlayerActivity;
+import com.android.tiki_taka.ui.activity.Album.LocalVideoPlayerActivity;
+import com.android.tiki_taka.ui.activity.Album.YoutubeVideoPlayerActivity;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -231,12 +232,12 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         } else if (holder.getItemViewType() == VIDEO_TYPE) {
             VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
-            String videoThumbnailUrl = card.getVideoThumbnail();
+            String videoThumbnail = card.getVideoThumbnail();
 
-            if(videoThumbnailUrl.startsWith("https://")){
-                ImageUtils.loadImage(videoThumbnailUrl,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
+            if(videoThumbnail.startsWith("https://")){
+                ImageUtils.loadImage(videoThumbnail,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
 
-            } else if (videoThumbnailUrl.startsWith("file://")) {
+            } else if (videoThumbnail.startsWith("file://")) {
                 // 크롭한 사진은 화질이 너무 저하되서 글라이드 동영상 uri로 렌더링
                 Uri video = Uri.parse(card.getVideo());
                 VideoUtils.loadVideoThumbnail( videoViewHolder.itemView.getContext() , video, videoViewHolder.imageView);
@@ -245,18 +246,23 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             videoViewHolder.playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(videoViewHolder.itemView.getContext(), VideoPlayerActivity.class);
 
-                    if(videoThumbnailUrl.startsWith("https://")){
-
+                    if(videoThumbnail.startsWith("https://")){
+                        //웹 기반 동영상 경로
+                        Intent intent = new Intent(videoViewHolder.itemView.getContext(), YoutubeVideoPlayerActivity.class);
                         String videoId = VideoUtils.extractYoutubeVideoId(card.getVideo());
                         intent.putExtra("VIDEO_ID", videoId);
 
-                    } else if (videoThumbnailUrl.startsWith("file://")) {
+                        videoViewHolder.itemView.getContext().startActivity(intent);
 
+                    } else if (videoThumbnail.startsWith("file://")) {
+                        //로컬 기반 동영상 경로
+                        Intent intent = new Intent(videoViewHolder.itemView.getContext(), LocalVideoPlayerActivity.class);
+                        String videoUriString = card.getVideo();
+                        intent.putExtra("videoUriString", videoUriString);
+
+                        videoViewHolder.itemView.getContext().startActivity(intent);
                     }
-
-                    videoViewHolder.itemView.getContext().startActivity(intent);
                 }
             });
 
