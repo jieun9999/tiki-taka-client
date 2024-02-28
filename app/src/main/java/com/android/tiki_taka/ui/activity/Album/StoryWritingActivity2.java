@@ -23,6 +23,8 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.ThumbnailCheckAdapter;
 import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.UriUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -72,11 +74,16 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         if (extras != null) {
             folderId = extras.getInt("folderId");
             uncroppedimageUriString = extras.getString("thumbnailUri");
-            ImageUtils.loadImage(uncroppedimageUriString, imageViewToCrop, this);
 
+            // 받아온 uncroppedimageUriString가 이미지 형식 or 동영상 형식 인지 구분하여 초기 이미지 로드하기
             sourceUri = Uri.parse(uncroppedimageUriString);
-            destinationUri = createUniqueDestinationUri();
+            if (UriUtils.isVideoUri(sourceUri, this)) {
+                VideoUtils.loadVideoThumbnail(this, sourceUri, imageViewToCrop);
 
+            } else if (UriUtils.isImageUri(sourceUri, this)) {
+                ImageUtils.loadImage(uncroppedimageUriString, imageViewToCrop, this);
+            }
+            destinationUri = createUniqueDestinationUri();
             selectedUris = extras.getParcelableArrayList("selectedUris");
         }
 
@@ -123,7 +130,13 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
             }
         });
 
-       imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
+        if (UriUtils.isVideoUri(sourceUri, this)) {
+            sourceUri = VideoUtils.getThumbNailUri(this, sourceUri);
+            imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
+
+        } else if (UriUtils.isImageUri(sourceUri, this)) {
+            imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
+        }
 
     }
 
@@ -140,7 +153,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     }
 
     private void UCorpSettings(Uri sourceUri, Uri destinationUri){
-
         int maxWidthPx = dpToPx(412); // 412dp를 픽셀로 변환
         int maxHeightPx = dpToPx(200); // 200dp를 픽셀로 변환
 

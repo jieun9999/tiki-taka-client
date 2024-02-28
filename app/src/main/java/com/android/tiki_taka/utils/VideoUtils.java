@@ -4,12 +4,17 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import android.net.Uri;
 import android.widget.ImageView;
+
+import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
 
@@ -38,6 +43,56 @@ public class VideoUtils {
                 .load(uri)
                 .thumbnail(0.1f) // 썸네일의 크기를 지정
                 .into(imageView);
+    }
+
+    // video Uri를 가지고 썸네일 이미지를 Uri 형식으로 추출하는 메서드
+    public static Uri getThumbNailUri(Context context, Uri videoUri){
+            // 썸네일 추출
+            Bitmap thumbnail = extractThumbnail(context, videoUri);
+            if (thumbnail == null) {
+                // 썸네일 추출 실패 처리
+                return null;
+            }
+
+            // 썸네일을 임시 파일로 저장
+            File thumbnailFile = saveThumbnailToFile(context, thumbnail);
+            if (thumbnailFile == null) {
+                // 파일 저장 실패 처리
+                return null;
+            }
+            return  Uri.fromFile(thumbnailFile);
+    }
+
+
+    // 비디오 Uri에서 썸네일 추출
+    private static Bitmap extractThumbnail(Context context, Uri videoUri) {
+        Bitmap thumbnail = null;
+        try {
+            Long videoId = Long.parseLong(videoUri.getLastPathSegment());
+            thumbnail = MediaStore.Video.Thumbnails.getThumbnail(
+                    context.getContentResolver(),
+                    videoId,
+                    MediaStore.Video.Thumbnails.MINI_KIND,
+                    null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return thumbnail;
+    }
+
+    // 썸네일을 파일로 저장
+    private static File saveThumbnailToFile(Context context, Bitmap thumbnail) {
+        File thumbnailFile = null;
+        try {
+            thumbnailFile = new File(context.getExternalCacheDir(), "temp_thumbnail.jpg");
+            FileOutputStream fos = new FileOutputStream(thumbnailFile);
+            thumbnail.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return thumbnailFile;
     }
 
 
