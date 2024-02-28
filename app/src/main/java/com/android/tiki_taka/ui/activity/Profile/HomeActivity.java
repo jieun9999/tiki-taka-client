@@ -18,7 +18,6 @@ import com.android.tiki_taka.ui.fragment.AlarmFragment;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.ui.fragment.ChatFragment;
 import com.android.tiki_taka.ui.fragment.HomeFragment;
-import com.android.tiki_taka.ui.fragment.VideochatFragment;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -40,7 +39,6 @@ public class HomeActivity extends AppCompatActivity {
     private AlbumFragment albumFragment;
     private ChatFragment chatFragment;
     private AlarmFragment alarmFragment;
-    private VideochatFragment videochatFragment;
     ProfileApiService service;
     int userId; // 유저 식별 정보
 
@@ -62,7 +60,6 @@ public class HomeActivity extends AppCompatActivity {
         albumFragment = new AlbumFragment();
         chatFragment = new ChatFragment();
         alarmFragment = new AlarmFragment();
-        videochatFragment = new VideochatFragment();
 
         // 인텐트에서 추가 정보 확인
         String openFragment = getIntent().getStringExtra("OPEN_FRAGMENT");
@@ -100,8 +97,6 @@ public class HomeActivity extends AppCompatActivity {
                 selectedFragment = chatFragment;
             } else if (menuItem.getItemId() == R.id.alarm_menu) {
                 selectedFragment = alarmFragment;
-            }else if (menuItem.getItemId() == R.id.video_menu){
-                selectedFragment = videochatFragment;
             }
 
             //선택된 프래그먼트(selectedFragment)로 실제 프래그먼트 전환을 수행하는 코드

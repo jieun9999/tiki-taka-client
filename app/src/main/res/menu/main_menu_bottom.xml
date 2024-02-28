@@ -21,8 +21,4 @@
         android:icon="@drawable/baseline_access_alarm_24"
         android:title="알림" />
 
-    <item
-        android:id="@+id/video_menu"
-        android:icon="@drawable/baseline_video_chat_24"
-        android:title="화상회의" />
 </menu>
