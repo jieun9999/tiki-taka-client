@@ -2,6 +2,7 @@ package com.android.tiki_taka.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -230,19 +231,31 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         } else if (holder.getItemViewType() == VIDEO_TYPE) {
             VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
-            String videoId = VideoUtils.extractYoutubeVideoId(card.getVideo());
-            String thumbnailUrl = "https://img.youtube.com/vi/" + videoId + "/0.jpg"; // 썸네일 URL 생성
+            String videoThumbnailUrl = card.getVideoThumbnail();
 
-            Glide.with(videoViewHolder.itemView.getContext())
-                    .asBitmap()
-                    .load(thumbnailUrl)
-                    .into(videoViewHolder.imageView);
+            if(videoThumbnailUrl.startsWith("https://")){
+                ImageUtils.loadImage(videoThumbnailUrl,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
+
+            } else if (videoThumbnailUrl.startsWith("file://")) {
+                // 크롭한 사진은 화질이 너무 저하되서 글라이드 동영상 uri로 렌더링
+                Uri video = Uri.parse(card.getVideo());
+                VideoUtils.loadVideoThumbnail( videoViewHolder.itemView.getContext() , video, videoViewHolder.imageView);
+            }
 
             videoViewHolder.playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(videoViewHolder.itemView.getContext(), VideoPlayerActivity.class);
-                    intent.putExtra("VIDEO_ID", videoId);
+
+                    if(videoThumbnailUrl.startsWith("https://")){
+
+                        String videoId = VideoUtils.extractYoutubeVideoId(card.getVideo());
+                        intent.putExtra("VIDEO_ID", videoId);
+
+                    } else if (videoThumbnailUrl.startsWith("file://")) {
+
+                    }
+
                     videoViewHolder.itemView.getContext().startActivity(intent);
                 }
             });
