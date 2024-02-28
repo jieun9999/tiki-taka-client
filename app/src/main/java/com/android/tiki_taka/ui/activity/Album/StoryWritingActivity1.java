@@ -118,7 +118,12 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
-        insertStoryCardsInDB();
+        if(UriUtils.isImageUri(firstUri, this)){
+            insertImageStoryCardsInDB();
+        }else if(UriUtils.isVideoUri(firstUri, this)) {
+            insertVideoStoryCardInDB();
+        }
+
     }
 
     private void convertUrisToStringListAndWrap(){
@@ -129,13 +134,26 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         // 아예, 편집을 하지 않은 경우와 다음 액티비티에서 편집을 해온 경우의 차이
         String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
 
-        //스토리 게시할때, 동영상 인지 이미지 인지에 따라 나눠야 할듯?
-        // thumbnailUri를 파일로 추출할 것인지의 문제임...
         cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri, comments);
     }
 
-    private void insertStoryCardsInDB(){
+    private void insertImageStoryCardsInDB(){
         service.saveImageStoryCards(cardRequest).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                ProcessInsertingCardsResponse(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                //네트워크 오류 처리
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void insertVideoStoryCardInDB(){
+        service.saveVideoStoryCard(cardRequest).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 ProcessInsertingCardsResponse(response);

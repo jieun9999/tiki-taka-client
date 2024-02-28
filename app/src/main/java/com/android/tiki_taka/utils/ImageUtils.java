@@ -64,6 +64,9 @@ public class ImageUtils {
                     .load(imageUri)
                     .into(imageView);
         }
+        // file:///storage/emulated/0/Android/data/com.android.tiki_taka/cache/temp_thumbnail.jpg
+        // ex.  안드로이드 기기 내부 스토리지에 있는 로컬 파일의 경로
+
     }
 
     public static void loadDrawableIntoView(Context context, ImageView imageView, String drawableName) {

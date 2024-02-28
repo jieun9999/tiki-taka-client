@@ -36,6 +36,9 @@ public interface StoryApiService {
     @POST("Story/saveMemoStoryCard.php")
     Call<ResponseBody> saveMemoStoryCard(@Body StoryCardRequest cardRequest);
 
+   @POST("Story/saveVideoStoryCard.php")
+   Call<ResponseBody> saveVideoStoryCard(@Body StoryCardRequest cardRequest);
+
     @GET("Story/getCardDetails.php")
     Call<StoryCard> getCardDetails(@Query("cardId") int cardId);
 
