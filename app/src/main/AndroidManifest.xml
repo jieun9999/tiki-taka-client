@@ -47,7 +47,8 @@
         <activity
             android:name=".ui.activity.Album.StoryWritingActivity3"
             android:exported="true"
-            android:theme="@style/NoActionBar" />
+            android:theme="@style/NoActionBar"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".ui.activity.Album.TextFolderActivity"
             android:exported="true"

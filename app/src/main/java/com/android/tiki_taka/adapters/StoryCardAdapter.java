@@ -237,7 +237,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             if(videoThumbnail.startsWith("https://")){
                 ImageUtils.loadImage(videoThumbnail,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
 
-            } else if (videoThumbnail.startsWith("file://")) {
+            } else {
                 // 크롭한 사진은 화질이 너무 저하되서 글라이드 동영상 uri로 렌더링
                 Uri video = Uri.parse(card.getVideo());
                 VideoUtils.loadVideoThumbnail( videoViewHolder.itemView.getContext() , video, videoViewHolder.imageView);
