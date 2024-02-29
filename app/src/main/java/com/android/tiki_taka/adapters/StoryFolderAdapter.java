@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.StoryFolder;
+import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.utils.TimeUtils;
 import com.bumptech.glide.Glide;
 

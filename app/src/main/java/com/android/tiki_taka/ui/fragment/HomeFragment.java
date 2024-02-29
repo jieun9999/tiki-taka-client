@@ -28,10 +28,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.HomeProfiles;
-import com.android.tiki_taka.models.dtos.PartnerDataManager;
-import com.android.tiki_taka.models.dtos.PartnerProfile;
-import com.android.tiki_taka.models.dtos.UserProfile;
+import com.android.tiki_taka.models.dto.HomeProfiles;
+import com.android.tiki_taka.models.dto.PartnerDataManager;
+import com.android.tiki_taka.models.dto.PartnerProfile;
+import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.TimeUtils;

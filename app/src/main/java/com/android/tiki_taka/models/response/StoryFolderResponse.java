@@ -1,6 +1,6 @@
-package com.android.tiki_taka.models.responses;
+package com.android.tiki_taka.models.response;
 
-import com.android.tiki_taka.models.dtos.StoryFolder;
+import com.android.tiki_taka.models.dto.StoryFolder;
 
 public class StoryFolderResponse {
     private boolean success;

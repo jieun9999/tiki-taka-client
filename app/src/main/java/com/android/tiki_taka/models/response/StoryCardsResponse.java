@@ -1,6 +1,6 @@
-package com.android.tiki_taka.models.responses;
+package com.android.tiki_taka.models.response;
 
-import com.android.tiki_taka.models.dtos.StoryCard;
+import com.android.tiki_taka.models.dto.StoryCard;
 
 import java.util.List;
 

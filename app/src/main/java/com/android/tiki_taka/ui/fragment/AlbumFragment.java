@@ -11,13 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryFolderAdapter;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.StoryFolder;
-import com.android.tiki_taka.models.responses.StoryFoldersResponse;
+import com.android.tiki_taka.models.dto.StoryFolder;
+import com.android.tiki_taka.models.response.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.SelectionActivity1;
 import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;

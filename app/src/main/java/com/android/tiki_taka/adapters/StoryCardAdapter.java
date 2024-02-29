@@ -21,9 +21,9 @@ import java.util.List;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.CommentItem;
-import com.android.tiki_taka.models.dtos.PartnerDataManager;
-import com.android.tiki_taka.models.dtos.StoryCard;
+import com.android.tiki_taka.models.dto.CommentItem;
+import com.android.tiki_taka.models.dto.PartnerDataManager;
+import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.ui.activity.Album.LocalVideoPlayerActivity;
 import com.android.tiki_taka.ui.activity.Album.YoutubeVideoPlayerActivity;

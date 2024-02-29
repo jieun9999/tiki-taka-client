@@ -1,5 +1,5 @@
 package com.android.tiki_taka.services;
-import com.android.tiki_taka.models.dtos.HomeProfiles;
+import com.android.tiki_taka.models.dto.HomeProfiles;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;

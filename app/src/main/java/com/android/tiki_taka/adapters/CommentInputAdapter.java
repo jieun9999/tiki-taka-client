@@ -1,7 +1,5 @@
 package com.android.tiki_taka.adapters;
 
-import android.content.ContentResolver;
-import android.content.Context;
 import android.net.Uri;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.CommentText;
+import com.android.tiki_taka.models.dto.CommentText;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.UriUtils;
 import com.android.tiki_taka.utils.VideoUtils;

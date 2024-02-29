@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.StoryCardRequest;
+import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.RetrofitClient;

@@ -55,5 +55,7 @@ dependencies {
     implementation ("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
     // 사진 확대 후 크롭 라이브러리
     implementation ("com.github.yalantis:ucrop:2.2.8-native")
+    // 바텀 시트 다이얼로그 라이브러리
+    implementation ("com.google.android.material:material:1.11.0")
 
 }

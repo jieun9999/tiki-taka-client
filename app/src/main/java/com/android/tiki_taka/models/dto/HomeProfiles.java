@@ -1,4 +1,4 @@
-package com.android.tiki_taka.models.dtos;
+package com.android.tiki_taka.models.dto;
 
 public class HomeProfiles {
     private UserProfile userProfile;

@@ -2,7 +2,7 @@ package com.android.tiki_taka.utils;
 
 import android.util.Pair;
 
-import com.android.tiki_taka.models.dtos.StoryCard;
+import com.android.tiki_taka.models.dto.StoryCard;
 
 public class LikesUtils {
     // 두명의 유저id 중 숫자가 작은 쪽이 user_a_likes, 큰쪽이 user_b_likes 자동으로 할당돼

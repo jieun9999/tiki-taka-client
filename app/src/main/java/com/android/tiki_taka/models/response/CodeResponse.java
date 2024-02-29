@@ -1,4 +1,4 @@
-package com.android.tiki_taka.models.responses;
+package com.android.tiki_taka.models.response;
 
 import com.google.gson.annotations.SerializedName;
 

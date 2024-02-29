@@ -24,7 +24,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dtos.UserProfile;
+import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;

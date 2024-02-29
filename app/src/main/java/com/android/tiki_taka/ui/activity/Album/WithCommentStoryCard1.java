@@ -1,10 +1,12 @@
 package com.android.tiki_taka.ui.activity.Album;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,12 +20,13 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.CommentAdapter;
 import com.android.tiki_taka.listeners.DeleteCommentListener;
-import com.android.tiki_taka.models.dtos.CommentIdRequest;
-import com.android.tiki_taka.models.dtos.CommentItem;
-import com.android.tiki_taka.models.dtos.LikeStatusRequest;
-import com.android.tiki_taka.models.dtos.PartnerDataManager;
-import com.android.tiki_taka.models.dtos.StoryCard;
-import com.android.tiki_taka.models.responses.ApiResponse;
+import com.android.tiki_taka.models.request.CardIdRequest;
+import com.android.tiki_taka.models.request.CommentIdRequest;
+import com.android.tiki_taka.models.dto.CommentItem;
+import com.android.tiki_taka.models.request.LikeStatusRequest;
+import com.android.tiki_taka.models.dto.PartnerDataManager;
+import com.android.tiki_taka.models.dto.StoryCard;
+import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.IntentHelper;
@@ -31,6 +34,7 @@ import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.TimeUtils;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -62,6 +66,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         loadComments();
         setupSendCommentButtonClickListener();
         setupLikeImageViewClickListener();
+        showEditOptionsBottomSheet();
 
     }
 
@@ -127,7 +132,13 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             }else {
                 ImageUtils.loadImage(partnerImg, partnerLikesProfileView, this);
             }
-
+            //편집 버튼
+            ImageView editBtn = findViewById(R.id.editBtn);
+            if(userId == storyCard.getUserId()){
+                editBtn.setVisibility(View.VISIBLE);
+            }else {
+                editBtn.setVisibility(View.GONE);
+            }
         }else {
             Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
         }
@@ -293,6 +304,78 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         Intent resultIntent = new Intent();
         setResult(RESULT_OK, resultIntent);
         finish();
+    }
+
+    private void showEditOptionsBottomSheet(){
+        ImageView editBtn = findViewById(R.id.editBtn);
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(WithCommentStoryCard1.this);
+                bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_image_video_card);
+
+                TextView deleteBtn = bottomSheetDialog.findViewById(R.id.textView9);
+                deleteBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showDeleteConfirmationDialog();
+                    }
+                });
+                TextView cancelBtn = bottomSheetDialog.findViewById(R.id.box2);
+                cancelBtn.setOnClickListener( v2->  bottomSheetDialog.dismiss());
+                bottomSheetDialog.show();
+            }
+        });
+    }
+
+    private void showDeleteConfirmationDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(WithCommentStoryCard1.this);
+
+        builder.setTitle("스토리 카드 삭제");
+        builder.setMessage("이 게시물을 정말 삭제하시겠습니까? 해당 스토리 카드가 삭제됩니다.");
+
+        builder.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteStoryCardFromServer();
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteStoryCardFromServer() {
+        CardIdRequest cardIdRequest = new CardIdRequest(cardId);
+        service.deleteCard(cardIdRequest).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        // success가 true일 때의 처리
+                        Intent resultIntent = new Intent();
+                        setResult(RESULT_OK, resultIntent);
+                        finish();
+                    }
+                }else {
+                    // success가 false일 때의 처리
+                    Log.e("ERROR", "댓글 업로드 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.e("ERROR", "네트워크 오류");
+            }
+        });
     }
 
 

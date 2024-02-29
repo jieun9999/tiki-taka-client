@@ -1,7 +1,7 @@
 package com.android.tiki_taka.services;
 
-import com.android.tiki_taka.models.responses.CodeResponse;
-import com.android.tiki_taka.models.dtos.UserProfile;
+import com.android.tiki_taka.models.response.CodeResponse;
+import com.android.tiki_taka.models.dto.UserProfile;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;

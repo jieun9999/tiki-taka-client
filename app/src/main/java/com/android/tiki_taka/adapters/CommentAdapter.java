@@ -12,9 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.DeleteCommentListener;
-import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.CommentItem;
-import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard1;
+import com.android.tiki_taka.models.dto.CommentItem;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.TimeUtils;

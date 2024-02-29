@@ -1,4 +1,4 @@
-package com.android.tiki_taka.models.dtos;
+package com.android.tiki_taka.models.request;
 
 public class CommentIdRequest {
     private int commentId;

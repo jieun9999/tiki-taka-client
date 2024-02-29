@@ -1,14 +1,15 @@
 package com.android.tiki_taka.services;
 
-import com.android.tiki_taka.models.dtos.CommentIdRequest;
-import com.android.tiki_taka.models.dtos.CommentItem;
-import com.android.tiki_taka.models.dtos.LikeStatusRequest;
-import com.android.tiki_taka.models.dtos.StoryCard;
-import com.android.tiki_taka.models.dtos.StoryCardRequest;
-import com.android.tiki_taka.models.responses.ApiResponse;
-import com.android.tiki_taka.models.responses.StoryCardsResponse;
-import com.android.tiki_taka.models.responses.StoryFolderResponse;
-import com.android.tiki_taka.models.responses.StoryFoldersResponse;
+import com.android.tiki_taka.models.request.CardIdRequest;
+import com.android.tiki_taka.models.request.CommentIdRequest;
+import com.android.tiki_taka.models.dto.CommentItem;
+import com.android.tiki_taka.models.request.LikeStatusRequest;
+import com.android.tiki_taka.models.dto.StoryCard;
+import com.android.tiki_taka.models.request.StoryCardRequest;
+import com.android.tiki_taka.models.response.ApiResponse;
+import com.android.tiki_taka.models.response.StoryCardsResponse;
+import com.android.tiki_taka.models.response.StoryFolderResponse;
+import com.android.tiki_taka.models.response.StoryFoldersResponse;
 
 import java.util.List;
 
@@ -56,5 +57,8 @@ public interface StoryApiService {
 
     @POST("Story/updateLikeStatus.php")
     Call<ApiResponse> updateLikeStatus(@Body LikeStatusRequest likeStatusRequest);
+
+    @POST("Story/deleteCard.php")
+    Call<ApiResponse> deleteCard(@Body CardIdRequest cardIdRequest);
 
 }

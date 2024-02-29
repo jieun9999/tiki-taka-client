@@ -1,6 +1,5 @@
 package com.android.tiki_taka.ui.activity.Album;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,10 +16,10 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dtos.StoryCard;
-import com.android.tiki_taka.models.dtos.StoryFolder;
-import com.android.tiki_taka.models.responses.StoryCardsResponse;
-import com.android.tiki_taka.models.responses.StoryFolderResponse;
+import com.android.tiki_taka.models.dto.StoryCard;
+import com.android.tiki_taka.models.dto.StoryFolder;
+import com.android.tiki_taka.models.response.StoryCardsResponse;
+import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.IntentHelper;
