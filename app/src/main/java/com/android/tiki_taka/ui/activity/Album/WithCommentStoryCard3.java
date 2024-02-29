@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -36,6 +37,7 @@ import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.TimeUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.ParseException;
@@ -100,7 +102,6 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     private void processCardDetailsResponse(Response<StoryCard> response) throws ParseException {
         if(response.isSuccessful() && response.body() != null){
             StoryCard storyCard = response.body();
-
             // 상단바
             ImageView profileImgView = findViewById(R.id.imageView41);
             TextView nameView = findViewById(R.id.textView37);
@@ -115,7 +116,18 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
             ImageView myLikesView = findViewById(R.id.imageView31);
             FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);
-            ImageUtils.loadImage(storyCard.getVideoThumbnail(), cardImgView, this);
+            String videoUrl = storyCard.getVideo();
+            if (videoUrl != null && !videoUrl.isEmpty()) {
+                if (videoUrl.startsWith("https:")) {
+                    // 원격 URL일 경우 Glide를 사용해 썸네일 로드
+                    ImageUtils.loadImage(storyCard.getVideoThumbnail(), cardImgView, this);
+
+                } else if (videoUrl.startsWith("content:")) {
+                    // 로컬 경로일 경우 Uri를 파싱하여 Glide로 렌더링
+                    Uri uri = Uri.parse(videoUrl);
+                    VideoUtils.loadVideoThumbnail(this, uri, cardImgView);
+                }
+            }
 
             //파트너 아이디와 이미지 가져오기
             partnerId = PartnerDataManager.getPartnerId();
@@ -222,7 +234,6 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     private void postComment(){
         EditText inputCommentView = findViewById(R.id.inputbox_comment);
         String inputText = inputCommentView.getText().toString();
-        Log.d("inputText", inputText);
 
         if(!inputText.isEmpty()){
             //새 댓글 객체 생성
