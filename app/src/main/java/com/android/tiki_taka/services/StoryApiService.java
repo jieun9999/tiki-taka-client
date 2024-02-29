@@ -7,6 +7,7 @@ import com.android.tiki_taka.models.request.LikeStatusRequest;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.models.response.ApiResponse;
+import com.android.tiki_taka.models.response.FolderDeletedResponse;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.models.response.StoryFoldersResponse;
@@ -59,6 +60,6 @@ public interface StoryApiService {
     Call<ApiResponse> updateLikeStatus(@Body LikeStatusRequest likeStatusRequest);
 
     @POST("Story/deleteCard.php")
-    Call<ApiResponse> deleteCard(@Body CardIdRequest cardIdRequest);
+    Call<FolderDeletedResponse> deleteCard(@Body CardIdRequest cardIdRequest);
 
 }

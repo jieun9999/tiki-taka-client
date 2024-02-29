@@ -27,8 +27,10 @@ import com.android.tiki_taka.models.request.LikeStatusRequest;
 import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.response.ApiResponse;
+import com.android.tiki_taka.models.response.FolderDeletedResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -356,24 +358,34 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
 
     private void deleteStoryCardFromServer() {
         CardIdRequest cardIdRequest = new CardIdRequest(cardId);
-        service.deleteCard(cardIdRequest).enqueue(new Callback<ApiResponse>() {
+        service.deleteCard(cardIdRequest).enqueue(new Callback<FolderDeletedResponse>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<FolderDeletedResponse> call, Response<FolderDeletedResponse> response) {
                 if(response.isSuccessful() && response.body() != null){
                     if(response.body().isSuccess()){
-                        // success가 true일 때의 처리
-                        Intent resultIntent = new Intent();
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
+                        if(response.body().isFolderDeleted()){
+                            //isFolderDeleted가 true일 때의 처리
+                            InitializeStack.navigateToAlbumFragment(WithCommentStoryCard2.this);
+
+                        } else if (!response.body().isFolderDeleted()) {
+                            //isFolderDeleted가 false일때 처리
+                            Intent resultIntent = new Intent();
+                            setResult(RESULT_OK, resultIntent);
+                            finish();
+                        }
+
+                    }else if(!response.body().isSuccess()){
+                        // success가 false일 때의 처리
+                        Log.e("ERROR", "서버 오류");
                     }
                 }else {
-                    // success가 false일 때의 처리
+
                     Log.e("ERROR", "댓글 업로드 실패");
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<FolderDeletedResponse> call, Throwable t) {
                 Log.e("ERROR", "네트워크 오류");
             }
         });
