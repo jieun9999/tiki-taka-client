@@ -2,6 +2,7 @@ package com.android.tiki_taka.utils;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -16,6 +17,8 @@ import android.widget.ImageView;
 
 import androidx.core.content.FileProvider;
 
+import com.android.tiki_taka.ui.activity.Album.LocalVideoPlayerActivity;
+import com.android.tiki_taka.ui.activity.Album.YoutubeVideoPlayerActivity;
 import com.bumptech.glide.Glide;
 
 import java.util.regex.Matcher;
@@ -95,5 +98,20 @@ public class VideoUtils {
         return thumbnailFile;
     }
 
+    public static void openVideo(Context context, String video) {
+        if (video.startsWith("https://")) {
+            // 웹 기반 동영상 경로
+            Intent intent = new Intent(context, YoutubeVideoPlayerActivity.class);
+            String videoId = extractYoutubeVideoId(video); // VideoUtils 클래스의 메서드를 여기에 직접 구현하거나, 해당 클래스 메서드를 호출
+            intent.putExtra("VIDEO_ID", videoId);
+            context.startActivity(intent);
+
+        } else if (video.startsWith("content://")) {
+            // 로컬 기반 동영상 경로
+            Intent intent = new Intent(context, LocalVideoPlayerActivity.class);
+            intent.putExtra("videoUriString", video);
+            context.startActivity(intent);
+        }
+    }
 
 }

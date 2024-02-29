@@ -119,11 +119,9 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
             String videoUrl = storyCard.getVideo();
             if (videoUrl != null && !videoUrl.isEmpty()) {
                 if (videoUrl.startsWith("https:")) {
-                    // 원격 URL일 경우 Glide를 사용해 썸네일 로드
                     ImageUtils.loadImage(storyCard.getVideoThumbnail(), cardImgView, this);
 
                 } else if (videoUrl.startsWith("content:")) {
-                    // 로컬 경로일 경우 Uri를 파싱하여 Glide로 렌더링
                     Uri uri = Uri.parse(videoUrl);
                     VideoUtils.loadVideoThumbnail(this, uri, cardImgView);
                 }
@@ -153,6 +151,8 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
             }else {
                 editBtn.setVisibility(View.GONE);
             }
+
+            setupPlayVideo(storyCard.getVideo());
 
         }else {
             Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
@@ -184,8 +184,6 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     private void processCommentsResponse(Response<List<CommentItem>> response){
         if (response.isSuccessful() && response.body() != null) {
             List<CommentItem> newCommentsData = response.body();
-            // Call<List<CommentItem>> getCommentsForStory(@Query("cardId") int cardId);
-            // 인터페이스에서 Retrofit은 자동으로 JSON 응답을 List<CommentItem> 형식의 객체로 변환해줌
             adapter.setCommentsData(newCommentsData);
 
         }else {
@@ -389,7 +387,6 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
                         Log.e("ERROR", "서버 오류");
                     }
                 }else {
-
                     Log.e("ERROR", "댓글 업로드 실패");
                 }
             }
@@ -399,5 +396,10 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
                 Log.e("ERROR", "네트워크 오류");
             }
         });
+    }
+
+    private void setupPlayVideo(String video){
+        ImageView playBtn = findViewById(R.id.playBtn);
+        playBtn.setOnClickListener(v-> VideoUtils.openVideo(this, video));
     }
 }

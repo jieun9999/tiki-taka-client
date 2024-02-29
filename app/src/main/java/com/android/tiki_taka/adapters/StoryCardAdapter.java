@@ -233,36 +233,21 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else if (holder.getItemViewType() == VIDEO_TYPE) {
             VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
             String videoThumbnail = card.getVideoThumbnail();
+            String video = card.getVideo();
 
             if(videoThumbnail.startsWith("https://")){
                 ImageUtils.loadImage(videoThumbnail,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
 
             } else {
                 // 크롭한 사진은 화질이 너무 저하되서 글라이드 동영상 uri로 렌더링
-                Uri video = Uri.parse(card.getVideo());
-                VideoUtils.loadVideoThumbnail( videoViewHolder.itemView.getContext() , video, videoViewHolder.imageView);
+                Uri videoUri = Uri.parse(video);
+                VideoUtils.loadVideoThumbnail( videoViewHolder.itemView.getContext() , videoUri, videoViewHolder.imageView);
             }
 
             videoViewHolder.playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    if(videoThumbnail.startsWith("https://")){
-                        //웹 기반 동영상 경로
-                        Intent intent = new Intent(videoViewHolder.itemView.getContext(), YoutubeVideoPlayerActivity.class);
-                        String videoId = VideoUtils.extractYoutubeVideoId(card.getVideo());
-                        intent.putExtra("VIDEO_ID", videoId);
-
-                        videoViewHolder.itemView.getContext().startActivity(intent);
-
-                    } else if (videoThumbnail.startsWith("file://")) {
-                        //로컬 기반 동영상 경로
-                        Intent intent = new Intent(videoViewHolder.itemView.getContext(), LocalVideoPlayerActivity.class);
-                        String videoUriString = card.getVideo();
-                        intent.putExtra("videoUriString", videoUriString);
-
-                        videoViewHolder.itemView.getContext().startActivity(intent);
-                    }
+                VideoUtils.openVideo(videoViewHolder.itemView.getContext(), video);
                 }
             });
 
