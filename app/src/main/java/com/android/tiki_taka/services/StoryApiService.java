@@ -26,8 +26,8 @@ public interface StoryApiService {
     Call<StoryFoldersResponse> getStoryFolders(@Query("userId") int userId);
     // <StoryFoldersResponse>는 서버에서 받아올 데이터 형식을 지정
 
-   @GET("Story/getThumbNail.php")
-    Call<StoryFolderResponse> getThumbNail(@Query("folderId") int folderId);
+   @GET("Story/getFolderData.php")
+    Call<StoryFolderResponse> getFolderData(@Query("folderId") int folderId);
 
     @GET("Story/getStoryCards.php")
     Call<StoryCardsResponse> getStoryCards(@Query("folderId") int folderId);

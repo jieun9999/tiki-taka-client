@@ -105,7 +105,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     }
 
     private void loadThumbNail(){
-        service.getThumbNail(folderId).enqueue(new Callback<StoryFolderResponse>() {
+        service.getFolderData(folderId).enqueue(new Callback<StoryFolderResponse>() {
             @Override
             public void onResponse(Call<StoryFolderResponse> call, Response<StoryFolderResponse> response) {
                 if(response.isSuccessful() && response.body() != null) {
@@ -257,7 +257,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId, REQUEST_EDIT_FOLDER);
+                IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId);
             }
         });
     }

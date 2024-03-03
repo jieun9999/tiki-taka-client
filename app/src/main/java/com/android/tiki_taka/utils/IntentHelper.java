@@ -25,6 +25,16 @@ public class IntentHelper {
         activity.startActivityForResult(intent, requestCode);
     }
 
+    // A 액티비티 -> B액티비티 이동, 결과를 받지 않음 (int id)
+    public static void navigateToActivity(Activity activity, Class<?> targetActivity, int id) {
+        Intent intent = new Intent(activity, targetActivity);
+        if (id != -1) {
+            intent.putExtra("id", id);
+        }
+        activity.startActivity(intent); // 결과를 기다리지 않고 액티비티 시작
+    }
+
+
     // B 액티비티에서 A 액티비티의 데이터를 받을때 (int id)
     public static int getId(Activity activity){
         Intent intent = activity.getIntent();

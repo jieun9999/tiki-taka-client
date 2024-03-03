@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.UriUtils;
+import com.android.tiki_taka.utils.VideoUtils;
 
 import java.util.ArrayList;
 
@@ -45,7 +47,13 @@ public class ThumbnailCheckAdapter extends RecyclerView.Adapter<ThumbnailCheckAd
     // checkBox 클릭 리스너는 onBindViewHolder에서 설정
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         Uri uri = uriList.get(position);
-        ImageUtils.loadImage(String.valueOf(uri), holder.imageView, context);
+        if(UriUtils.isImageUri(uri, context)){
+            ImageUtils.loadImage(String.valueOf(uri), holder.imageView, context);
+        } else if (UriUtils.isVideoUri(uri, context)) {
+            VideoUtils.loadVideoThumbnail(context, uri, holder.imageView);
+
+        }
+
         //  단일 선택만 가능한 체크박스를 구현
         holder.checkBox.setChecked(position == currentPosition); // 현재 위치가 선택된 위치와 같다면 체크 박스 선택
         holder.checkBox.setOnClickListener(v -> {

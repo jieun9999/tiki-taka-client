@@ -87,7 +87,7 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
     }
 
     private void loadThumbNail(){
-        service.getThumbNail(folderId).enqueue(new Callback<StoryFolderResponse>() {
+        service.getFolderData(folderId).enqueue(new Callback<StoryFolderResponse>() {
             @Override
             public void onResponse(Call<StoryFolderResponse> call, Response<StoryFolderResponse> response) {
                 if(response.isSuccessful() && response.body() != null) {
