@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.activity.Album.FolderEditActivity">
+
+    <include
+        android:id="@+id/include"
+        layout="@layout/toolbar_with_edit_folder"
+        app:layout_constraintBottom_toTopOf="@+id/include2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/include2"
+        layout="@layout/resize_thumbnail_image"
+        android:layout_width="412dp"
+        android:layout_height="200dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/include" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="300dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView21"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="    스토리 제목"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/editTextStoryTitle"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#FFFFFF"
+            android:gravity="center_vertical"
+            android:hint="이 스토리에 제목을 작성해 주세요."
+            android:inputType="text"
+            android:maxLength="50"
+            android:paddingStart="20dp"
+            android:textColorHint="#BDBDBD"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textViewStoryTitleCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0/50"
+            android:gravity="end"
+            android:paddingEnd="20dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
+
+        <TextView
+            android:id="@+id/textView22"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="    장소"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/editTextLocation"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#FFFFFF"
+            android:gravity="center_vertical"
+            android:hint="위치를 작성해주세요."
+            android:inputType="text"
+            android:maxLength="30"
+            android:paddingStart="20dp"
+            android:textColorHint="#BDBDBD"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/textViewLocationCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0/30"
+            android:gravity="end"
+            android:paddingEnd="20dp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView36"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="    대표 사진"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/checkCardRecyclerView"
+        android:layout_width="412dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView36" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

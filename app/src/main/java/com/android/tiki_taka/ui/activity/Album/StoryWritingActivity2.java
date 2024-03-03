@@ -48,6 +48,14 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_writing2);
 
+        setupCancelAndSaveBtnListener();
+        loadFolderThumbnail();
+        setRecyclerView();
+        countTitleAndLocationTexts();
+        setupThumbnailCropListener();
+
+    }
+    private void setupCancelAndSaveBtnListener(){
         TextView cancelBtn = findViewById(R.id.textView33);
         TextView saveBtn = findViewById(R.id.textView34);
 
@@ -55,7 +63,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if(TextUtils.isEmpty(croppedimageUriString)){
                     cropAlertDialog();
 
@@ -68,7 +75,21 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
                 }
             }
         });
+    }
 
+    private void cropAlertDialog(){
+        // 크롭되지 않았다면 사용자에게 알림창 표시
+        AlertDialog.Builder builder = new AlertDialog.Builder(StoryWritingActivity2.this);
+        builder.setMessage("사진을 크롭하세요")
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    private void loadFolderThumbnail(){
         imageViewToCrop = findViewById(R.id.cropped_image);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -86,11 +107,29 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
             destinationUri = createUniqueDestinationUri();
             selectedUris = extras.getParcelableArrayList("selectedUris");
         }
+    }
 
+    private void UCorpSettings(Uri sourceUri, Uri destinationUri){
+        int maxWidthPx = dpToPx(412); // 412dp를 픽셀로 변환
+        int maxHeightPx = dpToPx(200); // 200dp를 픽셀로 변환
+
+     UCrop.of(sourceUri, destinationUri)
+               .withAspectRatio(412, 200) // 원하는 비율로 설정
+               .withMaxResultSize(maxWidthPx, maxHeightPx) // 최대 결과 이미지 크기
+               .start(this);
+    }
+
+    public int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
+    }
+
+    private void setRecyclerView(){
         RecyclerView recyclerView = findViewById(R.id.checkCardRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(new ThumbnailCheckAdapter(selectedUris, this, this));
+    }
 
+    private void countTitleAndLocationTexts(){
         EditText editTextStoryTitle = findViewById(R.id.editTextStoryTitle);
         TextView textViewStoryTitleCount = findViewById(R.id.textViewStoryTitleCount);
         editTextStoryTitle.addTextChangedListener(new TextWatcher() {
@@ -129,7 +168,9 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
                 textViewLocationCount.setText(newLocationText.length() + "/30");
             }
         });
+    }
 
+    private void setupThumbnailCropListener(){
         if (UriUtils.isVideoUri(sourceUri, this)) {
             sourceUri = VideoUtils.getThumbNailUri(this, sourceUri);
             imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
@@ -137,33 +178,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
         } else if (UriUtils.isImageUri(sourceUri, this)) {
             imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
         }
-
-    }
-
-    private void cropAlertDialog(){
-        // 크롭되지 않았다면 사용자에게 알림창 표시
-        AlertDialog.Builder builder = new AlertDialog.Builder(StoryWritingActivity2.this);
-        builder.setMessage("사진을 크롭하세요")
-                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    private void UCorpSettings(Uri sourceUri, Uri destinationUri){
-        int maxWidthPx = dpToPx(412); // 412dp를 픽셀로 변환
-        int maxHeightPx = dpToPx(200); // 200dp를 픽셀로 변환
-
-     UCrop.of(sourceUri, destinationUri)
-               .withAspectRatio(412, 200) // 원하는 비율로 설정
-               .withMaxResultSize(maxWidthPx, maxHeightPx) // 최대 결과 이미지 크기
-               .start(this);
-    }
-
-    public int dpToPx(int dp) {
-        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     @Override

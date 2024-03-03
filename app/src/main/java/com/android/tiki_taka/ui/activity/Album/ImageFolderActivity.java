@@ -48,6 +48,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     private static final int REQUEST_CODE_IMAGE_CARD = 111;
     private static final int REQUEST_CODE_TEXT_CARD = 222;
     private static final int REQUEST_CODE_VIDEO_CARD = 333;
+    private static final int REQUEST_EDIT_FOLDER = 444;
 
 
     @Override
@@ -55,7 +56,14 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_folder);
 
-        // 커스텀 툴바 설정
+        setUpCustomToolBar();
+        setupNetworkAndRetrieveId();
+        setRecyclerView();
+        loadThumbnailAndStoryCards();
+        setupEditStoryFolder();
+    }
+
+    private void setUpCustomToolBar(){
         Toolbar toolbar = findViewById(R.id.custom_toolbar);
         setSupportActionBar(toolbar);
         ImageView backButton = findViewById(R.id.imageView36);
@@ -65,18 +73,24 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
                 onBackPressed();
             }
         });
+    }
 
+    private void setupNetworkAndRetrieveId(){
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
-        // 리사이클러뷰 초기화
+    }
+
+    private void setRecyclerView(){
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //빈 어댑터 사용
         adapter = new StoryCardAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
+    }
 
+    private void loadThumbnailAndStoryCards(){
         Intent intent = getIntent();
         folderId = intent.getIntExtra("CLICKED_ITEM_ID", -1); // "CLICKED_ITEM_ID" 키로 저장된 int 값을 가져옴
 
@@ -88,7 +102,6 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         } else {
             Log.e("Error", "서버에서 불러오기에 실패: ID가 유효하지 않습니다.");
         }
-
     }
 
     private void loadThumbNail(){
@@ -222,7 +235,6 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         } else if ("video".equals(clickedCard.getDataType())) {
             IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_VIDEO_CARD);
         }
-
     }
 
     @Override
@@ -234,9 +246,20 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
             loadStoryCards();
         } else if (requestCode == REQUEST_CODE_VIDEO_CARD && resultCode == RESULT_OK) {
             loadStoryCards();
+        } else if (requestCode == REQUEST_EDIT_FOLDER && resultCode == RESULT_OK) {
+            // 인텐트 번들로 가져온 데이터 들을 뷰에 렌더링
+
         }
     }
 
-
+    private void setupEditStoryFolder(){
+        ImageView editBtn = findViewById(R.id.edit_icon);
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId, REQUEST_EDIT_FOLDER);
+            }
+        });
+    }
 
 }
