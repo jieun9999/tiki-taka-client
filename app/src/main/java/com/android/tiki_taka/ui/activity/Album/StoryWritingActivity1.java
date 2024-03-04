@@ -128,7 +128,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                 if(response.isSuccessful() && response.body() != null) {
                     processThumbNailResponse(response);
                 }else {
-
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
                 }
             }
@@ -156,7 +155,11 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         thumbnailView = findViewById(R.id.imageView26);
         StoryFolder storyFolder = storyFolderResponse.getStoryFolder();
 
-        ImageUtils.loadImage(storyFolder.getDisplayImage(), thumbnailView, this);
+        if(storyFolder.getDisplayImage() == null){
+            ImageUtils.loadImage(String.valueOf(selectedUris.get(0)), thumbnailView, this);
+        }else {
+            ImageUtils.loadImage(storyFolder.getDisplayImage(), thumbnailView, this);
+        }
 
     }
 

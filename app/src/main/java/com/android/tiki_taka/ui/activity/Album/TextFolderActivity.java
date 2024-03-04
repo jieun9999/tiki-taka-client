@@ -50,7 +50,16 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_folder);
 
-        // 커스텀 툴바 설정
+
+        setUpCustomToolBar();
+        setupNetworkAndRetrieveId();
+        setRecyclerView();
+        loadThumbnailAndStoryCards();
+        navigateToSelection2Activity();
+
+    }
+
+    private void setUpCustomToolBar(){
         Toolbar toolbar = findViewById(R.id.custom_toolbar);
         setSupportActionBar(toolbar);
         ImageView backButton = findViewById(R.id.imageView36);
@@ -60,18 +69,24 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
                 onBackPressed();
             }
         });
+    }
 
+    private void setupNetworkAndRetrieveId(){
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
-        // 리사이클러뷰 초기화
+    }
+
+    private void setRecyclerView(){
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         //빈 어댑터 사용
         adapter = new StoryCardAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
+    }
 
+    private void loadThumbnailAndStoryCards(){
         Intent intent = getIntent();
         folderId = intent.getIntExtra("CLICKED_ITEM_ID", -1); // "CLICKED_ITEM_ID" 키로 저장된 int 값을 가져옴
 
@@ -83,7 +98,6 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         } else {
             Log.e("Error", "서버에서 불러오기에 실패: ID가 유효하지 않습니다.");
         }
-
     }
 
     private void loadThumbNail(){
@@ -224,4 +238,11 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
             loadStoryCards();
         }
     }
+
+    private void navigateToSelection2Activity(){
+        ImageView plusBtn = findViewById(R.id.plus_image);
+        plusBtn.setOnClickListener(v -> IntentHelper.navigateToActivity(this, SelectionActivity2.class, folderId));
+
+    }
+
 }
