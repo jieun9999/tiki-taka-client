@@ -288,9 +288,9 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void handleResponse(Response<SuccessAndMessageResponse> response){
         if (response.body() != null) {
             String message = response.body().getMessage();
-            Log.d("ALERT message", message);
 
             if(response.body().isSuccess()){
+                Log.d("message", message);
                 InitializeStack.navigateToAlbumFragment(this);
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
