@@ -16,13 +16,16 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
+import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.request.StoryCardRequest;
+import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.UriUtils;
 import com.android.tiki_taka.utils.VideoUtils;
 
@@ -30,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import okhttp3.ResponseBody;
@@ -54,25 +58,46 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     String location;
     private static final int REQUEST_CODE_IMAGE_COMMENT_INPUT = 456;
     ArrayList<String> comments;
+    boolean isAddingToExistingFolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_writing1);
 
+        setupNetworkAndRetrieveId();
+        extractIntentData();
+
+        if (isAddingToExistingFolder) {
+            // 기존 폴더에 추가하는 로직 처리
+            renderThumbnailFromDB();
+        } else {
+            // 새로운 스토리 카드 생성 로직 처리
+            renderThumbnail();
+        }
+
+        setRecyclerView();
+        setupUIListeners();
+
+    }
+
+    private void setupNetworkAndRetrieveId(){
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+        folderId = IntentHelper.getId(this);
 
+    }
+
+    private void extractIntentData(){
+        isAddingToExistingFolder = getIntent().getBooleanExtra("isAddingToExistingFolder", false);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
-        thumbnailView = findViewById(R.id.imageView26);
-        renderThumbnail(thumbnailView);
+    }
 
+    private void setRecyclerView(){
         RecyclerView recyclerView = findViewById(R.id.recyclerView2);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
-
-        setupUIListeners();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -96,25 +121,71 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
+    private void renderThumbnailFromDB(){
+        service.getFolderData(folderId).enqueue(new Callback<StoryFolderResponse>() {
+            @Override
+            public void onResponse(Call<StoryFolderResponse> call, Response<StoryFolderResponse> response) {
+                if(response.isSuccessful() && response.body() != null) {
+                    processThumbNailResponse(response);
+                }else {
+
+                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StoryFolderResponse> call, Throwable t) {
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void processThumbNailResponse(Response<StoryFolderResponse> response){
+
+        StoryFolderResponse storyFolderResponse = response.body();
+        if(storyFolderResponse.isSuccess()){
+            updateUIOnSuccess(storyFolderResponse);
+
+        }else {
+            handleFailure(storyFolderResponse);
+
+        }
+    }
+
+    private void updateUIOnSuccess(StoryFolderResponse storyFolderResponse){
+        thumbnailView = findViewById(R.id.imageView26);
+        StoryFolder storyFolder = storyFolderResponse.getStoryFolder();
+
+        ImageUtils.loadImage(storyFolder.getDisplayImage(), thumbnailView, this);
+
+    }
+
+    private void handleFailure(StoryFolderResponse storyFolderResponse){
+        String message = storyFolderResponse.getMessage();
+        Log.d("fail",message);
+    }
+
     // uri를 보고 동영상인지 이미지 인지 판별하여 다른 방법으로 렌더링함
-    private void renderThumbnail(ImageView imageView){
+    private void renderThumbnail(){
+        thumbnailView = findViewById(R.id.imageView26);
 
         if(selectedUris != null && !selectedUris.isEmpty()){
             firstUri = selectedUris.get(0);
 
                 if(UriUtils.isImageUri(firstUri, this)){
                     // MIME 타입이 이미지인 경우
-                    ImageUtils.loadImage(firstUri.toString(), imageView, this);
+                    ImageUtils.loadImage(firstUri.toString(), thumbnailView, this);
 
                 }else if(UriUtils.isVideoUri(firstUri, this)){
                     // MIME 타입이 동영상인 경우
-                    VideoUtils.loadVideoThumbnail(this, firstUri, imageView);
+                    VideoUtils.loadVideoThumbnail(this, firstUri, thumbnailView);
 
                 }
 
 
         }
     }
+
     private void savePhotoCards() {
         convertUrisToStringListAndWrap();
         if(UriUtils.isImageUri(firstUri, this)){
@@ -145,7 +216,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                //네트워크 오류 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });

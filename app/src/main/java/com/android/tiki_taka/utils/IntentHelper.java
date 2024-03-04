@@ -42,5 +42,15 @@ public class IntentHelper {
         activity.finish();
     }
 
+    // 현재 액티비티에서 다른 액티비티로 이동하는 메서드, id 전달
+    public static void navigateToActivity(Activity currentActivity, Class<?> targetActivityClass, int id) {
+        Intent intent = new Intent(currentActivity, targetActivityClass);
+        // id가 유효한 값인지 확인 후 인텐트에 추가
+        if (id >= 0) {
+            intent.putExtra("id", id);
+        }
+        currentActivity.startActivity(intent);
+    }
+
 
 }

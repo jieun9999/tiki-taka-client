@@ -128,7 +128,7 @@ public class TextFolderActivity extends AppCompatActivity implements ItemClickLi
         TextView thumbTextView = findViewById(R.id.textView27);
 
         // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
-        String inputDateString = storyFolder.getUpdatedAt();
+        String inputDateString = storyFolder.getCreatedAt();
         try {
             String outputDateString = TimeUtils.convertDateString(inputDateString);
             thumbDateView.setText(outputDateString);

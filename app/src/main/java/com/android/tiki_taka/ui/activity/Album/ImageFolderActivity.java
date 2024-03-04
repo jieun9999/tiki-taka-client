@@ -62,6 +62,8 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         setRecyclerView();
         loadThumbnailAndStoryCards();
         setupEditStoryFolder();
+        navigateToSelection2Activity();
+
     }
 
     private void setUpCustomToolBar(){
@@ -147,7 +149,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         ImageView thumbBackImgView = findViewById(R.id.imageView26);
 
         // 서버 날짜 문자열(2024-01-31 12:24:40) => 2023년 12월 25일 (월) 변환
-        String inputDateString = storyFolder.getUpdatedAt();
+        String inputDateString = storyFolder.getCreatedAt();
         try {
             String outputDateString = TimeUtils.convertDateString(inputDateString);
             thumbDateView.setText(outputDateString);
@@ -255,6 +257,12 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
                 IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId, REQUEST_EDIT_FOLDER);
             }
         });
+    }
+
+    private void navigateToSelection2Activity(){
+        ImageView plusBtn = findViewById(R.id.plus_image);
+        plusBtn.setOnClickListener(v -> IntentHelper.navigateToActivity(this, SelectionActivity2.class, folderId));
+
     }
 
 }
