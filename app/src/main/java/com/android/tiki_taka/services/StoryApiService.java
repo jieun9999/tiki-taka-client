@@ -12,6 +12,7 @@ import com.android.tiki_taka.models.response.FolderDeletedResponse;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.models.response.StoryFoldersResponse;
+import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 
 import java.util.List;
 
@@ -34,13 +35,13 @@ public interface StoryApiService {
     Call<StoryCardsResponse> getStoryCards(@Query("folderId") int folderId);
 
     @POST("Story/saveImageStoryCards.php")
-    Call<ResponseBody> saveImageStoryCards(@Body StoryCardRequest cardRequest);
+    Call<SuccessAndMessageResponse> saveImageStoryCards(@Body StoryCardRequest cardRequest);
 
     @POST("Story/saveMemoStoryCard.php")
     Call<ResponseBody> saveMemoStoryCard(@Body StoryCardRequest cardRequest);
 
    @POST("Story/saveVideoStoryCard.php")
-   Call<ResponseBody> saveVideoStoryCard(@Body StoryCardRequest cardRequest);
+   Call<SuccessAndMessageResponse> saveVideoStoryCard(@Body StoryCardRequest cardRequest);
 
     @GET("Story/getCardDetails.php")
     Call<StoryCard> getCardDetails(@Query("cardId") int cardId);

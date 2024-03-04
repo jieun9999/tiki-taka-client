@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
@@ -19,6 +20,7 @@ import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
+import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.InitializeStack;
@@ -59,6 +61,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private static final int REQUEST_CODE_IMAGE_COMMENT_INPUT = 456;
     ArrayList<String> comments;
     boolean isAddingToExistingFolder;
+    String displayImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,8 +157,9 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void updateUIOnSuccess(StoryFolderResponse storyFolderResponse){
         thumbnailView = findViewById(R.id.imageView26);
         StoryFolder storyFolder = storyFolderResponse.getStoryFolder();
+        displayImage = storyFolder.getDisplayImage();
 
-        if(storyFolder.getDisplayImage() == null){
+        if(displayImage == null){
             ImageUtils.loadImage(String.valueOf(selectedUris.get(0)), thumbnailView, this);
         }else {
             ImageUtils.loadImage(storyFolder.getDisplayImage(), thumbnailView, this);
@@ -190,7 +194,18 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     private void savePhotoCards() {
-        convertUrisToStringListAndWrap();
+
+        if (isAddingToExistingFolder) {
+            // 기존 폴더에 추가하는 로직 처리
+            firstUri = selectedUris.get(0);
+            convertUrisToStringListAndWrap(true);
+
+        } else {
+            // 새로운 스토리 카드 생성 로직 처리
+            convertUrisToStringListAndWrap(false);
+        }
+
+        // db 업데이트
         if(UriUtils.isImageUri(firstUri, this)){
             insertImageStoryCardsInDB();
         }else if(UriUtils.isVideoUri(firstUri, this)) {
@@ -199,79 +214,93 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     }
 
-    private void convertUrisToStringListAndWrap(){
+    private void convertUrisToStringListAndWrap(boolean includeFolderId){
         ArrayList<String> uriStrings = new ArrayList<>();
         for (Uri uri : selectedUris) {
             uriStrings.add(uri.toString());
         }
-        // 아예, 편집을 하지 않은 경우와 다음 액티비티에서 편집을 해온 경우의 차이
-        String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
 
-        cardRequest = new StoryCardRequest(userId, uriStrings ,storyTitle, location, thumbnailUri, comments);
+        if (includeFolderId) {
+            //StoryWritingActivity2에서 편집된 썸네일이 존재하는 지 여부에 따라 나뉨
+            String thumbnailUri;
+            if(TextUtils.isEmpty(editedThumbnailUri)){
+
+                if(displayImage == null){
+                    // 대표사진이 없다면 (text 폴더의 경우, 새롭게 추가되는 사진들 중 첫 사진을 썸네일로)
+                    thumbnailUri = String.valueOf(selectedUris.get(0));
+                }else {
+                    // 대표사진이 있다면, 기존 폴더의 대표사진으로
+                    thumbnailUri = displayImage;
+                }
+            }else {
+                // StoryWritingActivity2에서 편집된 썸네일을 가져옴
+                thumbnailUri = editedThumbnailUri;
+
+            }
+            cardRequest = new StoryCardRequest(userId, folderId, uriStrings, storyTitle, location, thumbnailUri, comments);
+
+        } else {
+
+            String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
+            cardRequest = new StoryCardRequest(userId, uriStrings, storyTitle, location, thumbnailUri, comments);
+        }
     }
 
+
     private void insertImageStoryCardsInDB(){
-        service.saveImageStoryCards(cardRequest).enqueue(new Callback<ResponseBody>() {
+        service.saveImageStoryCards(cardRequest).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 ProcessInsertingCardsResponse(response);
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
 
     private void insertVideoStoryCardInDB(){
-        service.saveVideoStoryCard(cardRequest).enqueue(new Callback<ResponseBody>() {
+        service.saveVideoStoryCard(cardRequest).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 ProcessInsertingCardsResponse(response);
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
                 //네트워크 오류 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
 
-    private void ProcessInsertingCardsResponse( Response<ResponseBody> response){
+    private void ProcessInsertingCardsResponse(Response<SuccessAndMessageResponse> response){
         if(response.isSuccessful()){
             handleResponse(response);
-            InitializeStack.navigateToAlbumFragment(this);
 
         } else {
-            // 응답 실패
             Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
         }
     }
 
-    private void handleResponse(Response<ResponseBody> response){
-        if (response.isSuccessful()) {
-            try {
-                String message = parseResponseData(response);
-                Log.d("success",message);
+    private void handleResponse(Response<SuccessAndMessageResponse> response){
+        if (response.body() != null) {
+            String message = response.body().getMessage();
+            Log.d("ALERT message", message);
 
-            } catch (JSONException | IOException e) {
-                // JSON 파싱 오류 처리 , IOException 처리
-                e.printStackTrace();
-                Log.e("Error","catch문 오류 발생");
+            if(response.body().isSuccess()){
+                InitializeStack.navigateToAlbumFragment(this);
+            } else {
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
+
         } else {
             Log.e("Error","서버 응답 오류");
         }
     }
 
-
-    private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
-        String responseJson = response.body().string();
-        JSONObject jsonObject = new JSONObject(responseJson);
-        return jsonObject.getString("message");
-    }
 
     private Bundle temporarystoryWritingBundle(){
         Bundle bundle = new Bundle();

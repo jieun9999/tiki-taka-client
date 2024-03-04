@@ -7,6 +7,7 @@ public class StoryCardRequest {
     // 서버에 보내는 것
     // userId, 스토리 카드 리스트(uris), 스토리 폴더 제목(title), 스토리 폴더 장소(location), 썸네일(displayImage), 댓글(comments)
     private int userId;
+    private int folderId;
     private ArrayList<String> uris;
     private String text; //메모의 텍스트
     private String title;
@@ -30,6 +31,17 @@ public class StoryCardRequest {
         this.text = text;
         this.title = title;
         this.location = location;
+    }
+
+    // 기존 폴더에 스토리 카드 추가
+    public StoryCardRequest(int userId, int folderId, ArrayList<String> uris, String title, String location, String displayImage, ArrayList<String> comments) {
+        this.userId = userId;
+        this.folderId =folderId;
+        this.uris = uris;
+        this.title = title;
+        this.location = location;
+        this.displayImage = displayImage;
+        this.comments = comments;
     }
 
     public int getUserId() {
@@ -86,5 +98,13 @@ public class StoryCardRequest {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public int getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(int folderId) {
+        this.folderId = folderId;
     }
 }
