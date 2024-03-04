@@ -21,6 +21,7 @@ import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -126,7 +127,6 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
 
     private void processThumbNailResponse(Response<StoryFolderResponse> response){
         // 요청 성공 + 응답 존재
-
         StoryFolderResponse storyFolderResponse = response.body();
         if(storyFolderResponse.isSuccess()){
             updateUIOnSuccess(storyFolderResponse);
@@ -138,7 +138,6 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     }
 
     private void updateUIOnSuccess(StoryFolderResponse storyFolderResponse){
-        //success가 true인 경우,
         StoryFolder storyFolder = storyFolderResponse.getStoryFolder();
 
         //썸네일 뷰 할당하기
@@ -157,10 +156,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         }
         thumbTitleView.setText(storyFolder.getTitle());
         thumbLocView.setText(storyFolder.getLocation());
-        // 이미지는 글라이드로 할당
-        Glide.with(getApplicationContext())
-                .load(storyFolder.getDisplayImage())
-                .into(thumbBackImgView);
+        ImageUtils.loadImage(storyFolder.getDisplayImage(), thumbBackImgView, this);
 
         String message = storyFolderResponse.getMessage();
         Log.d("success", message);
@@ -247,8 +243,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         } else if (requestCode == REQUEST_CODE_VIDEO_CARD && resultCode == RESULT_OK) {
             loadStoryCards();
         } else if (requestCode == REQUEST_EDIT_FOLDER && resultCode == RESULT_OK) {
-            // 인텐트 번들로 가져온 데이터 들을 뷰에 렌더링
-
+            loadThumbNail();
         }
     }
 
@@ -257,7 +252,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId);
+                IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId, REQUEST_EDIT_FOLDER);
             }
         });
     }

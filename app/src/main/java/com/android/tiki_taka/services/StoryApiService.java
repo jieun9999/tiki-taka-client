@@ -1,5 +1,6 @@
 package com.android.tiki_taka.services;
 
+import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.request.CardIdRequest;
 import com.android.tiki_taka.models.request.CommentIdRequest;
 import com.android.tiki_taka.models.dto.CommentItem;
@@ -61,5 +62,8 @@ public interface StoryApiService {
 
     @POST("Story/deleteCard.php")
     Call<FolderDeletedResponse> deleteCard(@Body CardIdRequest cardIdRequest);
+
+    @POST("Story/updateFolder.php")
+    Call<ApiResponse> updateFolder(@Body StoryFolder storyFolder);
 
 }

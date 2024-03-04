@@ -24,6 +24,7 @@ import com.android.tiki_taka.adapters.ThumbnailCheckAdapter;
 import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
+import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.services.StoryApiService;
@@ -89,9 +90,8 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
                     cropAlertDialog();
 
                 }else {
-                    //db 업데이트
-                    StoryFolder storyFolder = new StoryFolder(folderId, croppedimageUriString, newTitleText, newLocationText);
-                    // 서비스로 업데이트 내용 db에 보내기
+                    updateFolderInDB();
+
                 }
             }
         });
@@ -163,6 +163,7 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
 
     private void countTitleAndLocationTexts(){
         EditText editTextStoryTitle = findViewById(R.id.editTextStoryTitle);
+        newTitleText = editTextStoryTitle.getText().toString();
         TextView textViewStoryTitleCount = findViewById(R.id.textViewStoryTitleCount);
         editTextStoryTitle.addTextChangedListener(new TextWatcher() {
             @Override
@@ -182,6 +183,7 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
         });
 
         EditText editTextLocation = findViewById(R.id.editTextLocation);
+        newLocationText = editTextLocation.getText().toString();
         TextView textViewLocationCount = findViewById(R.id.textViewLocationCount);
         editTextLocation.addTextChangedListener(new TextWatcher() {
             @Override
@@ -332,4 +334,30 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
         }
     }
 
+    private void updateFolderInDB(){
+        StoryFolder newStoryFolder = new StoryFolder(folderId, croppedimageUriString, newTitleText, newLocationText);
+        service.updateFolder(newStoryFolder).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if (response.body().isSuccess()) {
+                        // success가 true일 때의 처리
+                        // DB 업데이트된 후에만 이전 액티비티로 결과를 반환하고 현재 액티비티를 종료하게 됩니다.
+                        IntentHelper.setResultAndFinish(FolderEditActivity.this, RESULT_OK);
+                        Log.d("success", "폴더 상태 업데이트 성공");
+                    } else {
+                        // success가 false일 때의 처리
+                        Log.e("ERROR", "폴더 상태 업데이트 실패");
+                    }
+                }else {
+                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
 }
