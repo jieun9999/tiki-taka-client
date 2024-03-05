@@ -70,7 +70,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         setupNetworkAndRetrieveId();
         extractIntentData();
-
         if (isAddingToExistingFolder) {
             // 기존 폴더에 추가하는 로직 처리
             renderThumbnailFromDB();
@@ -78,7 +77,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             // 새로운 스토리 카드 생성 로직 처리
             renderThumbnail();
         }
-
         setRecyclerView();
         setupUIListeners();
 
@@ -95,6 +93,10 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void extractIntentData(){
         isAddingToExistingFolder = getIntent().getBooleanExtra("isAddingToExistingFolder", false);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
+        if(selectedUris != null){
+            firstUri = selectedUris.get(0);
+        }
+
     }
 
     private void setRecyclerView(){
@@ -177,7 +179,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         thumbnailView = findViewById(R.id.imageView26);
 
         if(selectedUris != null && !selectedUris.isEmpty()){
-            firstUri = selectedUris.get(0);
 
                 if(UriUtils.isImageUri(firstUri, this)){
                     // MIME 타입이 이미지인 경우
@@ -195,57 +196,55 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     private void savePhotoCards() {
 
-        if (isAddingToExistingFolder) {
-            // 기존 폴더에 추가하는 로직 처리
-            firstUri = selectedUris.get(0);
-            convertUrisToStringListAndWrap(true);
+        ArrayList<String> uriStrings = convertUrisToStringList(selectedUris);
+        Log.d("editedThumbnailUri", String.valueOf(editedThumbnailUri));
+        Log.d("displayImage", String.valueOf(displayImage));
+        Log.d("firstUri", String.valueOf(firstUri));
+        String thumbnailUri = determineThumbnailUri(isAddingToExistingFolder, editedThumbnailUri, displayImage, firstUri);
 
+        createStoryCardRequest(isAddingToExistingFolder, userId, folderId, storyTitle, location, thumbnailUri, uriStrings, comments );
+        updateDatabase(firstUri);
+
+    }
+
+    private ArrayList<String> convertUrisToStringList(ArrayList<Uri> selectedUris){
+        ArrayList<String> uriStrings = new ArrayList<>();
+        for (Uri uri : selectedUris) {
+            uriStrings.add(uri.toString());
+        }
+        return uriStrings;
+    }
+
+    private String determineThumbnailUri(boolean includeFolderId, String editedThumbnailUri, String displayImage, Uri firstUri){
+        if (includeFolderId) {
+            // 기존 폴더에 추가하는 로직 처리
+            if (TextUtils.isEmpty(editedThumbnailUri)) {
+                // 편집된 썸네일이 존재 하는지 여부에 따라 갈림
+                return (TextUtils.isEmpty(displayImage)) ? firstUri.toString() : displayImage;
+            } else {
+                return editedThumbnailUri;
+            }
         } else {
             // 새로운 스토리 카드 생성 로직 처리
-            convertUrisToStringListAndWrap(false);
+            return (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
         }
+    }
 
-        // db 업데이트
+    private void createStoryCardRequest(boolean includeFolderId, int userId, int folderId, String storyTitle, String location, String thumbnailUri,  ArrayList<String> uriStrings, ArrayList<String> comments) {
+        if (includeFolderId) {
+            cardRequest = new StoryCardRequest(userId, folderId, uriStrings, storyTitle, location, thumbnailUri, comments);
+        } else {
+            cardRequest = new StoryCardRequest(userId, uriStrings, storyTitle, location, thumbnailUri, comments);
+        }
+    }
+
+    private void updateDatabase(Uri firstUri) {
         if(UriUtils.isImageUri(firstUri, this)){
             insertImageStoryCardsInDB();
         }else if(UriUtils.isVideoUri(firstUri, this)) {
             insertVideoStoryCardInDB();
         }
-
     }
-
-    private void convertUrisToStringListAndWrap(boolean includeFolderId){
-        ArrayList<String> uriStrings = new ArrayList<>();
-        for (Uri uri : selectedUris) {
-            uriStrings.add(uri.toString());
-        }
-
-        if (includeFolderId) {
-            //StoryWritingActivity2에서 편집된 썸네일이 존재하는 지 여부에 따라 나뉨
-            String thumbnailUri;
-            if(TextUtils.isEmpty(editedThumbnailUri)){
-
-                if(displayImage == null){
-                    // 대표사진이 없다면 (text 폴더의 경우, 새롭게 추가되는 사진들 중 첫 사진을 썸네일로)
-                    thumbnailUri = String.valueOf(selectedUris.get(0));
-                }else {
-                    // 대표사진이 있다면, 기존 폴더의 대표사진으로
-                    thumbnailUri = displayImage;
-                }
-            }else {
-                // StoryWritingActivity2에서 편집된 썸네일을 가져옴
-                thumbnailUri = editedThumbnailUri;
-
-            }
-            cardRequest = new StoryCardRequest(userId, folderId, uriStrings, storyTitle, location, thumbnailUri, comments);
-
-        } else {
-
-            String thumbnailUri = (TextUtils.isEmpty(editedThumbnailUri)) ? firstUri.toString() : editedThumbnailUri;
-            cardRequest = new StoryCardRequest(userId, uriStrings, storyTitle, location, thumbnailUri, comments);
-        }
-    }
-
 
     private void insertImageStoryCardsInDB(){
         service.saveImageStoryCards(cardRequest).enqueue(new Callback<SuccessAndMessageResponse>() {
