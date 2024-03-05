@@ -52,16 +52,16 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     int folderId;
     Uri firstUri;
     ImageView thumbnailView;
-    private static final int REQUEST_CODE_STORY_FOLDER_EDIT = 123;
     TextView locationView;
     TextView titleView;
     String editedThumbnailUri;
     String storyTitle;
     String location;
-    private static final int REQUEST_CODE_IMAGE_COMMENT_INPUT = 456;
     ArrayList<String> comments;
-    boolean isAddingToExistingFolder;
+    boolean isExistingFolder;
     String displayImage;
+    private static final int EDIT_FOLDER = 123;
+    private static final int INPUT_IMAGE_COMMENT = 456;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +70,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         setupNetworkAndRetrieveId();
         extractIntentData();
-        if (isAddingToExistingFolder) {
-            // 기존 폴더에 추가하는 로직 처리
-            renderThumbnailFromDB();
-        } else {
-            // 새로운 스토리 카드 생성 로직 처리
-            renderThumbnail();
-        }
+        renderThumbnailBasedOnCondition(isExistingFolder);
         setRecyclerView();
         setupUIListeners();
 
@@ -86,12 +80,11 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-        folderId = IntentHelper.getId(this);
-
     }
 
     private void extractIntentData(){
-        isAddingToExistingFolder = getIntent().getBooleanExtra("isAddingToExistingFolder", false);
+        folderId = IntentHelper.getId(this);
+        isExistingFolder = getIntent().getBooleanExtra("isExistingFolder", false);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
         if(selectedUris != null){
             firstUri = selectedUris.get(0);
@@ -99,30 +92,13 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     }
 
-    private void setRecyclerView(){
-        RecyclerView recyclerView = findViewById(R.id.recyclerView2);
-        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_CODE_STORY_FOLDER_EDIT && resultCode == RESULT_OK && data != null){
-                Bundle extras = data.getExtras();
-                if (extras != null) {
-                    editedThumbnailUri = extras.getString("croppedThumbnailUri");
-                    storyTitle = extras.getString("storyTitle");
-                    location = extras.getString("location");
-
-                    locationView = findViewById(R.id.textView28);
-                    titleView = findViewById(R.id.textView27);
-                    ImageUtils.loadImage(editedThumbnailUri, thumbnailView, this);
-                    titleView.setText(storyTitle);
-                    locationView.setText(location);
-                }
-        } else if (requestCode == REQUEST_CODE_IMAGE_COMMENT_INPUT && resultCode == RESULT_OK && data != null) {
-            comments = data.getStringArrayListExtra("comments");
-
+    private void renderThumbnailBasedOnCondition(boolean isAddingToExistingFolder){
+        if (isAddingToExistingFolder) {
+            // 기존 폴더에 추가하는 로직 처리
+            renderThumbnailFromDB();
+        } else {
+            // 새로운 스토리 카드 생성 로직 처리
+            renderThumbnail();
         }
     }
 
@@ -145,8 +121,8 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     private void processThumbNailResponse(Response<StoryFolderResponse> response){
-
         StoryFolderResponse storyFolderResponse = response.body();
+
         if(storyFolderResponse.isSuccess()){
             updateUIOnSuccess(storyFolderResponse);
 
@@ -180,29 +156,30 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         if(selectedUris != null && !selectedUris.isEmpty()){
 
-                if(UriUtils.isImageUri(firstUri, this)){
-                    // MIME 타입이 이미지인 경우
-                    ImageUtils.loadImage(firstUri.toString(), thumbnailView, this);
+            if(UriUtils.isImageUri(firstUri, this)){
+                // MIME 타입이 이미지인 경우
+                ImageUtils.loadImage(firstUri.toString(), thumbnailView, this);
 
-                }else if(UriUtils.isVideoUri(firstUri, this)){
-                    // MIME 타입이 동영상인 경우
-                    VideoUtils.loadVideoThumbnail(this, firstUri, thumbnailView);
+            }else if(UriUtils.isVideoUri(firstUri, this)){
+                // MIME 타입이 동영상인 경우
+                VideoUtils.loadVideoThumbnail(this, firstUri, thumbnailView);
 
-                }
-
+            }
 
         }
+    }
+
+    private void setRecyclerView(){
+        RecyclerView recyclerView = findViewById(R.id.recyclerView2);
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
     }
 
     private void savePhotoCards() {
 
         ArrayList<String> uriStrings = convertUrisToStringList(selectedUris);
-        Log.d("editedThumbnailUri", String.valueOf(editedThumbnailUri));
-        Log.d("displayImage", String.valueOf(displayImage));
-        Log.d("firstUri", String.valueOf(firstUri));
-        String thumbnailUri = determineThumbnailUri(isAddingToExistingFolder, editedThumbnailUri, displayImage, firstUri);
-
-        createStoryCardRequest(isAddingToExistingFolder, userId, folderId, storyTitle, location, thumbnailUri, uriStrings, comments );
+        String thumbnailUri = determineThumbnailUri(isExistingFolder, editedThumbnailUri, displayImage, firstUri);
+        createStoryCardRequest(isExistingFolder, userId, folderId, storyTitle, location, thumbnailUri, uriStrings, comments );
         updateDatabase(firstUri);
 
     }
@@ -300,15 +277,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
-
-    private Bundle temporarystoryWritingBundle(){
-        Bundle bundle = new Bundle();
-        bundle.putInt("folderId", folderId);
-        bundle.putString("thumbnailUri", firstUri.toString());
-        bundle.putParcelableArrayList("selectedUris", selectedUris);
-        return bundle;
-    }
-
     @Override
     public void pencilIconClicked(ArrayList<Uri> uriList, int position) {
 
@@ -326,7 +294,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                 }
         }
         intent.putExtra("scrollToPosition", position);
-        startActivityForResult(intent, REQUEST_CODE_IMAGE_COMMENT_INPUT);
+        startActivityForResult(intent, INPUT_IMAGE_COMMENT);
     }
 
     private void setupUIListeners(){
@@ -339,8 +307,38 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             @Override
             public void onClick(View v) {
                 Bundle bundle = temporarystoryWritingBundle();
-                IntentHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, REQUEST_CODE_STORY_FOLDER_EDIT);
+                IntentHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, EDIT_FOLDER);
             }
         });
+    }
+
+    private Bundle temporarystoryWritingBundle(){
+        Bundle bundle = new Bundle();
+        bundle.putInt("folderId", folderId);
+        bundle.putString("thumbnailUri", firstUri.toString());
+        bundle.putParcelableArrayList("selectedUris", selectedUris);
+        bundle.putBoolean("isExistingFolder", isExistingFolder);
+        return bundle;
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == EDIT_FOLDER && resultCode == RESULT_OK && data != null){
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                editedThumbnailUri = extras.getString("croppedThumbnailUri");
+                storyTitle = extras.getString("storyTitle");
+                location = extras.getString("location");
+
+                locationView = findViewById(R.id.textView28);
+                titleView = findViewById(R.id.textView27);
+                ImageUtils.loadImage(editedThumbnailUri, thumbnailView, this);
+                titleView.setText(storyTitle);
+                locationView.setText(location);
+            }
+        }  else if (requestCode == INPUT_IMAGE_COMMENT && resultCode == RESULT_OK && data != null) {
+            comments = data.getStringArrayListExtra("comments");
+
+        }
     }
 }

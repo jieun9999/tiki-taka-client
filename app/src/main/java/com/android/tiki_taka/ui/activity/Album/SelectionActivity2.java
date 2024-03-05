@@ -71,12 +71,12 @@ public class SelectionActivity2 extends AppCompatActivity {
             selectedUris.clear();
             selectedUris.add(imageUri);
 
-            boolean isAddingToExistingFolder = true;
+            boolean isExistingFolder = true;
 
             Intent intent = new Intent(SelectionActivity2.this, StoryWritingActivity1.class);
             intent.putExtra("id", folderId);
             intent.putParcelableArrayListExtra("selectedUris", selectedUris);
-            intent.putExtra("isAddingToExistingFolder", isAddingToExistingFolder);
+            intent.putExtra("isExistingFolder", isExistingFolder);
             startActivity(intent);
         }
     }

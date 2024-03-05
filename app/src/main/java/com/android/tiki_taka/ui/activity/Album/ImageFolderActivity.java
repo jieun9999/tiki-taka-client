@@ -178,14 +178,12 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
                     handleStoryCardsResponse(response);
 
                 }else {
-                    // 응답 실패
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<StoryCardsResponse> call, Throwable t) {
-                // 요청 실패 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
