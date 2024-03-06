@@ -107,8 +107,8 @@ public class StoryWritingActivity4 extends AppCompatActivity {
 
     private String makeTitleFromTexts(String memoText){
         String title;
-        if (memoText.length() > 20) {
-            title = memoText.substring(0, 20);
+        if (memoText.length() > 10) {
+            title = memoText.substring(0, 10);
         } else {
             title = memoText;
         }
