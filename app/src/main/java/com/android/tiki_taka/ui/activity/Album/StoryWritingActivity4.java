@@ -29,20 +29,47 @@ import retrofit2.Retrofit;
 public class StoryWritingActivity4 extends AppCompatActivity {
     StoryApiService service;
     int userId;
+    int folderId;
+    boolean isExistingFolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_writing4);
 
+        setupNetworkAndRetrieveId();
+        extractIntentData();
+        locationEditTextGone();
+        displayCurrentDateOnToolbar();
+        setupUIListeners();
+
+    }
+
+    private void setupNetworkAndRetrieveId(){
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+    }
 
+    private void displayCurrentDateOnToolbar() {
         String currentDate = getIntent().getStringExtra("currentDate");
         TextView toolbarDateView = findViewById(R.id.textView35);
         toolbarDateView.setText(currentDate);
+    }
 
+    private void extractIntentData(){
+        folderId =  getIntent().getIntExtra("id", -1);
+        isExistingFolder = getIntent().getBooleanExtra("isExistingFolder", false);
+    }
+
+    private void locationEditTextGone(){
+        if(isExistingFolder){
+            EditText locationEditText = findViewById(R.id.locationEditText);
+            locationEditText.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupUIListeners(){
         TextView cancelBtn = findViewById(R.id.textView33);
         cancelBtn.setOnClickListener( v -> finish());
         TextView uploadBtn = findViewById(R.id.textView34);
@@ -50,8 +77,13 @@ public class StoryWritingActivity4 extends AppCompatActivity {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StoryCardRequest cardRequest = createStoryCardRequestFromInput();
-                uploadMemoToServer(cardRequest);
+                if(isExistingFolder){
+                    StoryCardRequest cardRequest = createStoryCardRequestFromInput(folderId);
+                    uploadMemoToServer(cardRequest);
+                }else {
+                    StoryCardRequest cardRequest = createStoryCardRequestFromInput();
+                    uploadMemoToServer(cardRequest);
+                }
             }
         });
     }
@@ -63,10 +95,16 @@ public class StoryWritingActivity4 extends AppCompatActivity {
         EditText locationView = findViewById(R.id.locationEditText);
         String location = locationView.getText().toString();
         StoryCardRequest cardRequest = new StoryCardRequest(userId, memoText,title, location);
-        Log.d("memoText", memoText);
-        Log.d("title", title);
         return cardRequest;
     }
+
+    private StoryCardRequest createStoryCardRequestFromInput(int folderId){
+        EditText noteEditTextView = findViewById(R.id.memoEditText);
+        String memoText = noteEditTextView.getText().toString();
+        StoryCardRequest cardRequest = new StoryCardRequest(userId, folderId, memoText);
+        return cardRequest;
+    }
+
     private String makeTitleFromTexts(String memoText){
         String title;
         if (memoText.length() > 20) {

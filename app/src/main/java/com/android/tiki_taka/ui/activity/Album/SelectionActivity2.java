@@ -19,7 +19,9 @@ import com.android.tiki_taka.utils.IntentHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class SelectionActivity2 extends AppCompatActivity {
     private static final int PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE = 1 ;
@@ -43,6 +45,10 @@ public class SelectionActivity2 extends AppCompatActivity {
         //사진
         ImageView photoIcon = findViewById(R.id.imageView35);
         photoIcon.setOnClickListener(v -> launchPhotoPickerInMultiSelectedMode());
+
+        //메모
+        ImageView memoIcon = findViewById(R.id.imageView38);
+        memoIcon.setOnClickListener(v -> openNotePad());
 
         ImageView xBtn = findViewById(R.id.imageView40);
         xBtn.setOnClickListener(v -> dismissActivity());
@@ -77,6 +83,17 @@ public class SelectionActivity2 extends AppCompatActivity {
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(Intent.createChooser(intent, "Select Pictures"), PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE);
+    }
+
+    // 메모장 액티비티를 시작
+    public void openNotePad() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy년 MM월 dd일");
+        String currentDate = dateFormat.format(new Date());
+        Intent intent = new Intent(this, StoryWritingActivity4.class);
+        intent.putExtra("currentDate", currentDate);
+        intent.putExtra("id", folderId);
+        intent.putExtra("isExistingFolder", isExistingFolder);
+        startActivity(intent);
     }
 
     private void dismissActivity() {
