@@ -26,6 +26,7 @@ import java.util.Date;
 public class SelectionActivity2 extends AppCompatActivity {
     private static final int PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE = 1 ;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
+    private static final int REQUEST_VIDEO_PICK = 3;
     private Uri imageUri; //카메라 앱이 전달받을 파일경로
     ArrayList<Uri> selectedUris = new ArrayList<>();
     int folderId; // 특정 폴더
@@ -49,6 +50,10 @@ public class SelectionActivity2 extends AppCompatActivity {
         //메모
         ImageView memoIcon = findViewById(R.id.imageView38);
         memoIcon.setOnClickListener(v -> openNotePad());
+
+        //동영상
+        ImageView videoIcon = findViewById(R.id.imageView37);
+        videoIcon.setOnClickListener(v -> pickVideoFromGallery());
 
         ImageView xBtn = findViewById(R.id.imageView40);
         xBtn.setOnClickListener(v -> dismissActivity());
@@ -96,6 +101,13 @@ public class SelectionActivity2 extends AppCompatActivity {
         startActivity(intent);
     }
 
+    // 동영상을 갤러리에서 선택
+    private void pickVideoFromGallery(){
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("video/*");
+        startActivityForResult(intent, REQUEST_VIDEO_PICK);
+    }
+
     private void dismissActivity() {
         finish();
     }
@@ -103,46 +115,72 @@ public class SelectionActivity2 extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            selectedUris.clear();
-            selectedUris.add(imageUri);
+        if(requestCode == RESULT_OK){
+            switch (requestCode){
+                case REQUEST_IMAGE_CAPTURE:
+                    handleImageCapture();
+                    break;
+                case PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE:
+                    handleImageMultiSelect(data);
+                    break;
+                case REQUEST_VIDEO_PICK:
+                    handleVideoPick(data);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 
+    private  void handleImageCapture(){
+        selectedUris.clear();
+        selectedUris.add(imageUri);
+        startStoryWritingActivity();
+    }
+
+    private void startStoryWritingActivity(){
+
+        if(!selectedUris.isEmpty()){
             Intent intent = new Intent(SelectionActivity2.this, StoryWritingActivity1.class);
             intent.putExtra("id", folderId);
             intent.putParcelableArrayListExtra("selectedUris", selectedUris);
             intent.putExtra("isExistingFolder", isExistingFolder);
             startActivity(intent);
-
-        }else if (requestCode == PHOTO_PICKER_MULTI_SELECT_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            // 초기화를 여기서 수행하면 사용자가 다시 이미지 선택을 시작할 때마다 리스트가 초기화됩니다.
-            selectedUris.clear();
-
-            ClipData clipData = data.getClipData();
-            if (clipData != null) {
-                // 여러 사진 선택
-                if (clipData.getItemCount() > 10) {
-                    showToast("사진은 10장까지 선택 가능합니다.");
-                }
-                else {
-                    for (int i = 0; i < clipData.getItemCount(); i++) {
-                        Uri currentUri = clipData.getItemAt(i).getUri();
-                        selectedUris.add(currentUri);  //uri를 list에 담는다.
-                    }
-                }
-
-            } else if (data.getData() != null) {
-                // 단일 사진 선택
-                selectedUris.add(data.getData());
-            }
-            if(!selectedUris.isEmpty()){
-                Intent intent = new Intent(SelectionActivity2.this, StoryWritingActivity1.class);
-                intent.putExtra("id", folderId);
-                intent.putParcelableArrayListExtra("selectedUris", selectedUris);
-                intent.putExtra("isExistingFolder", isExistingFolder);
-                startActivity(intent);
-            }
-
         }
+    }
+
+    private void handleImageMultiSelect(Intent data){
+        // 초기화를 여기서 수행하면 사용자가 다시 이미지 선택을 시작할 때마다 리스트가 초기화됩니다.
+        selectedUris.clear();
+
+        ClipData clipData = data.getClipData();
+        if (clipData != null) {
+            // 여러 사진 선택
+            if (clipData.getItemCount() > 10) {
+                showToast("사진은 10장까지 선택 가능합니다.");
+            }
+            else {
+                for (int i = 0; i < clipData.getItemCount(); i++) {
+                    Uri currentUri = clipData.getItemAt(i).getUri();
+                    selectedUris.add(currentUri);  //uri를 list에 담는다.
+                }
+            }
+
+        } else if (data.getData() != null) {
+            // 단일 사진 선택
+            selectedUris.add(data.getData());
+        }
+
+        if(!selectedUris.isEmpty()){
+            startStoryWritingActivity();
+        }
+    }
+
+    private void handleVideoPick(Intent data) {
+        selectedUris.clear();
+        Uri selectedVideoUri = data.getData();
+        selectedUris.add(selectedVideoUri);
+        startStoryWritingActivity();
     }
 
     private void showToast(String message) {

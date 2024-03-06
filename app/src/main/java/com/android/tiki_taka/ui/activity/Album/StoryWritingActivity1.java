@@ -138,9 +138,18 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         displayImage = storyFolder.getDisplayImage();
 
         if(displayImage == null){
-            ImageUtils.loadImage(String.valueOf(selectedUris.get(0)), thumbnailView, this);
+            determineThumbnailViewBasedOnUriType();
         }else {
             ImageUtils.loadImage(storyFolder.getDisplayImage(), thumbnailView, this);
+        }
+    }
+
+    private void determineThumbnailViewBasedOnUriType(){
+        Uri firstUri = selectedUris.get(0);
+        if(UriUtils.isVideoUri(firstUri, this)){
+            VideoUtils.loadVideoThumbnail(this, firstUri, thumbnailView);
+        } else if (UriUtils.isImageUri(firstUri, this)) {
+            ImageUtils.loadImage(String.valueOf(firstUri), thumbnailView, this);
         }
 
     }
@@ -246,7 +255,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
             @Override
             public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
-                //네트워크 오류 처리
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
