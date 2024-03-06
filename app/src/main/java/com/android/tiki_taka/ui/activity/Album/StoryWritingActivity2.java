@@ -222,7 +222,6 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     }
 
     private void loadExistingUrisFromFolderAndSetRecyclerView(int folderId) {
-        ArrayList<Uri> existingUris = new ArrayList<>();
         service.getStoryCards(folderId).enqueue(new Callback<StoryCardsResponse>() {
             @Override
             public void onResponse(Call<StoryCardsResponse> call, Response<StoryCardsResponse> response) {
@@ -255,12 +254,19 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     }
 
     private void filterAndAddValidUris(List<StoryCard> storyCards, ArrayList<Uri> existingUris) {
+        // 이미지와 비디오 카드를 모두 담아야 함
         for (StoryCard storyCard : storyCards) {
             String imageUriString = storyCard.getImage();
+            String videoUriString = storyCard.getVideo();
             String dataType = storyCard.getDataType();
 
-            if (imageUriString != null && !"text".equals(dataType)) {
+            if (imageUriString != null && "image".equals(dataType)) {
                 Uri uri = Uri.parse(imageUriString);
+                existingUris.add(uri);
+            }
+
+            if(videoUriString != null && "video".equals(dataType)){
+                Uri uri = Uri.parse(videoUriString);
                 existingUris.add(uri);
             }
         }

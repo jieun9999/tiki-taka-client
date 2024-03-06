@@ -115,7 +115,7 @@ public class SelectionActivity2 extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == RESULT_OK){
+        if(resultCode == RESULT_OK){
             switch (requestCode){
                 case REQUEST_IMAGE_CAPTURE:
                     handleImageCapture();
