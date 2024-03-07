@@ -6,6 +6,7 @@ import java.util.ArrayList;
 public class StoryCardRequest {
     // 서버에 보내는 것
     // userId, 스토리 카드 리스트(uris), 스토리 폴더 제목(title), 스토리 폴더 장소(location), 썸네일(displayImage), 댓글(comments)
+    private int cardId;
     private int userId;
     private int folderId;
     private ArrayList<String> uris;
@@ -48,6 +49,12 @@ public class StoryCardRequest {
     public StoryCardRequest(int userId, int folderId, String text) {
         this.userId = userId;
         this.folderId = folderId;
+        this.text = text;
+    }
+
+    // 메모 카드 내용 편집
+    public StoryCardRequest(int cardId, String text) {
+        this.cardId = cardId;
         this.text = text;
     }
 
@@ -113,5 +120,13 @@ public class StoryCardRequest {
 
     public void setFolderId(int folderId) {
         this.folderId = folderId;
+    }
+
+    public int getCardId() {
+        return cardId;
+    }
+
+    public void setCardId(int cardId) {
+        this.cardId = cardId;
     }
 }

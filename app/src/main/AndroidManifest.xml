@@ -23,9 +23,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Album.MemoCardEditActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.Album.FolderEditActivity"
-            android:theme="@style/NoActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/NoActionBar" />
         <activity
             android:name=".ui.activity.Album.SelectionActivity2"
             android:exported="true" />

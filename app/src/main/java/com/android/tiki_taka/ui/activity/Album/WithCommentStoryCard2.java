@@ -1,5 +1,6 @@
 package com.android.tiki_taka.ui.activity.Album;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -56,7 +57,8 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
     ArrayList<CommentItem> commentList;
     RecyclerView recyclerView;
     boolean isLiked;
-
+    String memoText;
+    private static final int REQUEST_CODE_EDIT_MEMO = 777;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,6 +116,7 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
             ImageView myLikesView = findViewById(R.id.imageView31);
             FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);
+            memoText = storyCard.getMemo();
             cardTextView.setText(storyCard.getMemo());
 
             //파트너 아이디와 이미지 가져와서 좋아요 상태 렌더링
@@ -317,6 +320,19 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
                 BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(WithCommentStoryCard2.this);
                 bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_memo_card);
 
+                TextView editMemoBtn = bottomSheetDialog.findViewById(R.id.editMemo);
+                editMemoBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("memoText", memoText);
+                        bundle.putInt("cardId", cardId);
+                        IntentHelper.navigateToActivity(WithCommentStoryCard2.this, MemoCardEditActivity.class, bundle, REQUEST_CODE_EDIT_MEMO);
+
+                        bottomSheetDialog.dismiss();
+                    }
+                });
+
                 TextView deleteBtn = bottomSheetDialog.findViewById(R.id.textView9);
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -391,4 +407,13 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_EDIT_MEMO) {
+            if (resultCode == RESULT_OK) {
+                loadCardDetails();
+            }
+        }
+    }
 }

@@ -64,6 +64,7 @@ public class StoryWritingActivity4 extends AppCompatActivity {
 
     private void locationEditTextGone(){
         if(isExistingFolder){
+            // 기존 폴더가 있거나, 기존 메모 내용을 편집할 때
             EditText locationEditText = findViewById(R.id.locationEditText);
             locationEditText.setVisibility(View.GONE);
         }
