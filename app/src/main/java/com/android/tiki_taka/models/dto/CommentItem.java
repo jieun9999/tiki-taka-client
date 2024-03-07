@@ -25,8 +25,8 @@ public class CommentItem{
     }
 
     // 코멘트 수정
-    public CommentItem(int cardId, String commentText) {
-        this.cardId = cardId;
+    public CommentItem(int commentId,String commentText) {
+        this.commentId = commentId;
         this.commentText = commentText;
     }
 

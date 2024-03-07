@@ -113,8 +113,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     if(editCommentListener != null){
                         int position = getAdapterPosition();
                         if(position != RecyclerView.NO_POSITION){
+                            int commentId = commentItems.get(position).getCommentId();
                             String commentText = commentItems.get(position).getCommentText();
-                            editCommentListener.onEditClick(position, commentText);
+                            editCommentListener.onEditClick(position, commentId, commentText);
                         }
                     }
                 }

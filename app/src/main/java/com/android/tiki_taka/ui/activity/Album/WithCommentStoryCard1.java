@@ -375,7 +375,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
 
                     }else if(!response.body().isSuccess()){
                         // success가 false일 때의 처리
-                        Log.e("ERROR", "서버 오류");
+                        Log.e("ERROR", "서버 응답 오류");
                     }
                 }else {
 
@@ -392,7 +392,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
 
 
     @Override
-    public void onEditClick(int position, String commentText) {
+    public void onEditClick(int position, int commentId, String commentText) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_comment);
 
@@ -404,7 +404,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             @Override
             public void onClick(View v) {
                 String updatedComment = editTextComment.getText().toString();
-                updateCommentToServer(updatedComment);
+                updateCommentToServer(commentId, updatedComment);
                 bottomSheetDialog.dismiss();
             }
         });
@@ -412,17 +412,27 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         bottomSheetDialog.show();
     }
 
-    private void updateCommentToServer(String updatedComment){
-        CommentItem newCommentItem = new CommentItem(cardId, updatedComment);
+    private void updateCommentToServer(int commentId, String updatedComment){
+        CommentItem newCommentItem = new CommentItem(commentId, updatedComment);
         service.updateComment(newCommentItem).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        loadComments();
 
+                    }else if(!response.body().isSuccess()){
+                        Log.e("ERROR", "서버 응답 오류");
+                    }
+                }else {
+
+                    Log.e("ERROR", "댓글 업데이트 실패");
+                }
             }
 
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-
+                Log.e("ERROR", "네트워크 오류");
             }
         });
     }

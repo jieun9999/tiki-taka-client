@@ -419,7 +419,48 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
     }
 
     @Override
-    public void onEditClick(int position, String commentText) {
+    public void onEditClick(int position, int commentId, String commentText) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_comment);
 
+        EditText editTextComment = bottomSheetDialog.findViewById(R.id.inputbox_comment);
+        TextView buttonSaveComment = bottomSheetDialog.findViewById(R.id.send_comment_view);
+        editTextComment.setText(commentText);
+
+        buttonSaveComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String updatedComment = editTextComment.getText().toString();
+                updateCommentToServer(commentId, updatedComment);
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        bottomSheetDialog.show();
+    }
+
+    private void updateCommentToServer(int commentId, String updatedComment){
+        CommentItem newCommentItem = new CommentItem(commentId, updatedComment);
+        service.updateComment(newCommentItem).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        loadComments();
+
+                    }else if(!response.body().isSuccess()){
+                        Log.e("ERROR", "서버 응답 오류");
+                    }
+                }else {
+
+                    Log.e("ERROR", "댓글 업데이트 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.e("ERROR", "네트워크 오류");
+            }
+        });
     }
 }
