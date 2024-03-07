@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.DeleteCommentListener;
+import com.android.tiki_taka.listeners.EditCommentListener;
 import com.android.tiki_taka.models.dto.CommentItem;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -21,20 +22,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
-    private ArrayList<CommentItem> commentItems;
+    private static ArrayList<CommentItem> commentItems;
     private int currentUserId;
     private static DeleteCommentListener deleteCommentListener;
     private boolean showDeleteButton;
+    private static EditCommentListener editCommentListener;
 
     public CommentAdapter(ArrayList<CommentItem> commentItems, boolean showDeleteButton) {
         this.commentItems = commentItems;
         this.showDeleteButton = showDeleteButton;
     }
 
-    public CommentAdapter(ArrayList<CommentItem> commentItems, DeleteCommentListener deleteCommentListener, boolean showDeleteButton) {
+    public CommentAdapter(ArrayList<CommentItem> commentItems, DeleteCommentListener deleteCommentListener, boolean showDeleteButton, EditCommentListener editCommentListener) {
         this.commentItems = commentItems;
         this.deleteCommentListener = deleteCommentListener;
         this.showDeleteButton = showDeleteButton;
+        this.editCommentListener = editCommentListener;
     }
 
     @NonNull
@@ -58,12 +61,15 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             currentUserId = SharedPreferencesHelper.getUserId(holder.itemView.getContext());
             if(comment.getUserId() == currentUserId){
                 holder.deleteCommentButton.setVisibility(View.VISIBLE);
+                holder.editCommentButton.setVisibility(View.VISIBLE);
             }else {
                 holder.deleteCommentButton.setVisibility(View.GONE);
+                holder.editCommentButton.setVisibility(View.GONE);
             }
 
         }else {
             holder.deleteCommentButton.setVisibility(View.GONE);
+            holder.editCommentButton.setVisibility(View.GONE);
         }
 
 
@@ -79,6 +85,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         TextView commentTextView;
         TextView createdAtTextView;
         ImageView deleteCommentButton;
+        ImageView editCommentButton;
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -86,6 +93,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             commentTextView = itemView.findViewById(R.id.textView37);
             createdAtTextView = itemView.findViewById(R.id.textView38);
             deleteCommentButton = itemView.findViewById(R.id.imageView43);
+            editCommentButton = itemView.findViewById(R.id.imageView34);
 
             deleteCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -94,6 +102,19 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                         int position = getAdapterPosition();
                         if(position != RecyclerView.NO_POSITION){
                             deleteCommentListener.onDeleteClick(position);
+                        }
+                    }
+                }
+            });
+
+            editCommentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(editCommentListener != null){
+                        int position = getAdapterPosition();
+                        if(position != RecyclerView.NO_POSITION){
+                            String commentText = commentItems.get(position).getCommentText();
+                            editCommentListener.onEditClick(position, commentText);
                         }
                     }
                 }

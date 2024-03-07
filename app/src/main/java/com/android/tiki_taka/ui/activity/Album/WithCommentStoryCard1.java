@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.CommentAdapter;
 import com.android.tiki_taka.listeners.DeleteCommentListener;
+import com.android.tiki_taka.listeners.EditCommentListener;
 import com.android.tiki_taka.models.request.CardIdRequest;
 import com.android.tiki_taka.models.request.CommentIdRequest;
 import com.android.tiki_taka.models.dto.CommentItem;
@@ -47,7 +48,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCommentListener{
+public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCommentListener, EditCommentListener {
     StoryApiService service;
     int userId;
     int partnerId;
@@ -150,7 +151,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
         recyclerView = findViewById(R.id.commentRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         commentList = new ArrayList<>();
-        adapter = new CommentAdapter(commentList,this, true);
+        adapter = new CommentAdapter(commentList,this, true, this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -222,7 +223,6 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
     private void postComment(){
         EditText inputCommentView = findViewById(R.id.inputbox_comment);
         String inputText = inputCommentView.getText().toString();
-        Log.d("inputText", inputText);
 
         if(!inputText.isEmpty()){
             //새 댓글 객체 생성
@@ -391,4 +391,39 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
     }
 
 
+    @Override
+    public void onEditClick(int position, String commentText) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_comment);
+
+        EditText editTextComment = bottomSheetDialog.findViewById(R.id.inputbox_comment);
+        TextView buttonSaveComment = bottomSheetDialog.findViewById(R.id.send_comment_view);
+        editTextComment.setText(commentText);
+
+        buttonSaveComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String updatedComment = editTextComment.getText().toString();
+                updateCommentToServer(updatedComment);
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        bottomSheetDialog.show();
+    }
+
+    private void updateCommentToServer(String updatedComment){
+        CommentItem newCommentItem = new CommentItem(cardId, updatedComment);
+        service.updateComment(newCommentItem).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+
+            }
+        });
+    }
 }

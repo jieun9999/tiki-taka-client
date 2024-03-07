@@ -24,6 +24,12 @@ public class CommentItem{
         this.commentText = commentText;
     }
 
+    // 코멘트 수정
+    public CommentItem(int cardId, String commentText) {
+        this.cardId = cardId;
+        this.commentText = commentText;
+    }
+
     public int getCommentId() {
         return commentId;
     }

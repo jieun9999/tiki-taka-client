@@ -60,6 +60,8 @@ public interface StoryApiService {
 
     @POST("Story/deleteComment.php")
     Call<ApiResponse> deleteComment(@Body CommentIdRequest commentIdRequest);
+    @POST("Story/updateComment.php")
+    Call<ApiResponse> updateComment(@Body CommentItem commentItem);
 
     @POST("Story/updateLikeStatus.php")
     Call<ApiResponse> updateLikeStatus(@Body LikeStatusRequest likeStatusRequest);

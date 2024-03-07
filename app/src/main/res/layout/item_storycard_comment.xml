@@ -52,4 +52,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ph_x_bold"
         tools:layout_editor_absoluteY="30dp" />
+
+    <ImageView
+        android:id="@+id/imageView34"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="13dp"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageView43"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/mdi_pencil" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
