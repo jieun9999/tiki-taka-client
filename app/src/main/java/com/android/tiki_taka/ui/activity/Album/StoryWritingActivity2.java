@@ -212,6 +212,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
             imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
         }
     }
+
     private void setupRecyclerViewBasedOnFolderType() {
         //기존 폴더가 있는 경우에만 서버에서 추가 데이터를 로드 후 리사이클러뷰 설정
         if(isExistingFolder){
@@ -284,12 +285,13 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     public void onUpdateThumbnail(Uri uri) {
         // 썸네일뷰 업데이트 로직
         ImageUtils.loadImage(String.valueOf(uri), imageViewToCrop, this);
-        sourceUri = uri; // sourceUri 업데이트
-
+        if(UriUtils.isVideoUri(uri, this)){
+            sourceUri = VideoUtils.getThumbNailUri(this, uri);
+        }else {
+            sourceUri = uri;
+        }
         destinationUri = createUniqueDestinationUri();
-        // 새로운 destinationUri 생성
         imageViewToCrop.setOnClickListener(v -> UCorpSettings(sourceUri, destinationUri));
-        // imageViewToCrop의 클릭 리스너를 업데이트된 sourceUri를 사용하여 재설정
     }
 
     @Override
