@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.listeners.FolderSelectListener;
 import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.utils.TimeUtils;
@@ -30,6 +31,7 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         this.itemClickListener = itemClickListener;
     }
 
+
     @Override
     public int getItemViewType(int position) {
         StoryFolder storyFolderDto = storyFolders.get(position);
@@ -41,6 +43,19 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             default :
                 return -1;
         }
+    }
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if(viewType == IMAGE_TYPE){
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_folder_image, parent, false);
+            return new ImageViewHolder(view);
+
+        } else if (viewType == TEXT_TYPE) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_folder_memo, parent, false);
+            return new TextViewHolder(view);
+        }
+        return null;
     }
 
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
@@ -69,20 +84,6 @@ public class StoryFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if(viewType == IMAGE_TYPE){
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_folder_image, parent, false);
-            return new ImageViewHolder(view);
-
-        } else if (viewType == TEXT_TYPE) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_story_folder_memo, parent, false);
-            return new TextViewHolder(view);
-        }
-        return null;
-    }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {

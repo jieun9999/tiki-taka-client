@@ -37,7 +37,7 @@ import retrofit2.Retrofit;
 // 프래그먼트 내에서 ItemClickListener 인터페이스를 구현하고, 이를 어댑터에 전달할 수 있음
 public class AlbumFragment extends Fragment implements ItemClickListener {
     private StoryFolderAdapter adapter;
-    StoryApiService storyFolderApiService;
+    StoryApiService service;
     int userId; // 유저 식별 정보
 
     public AlbumFragment() {
@@ -50,7 +50,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
 
         super.onCreate(savedInstanceState);
         Retrofit retrofit = RetrofitClient.getClient();
-        storyFolderApiService = retrofit.create(StoryApiService.class);
+        service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(getContext());
 
     }
@@ -83,7 +83,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
     }
 
     private void loadStoryFolders() {
-        storyFolderApiService.getStoryFolders(userId).enqueue(new Callback<StoryFoldersResponse>() {
+        service.getStoryFolders(userId).enqueue(new Callback<StoryFoldersResponse>() {
             @Override
             public void onResponse(Call<StoryFoldersResponse> call, Response<StoryFoldersResponse> response) {
                 processStoryFolderResponse(response);

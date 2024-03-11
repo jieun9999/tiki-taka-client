@@ -47,7 +47,7 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView15" />
 
     <TextView
-        android:id="@+id/editMemo"
+        android:id="@+id/changeFolder"
         android:layout_width="330dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -70,7 +70,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editMemo">
+        app:layout_constraintTop_toBottomOf="@+id/changeFolder">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/이메일"

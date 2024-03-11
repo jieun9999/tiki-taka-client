@@ -16,7 +16,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/editMemo"
+            android:id="@+id/changeFolder"
             android:layout_width="match_parent"
             android:layout_height="53dp"
             android:gravity="center"

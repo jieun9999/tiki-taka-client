@@ -316,6 +316,15 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
                 BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(WithCommentStoryCard1.this);
                 bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_image_video_card);
 
+                TextView changeFolder = bottomSheetDialog.findViewById(R.id.changeFolder);
+                changeFolder.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        IntentHelper.navigateToActivity(WithCommentStoryCard1.this, SelectFolderActivity.class, cardId);
+                        bottomSheetDialog.dismiss();
+                    }
+                });
+
                 TextView deleteBtn = bottomSheetDialog.findViewById(R.id.textView9);
                 deleteBtn.setOnClickListener(new View.OnClickListener() {
                     @Override

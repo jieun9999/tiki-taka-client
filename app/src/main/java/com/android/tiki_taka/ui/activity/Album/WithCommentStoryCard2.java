@@ -321,7 +321,7 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
                 BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(WithCommentStoryCard2.this);
                 bottomSheetDialog.setContentView(R.layout.bottomsheet_edit_memo_card);
 
-                TextView editMemoBtn = bottomSheetDialog.findViewById(R.id.editMemo);
+                TextView editMemoBtn = bottomSheetDialog.findViewById(R.id.changeFolder);
                 editMemoBtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
