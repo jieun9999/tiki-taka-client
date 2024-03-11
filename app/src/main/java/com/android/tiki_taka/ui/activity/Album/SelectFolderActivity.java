@@ -5,8 +5,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.ChangeFolderAdapter;
@@ -15,8 +18,11 @@ import com.android.tiki_taka.adapters.StoryFolderAdapter;
 import com.android.tiki_taka.listeners.FolderSelectListener;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
+import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.StoryFoldersResponse;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.utils.InitializeStack;
+import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -31,9 +37,10 @@ import retrofit2.Retrofit;
 public class SelectFolderActivity extends AppCompatActivity implements FolderSelectListener {
     StoryApiService service;
     int userId;
+    int cardId;
     ChangeFolderAdapter adapter;
     RecyclerView recyclerView;
-    List<StoryFolder> storyFolders;
+    int selectedFolderId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +50,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
         setupNetworkAndRetrieveId();
         setRecyclerView();
         loadStoryFolders();
+        setupSaveBtnClickLister();
 
     }
 
@@ -50,6 +58,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+        cardId = IntentHelper.getId(this);
 
     }
 
@@ -108,8 +117,47 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
         Log.e("fail", message);
     }
 
-    @Override
-    public void onFolderItemSelect(int position) {
+    private void setupSaveBtnClickLister(){
+        Button saveBtn = findViewById(R.id.btn_save);
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(selectedFolderId != -1){
+                    saveSelectedFolderToDB();
+                }
+            }
+        });
+    }
 
+    private void saveSelectedFolderToDB(){
+        StoryCard updatedCard = StoryCard.fromCardIdAndFolderId(cardId, selectedFolderId);
+        service.updateFolderLocationInCard(updatedCard).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    handleSuccessResponse(response.body());
+                }else {
+                    Log.e("ERROR", "폴더 위치 업데이트 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.e("ERROR", "네트워크 오류");
+            }
+        });
+    }
+
+    private void handleSuccessResponse(ApiResponse response) {
+        if (response.isSuccess()) {
+            InitializeStack.navigateToAlbumFragment(SelectFolderActivity.this);
+        } else {
+            Log.e("ERROR", "서버 응답 오류");
+        }
+    }
+
+    @Override
+    public void onFolderItemSelect(int folderId) {
+        selectedFolderId = folderId;
     }
 }

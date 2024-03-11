@@ -24,17 +24,21 @@ public class StoryFolder {
     private String createdAt;
     @SerializedName("updated_at")
     private String updatedAt;
-    //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱함
 
-    // 생성자 함수를 작성할 때, 날짜 항목을 빼고 클래스의 인스턴스를 생성한뒤, 서버로 보냄
-    // createdAt 및 updatedAt 필드는 데이터베이스에 삽입 또는 수정 쿼리를 사용할 때 자동으로 설정됨
-    // 대신 서버에서 데이터를 받아올 때 해당 필드들이 포함된 객체를 사용하여 정보를 표시
+
     public StoryFolder(int folderId, String displayImage, String title, String location) {
         this.folderId = folderId;
         this.displayImage = displayImage;
         this.title = title;
         this.location = location;
     }
+
+
+    public static StoryFolder fromDetails(int folderId, String displayImage, String title, String location){
+        return new StoryFolder(folderId, displayImage, title, location);
+    }
+
+
     public int getFolderId() {
         return folderId;
     }

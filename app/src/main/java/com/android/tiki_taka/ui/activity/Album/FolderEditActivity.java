@@ -335,7 +335,7 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
     }
 
     private void updateFolderInDB(){
-        StoryFolder newStoryFolder = new StoryFolder(folderId, croppedimageUriString, newTitleText, newLocationText);
+        StoryFolder newStoryFolder = StoryFolder.fromDetails(folderId, croppedimageUriString, newTitleText, newLocationText);
         service.updateFolder(newStoryFolder).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {

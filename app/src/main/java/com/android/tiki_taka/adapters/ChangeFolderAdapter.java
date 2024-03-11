@@ -13,13 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.FolderSelectListener;
-import com.android.tiki_taka.listeners.ItemClickListener;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.utils.ImageUtils;
-import com.android.tiki_taka.utils.TimeUtils;
-import com.bumptech.glide.Glide;
-
-import java.text.ParseException;
 import java.util.List;
 
 public class ChangeFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -28,6 +23,8 @@ public class ChangeFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private List<StoryFolder> storyFolders;
     private FolderSelectListener folderSelectListener;
+    private int selectedPosition = -1;
+
 
     public ChangeFolderAdapter(List<StoryFolder> storyFolders, FolderSelectListener folderSelectListener) {
         this.storyFolders = storyFolders;
@@ -99,13 +96,35 @@ public class ChangeFolderAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             imageViewHolder.folderTitle.setText(folder.getTitle());
             ImageUtils.loadImage(folder.getDisplayImage(),imageViewHolder.folderImageView, imageViewHolder.itemView.getContext());
 
+            imageViewHolder.radioButton.setChecked(position == selectedPosition);
+            imageViewHolder.radioButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectedPosition = holder.getAdapterPosition();
+                    notifyDataSetChanged();
+                    if(folderSelectListener != null){
+                        folderSelectListener.onFolderItemSelect(storyFolders.get(selectedPosition).getFolderId());
+                    }
+                }
+            });
+
         } else if (holder.getItemViewType() == TEXT_TYPE) {
             ChangeFolderAdapter.TextViewHolder textViewHolder = (ChangeFolderAdapter.TextViewHolder) holder;
             textViewHolder.folderTextView.setText(folder.getTitle());
 
-        }
+            textViewHolder.radioButton.setChecked(position == selectedPosition);
+            textViewHolder.radioButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selectedPosition = holder.getAdapterPosition();
+                    notifyDataSetChanged();
+                    if(folderSelectListener != null){
+                        folderSelectListener.onFolderItemSelect(storyFolders.get(selectedPosition).getFolderId());
+                    }
+                }
+            });
 
-        holder.itemView.findViewById(R.id.radioButton).setOnClickListener( v -> folderSelectListener.onFolderItemSelect(position));
+        }
     }
 
     @Override

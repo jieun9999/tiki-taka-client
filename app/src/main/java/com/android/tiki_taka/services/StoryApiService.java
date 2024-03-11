@@ -72,4 +72,7 @@ public interface StoryApiService {
     @POST("Story/updateFolder.php")
     Call<ApiResponse> updateFolder(@Body StoryFolder storyFolder);
 
+    @POST("Story/updateFolderLocationInCard.php")
+    Call<ApiResponse> updateFolderLocationInCard(@Body StoryCard storyCard);
+
 }
