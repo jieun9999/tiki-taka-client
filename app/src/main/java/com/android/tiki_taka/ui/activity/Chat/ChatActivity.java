@@ -3,35 +3,35 @@ package com.android.tiki_taka.ui.activity.Chat;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.android.tiki_taka.R;
-import com.android.tiki_taka.models.dto.ChatUser;
-import com.android.tiki_taka.models.dto.Message;
-import com.android.tiki_taka.models.request.StoryCardRequest;
+import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 public class ChatActivity extends AppCompatActivity {
 
     private int userId;
     private int chatRoomId;
-    private List<Message> messages = new ArrayList<>(); //메세지 목록을 저장하는 필드
+    private ChatClient chatClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        initializeUserAndRoomIds();
         setupUIListeners();
+        initializeUserAndRoomIds();
+
+        try {
+            chatClient = new ChatClient("52.79.41.79", 1234);
+            chatClient.sendUserId(userId);
+            // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -45,7 +45,4 @@ public class ChatActivity extends AppCompatActivity {
         cancelBtn.setOnClickListener( v -> finish());
     }
 
-    public void addMessage(Message message){
-        this.messages.add(message);
-    }
 }
