@@ -36,4 +36,16 @@ public class SharedPreferencesHelper {
         editor.clear();
         editor.apply(); // 비동기적으로 저장
     }
+
+    public static void setRoomId(Context context, int roomId){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("roomId", roomId);
+        editor.apply();
+    }
+
+    public static int getRoomId(Context context){
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
+        return sharedPreferences.getInt("roomId", DEFAULT_USER_ID);
+    }
 }

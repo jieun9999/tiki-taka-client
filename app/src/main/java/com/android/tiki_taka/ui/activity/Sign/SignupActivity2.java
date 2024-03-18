@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.ChatRoom;
-import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.CodeResponse;
 import com.android.tiki_taka.services.AuthApiService;
 import com.android.tiki_taka.services.ChatApiService;
@@ -194,25 +193,35 @@ public class SignupActivity2 extends AppCompatActivity {
 
     private void makeChatRoomInDB( int partnerId){
         ChatRoom chatRoom = new ChatRoom(userId, partnerId);
-        chatService.makeChatRoom(chatRoom).enqueue(new Callback<ApiResponse>() {
+        chatService.makeChatRoom(chatRoom).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if(response.isSuccessful() && response.body() != null){
-                    if(response.body().isSuccess()){
-                        // success가 true일 때의 처리
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful() && response.body() != null) {
 
+                    int roomId = 0;
+                    try {
+                        roomId = parseResponseData(response);
+                    } catch (JSONException | IOException e) {
+                        throw new RuntimeException(e);
                     }
-                }else {
-                    // success가 false일 때의 처리
-                    Log.e("ERROR", "댓글 업로드 실패");
+
+                    if(roomId != -1){
+                        SharedPreferencesHelper.setRoomId(SignupActivity2.this, roomId);
+                    }
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("ERROR", "네트워크 오류");
             }
         });
+    }
+
+    private int parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
+        String responseJson = response.body().string();
+        JSONObject jsonObject = new JSONObject(responseJson);
+        return jsonObject.getInt("roomId");
     }
 
     private void handleResponseParsingError(Exception e){

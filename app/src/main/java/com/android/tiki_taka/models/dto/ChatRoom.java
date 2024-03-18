@@ -1,7 +1,6 @@
 package com.android.tiki_taka.models.dto;
 
 import com.google.gson.annotations.SerializedName;
-
 public class ChatRoom {
 
     @SerializedName("room_id")
@@ -12,6 +11,7 @@ public class ChatRoom {
     private int user2Id;
     @SerializedName("created_at")
     private String createdAt;
+
 
     public ChatRoom(int user1Id, int user2Id) {
         this.user1Id = user1Id;
@@ -49,4 +49,6 @@ public class ChatRoom {
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
+
+
 }

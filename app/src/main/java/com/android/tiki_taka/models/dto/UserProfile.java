@@ -28,11 +28,6 @@ public class UserProfile {
     @SerializedName("profile_message")
     private String profileMessage;
 
-    private String chatRoomId;
-    // 속한 채팅방 ID
-    // 일대다 모델에서는 각 사용자가 속할 수 있는 채팅방이 단 하나뿐이므로,
-    // 사용자 테이블에서 직접 ID를 참조하는 방식으로 구성
-    // 이렇게 하면 사용자를 통해서 바로 채팅방 정보에 접근이 가능함
 
     // 생성자를 private으로 만듭니다.
     private UserProfile(int userId, String profileImage, String gender, String name, String birthday, String meetingDay, boolean agreeTerms, boolean agreePrivacy) {
@@ -125,12 +120,5 @@ public class UserProfile {
         this.profileMessage = profileMessage;
     }
 
-    public String getChatRoomId() {
-        return chatRoomId;
-    }
-
-    public void setChatRoomId(String chatRoomId) {
-        this.chatRoomId = chatRoomId;
-    }
 }
 
