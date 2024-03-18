@@ -54,6 +54,7 @@ public class SignupActivity3 extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 3;
     private static final int REQUEST_GALLERY_IMAGE = 4;
     private int currentAction;
+    int userId;
 
     //프로필 항목
     CircleImageView profileImage;
@@ -212,7 +213,7 @@ public class SignupActivity3 extends AppCompatActivity {
         String message = jsonObject.getString("message");
 
         if (success) {
-            // 저장 성공
+            // 프로필 내용 저장 성공
             showToast(message);
 
             //로그인 화면으로 이동
@@ -424,7 +425,7 @@ public class SignupActivity3 extends AppCompatActivity {
     //사용자 입력값을 가져와서 객체 생성
     private UserProfile collectUserData() {
 
-        int userId = SharedPreferencesHelper.getUserId(this);
+        userId = SharedPreferencesHelper.getUserId(this);
         String profileImage = determineProfileImage();
         String gender = ((RadioButton)findViewById(radioGroupGender.getCheckedRadioButtonId())).getText().toString();
         String name = String.valueOf(editTextName.getText());

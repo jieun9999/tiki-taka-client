@@ -32,7 +32,7 @@ public interface AuthApiService {
 
     @FormUrlEncoded
     @POST("/Auth/savePass.php")
-    Call<Boolean> sendPass(@Field("email") String email,
+    Call<Boolean> savePass(@Field("email") String email,
                            @Field("password") String password);
 
     //URL에 쿼리 파라미터를 추가
@@ -41,7 +41,7 @@ public interface AuthApiService {
 
     @FormUrlEncoded
     @POST("/Auth/connect.php")
-    Call<ResponseBody> sendInviteCode(@Field("userId") int userId,
+    Call<ResponseBody> connect(@Field("userId") int userId,
                                       @Field("inviCode") String inviCode);
     //@field나 @Query는 키-값 쌍 형식으로 데이터를 저장
 

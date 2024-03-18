@@ -5,14 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.dto.ChatRoom;
+import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.CodeResponse;
 import com.android.tiki_taka.services.AuthApiService;
+import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.android.material.textfield.TextInputEditText;
@@ -34,6 +38,7 @@ import retrofit2.Retrofit;
 
 public class SignupActivity2 extends AppCompatActivity {
     AuthApiService service;
+    ChatApiService chatService;
     int userId; // 유저 식별 정보
     TextView codeEffectiveDate;
     TextView code;
@@ -128,7 +133,7 @@ public class SignupActivity2 extends AppCompatActivity {
     }
 
     private void sendCode(String code){
-        Call<ResponseBody> call = service.sendInviteCode(userId,code);
+        Call<ResponseBody> call = service.connect(userId,code);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -149,7 +154,6 @@ public class SignupActivity2 extends AppCompatActivity {
     private void responseProcess(Response<ResponseBody> response){
         if (response.isSuccessful()) {
             // http 요청 성공시
-
             try {
                 handleSuccessfulResponse(response);
 
@@ -168,10 +172,14 @@ public class SignupActivity2 extends AppCompatActivity {
         JSONObject jsonObject = new JSONObject(responseJson);
         boolean success = jsonObject.getBoolean("success");
         String message = jsonObject.getString("message");
+        int partnerId = jsonObject.getInt("partnerId");
 
         if (success) {
             // 초대번호 일치
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+
+            // db에 채팅방 생성
+            makeChatRoomInDB(partnerId);
 
             //회원가입_3으로 이동
             Intent intent = new Intent(SignupActivity2.this, SignupActivity3.class);
@@ -181,6 +189,29 @@ public class SignupActivity2 extends AppCompatActivity {
             // 초대번호 불일치 or 만료됨
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void makeChatRoomInDB( int partnerId){
+        ChatRoom chatRoom = new ChatRoom(userId, partnerId);
+        chatService.makeChatRoom(chatRoom).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        // success가 true일 때의 처리
+
+                    }
+                }else {
+                    // success가 false일 때의 처리
+                    Log.e("ERROR", "댓글 업로드 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Log.e("ERROR", "네트워크 오류");
+            }
+        });
     }
 
     private void handleResponseParsingError(Exception e){

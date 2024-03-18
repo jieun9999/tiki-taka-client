@@ -311,7 +311,7 @@ public class SignupActivity1 extends AppCompatActivity {
 
 
     public void sendPw(String pw){
-        Call<Boolean> call = service.sendPass(email, pw);
+        Call<Boolean> call = service.savePass(email, pw);
         call.enqueue(new Callback<Boolean>() {
             @Override
             public void onResponse(Call<Boolean> call, Response<Boolean> response) {

@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.dto.ChatRoom;
 import com.android.tiki_taka.models.dto.HomeProfiles;
 import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.PartnerProfile;
@@ -74,6 +75,7 @@ public class HomeFragment extends Fragment {
     private static final int REQUEST_IMAGE_CAPTURE = 3;
     private static final int REQUEST_GALLERY_IMAGE = 4;
     View dialogView; // 모달창 ui
+    public static  ChatRoom chatRoom;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
