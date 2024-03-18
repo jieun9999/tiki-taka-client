@@ -57,6 +57,7 @@ public class SignupActivity2 extends AppCompatActivity {
 
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(AuthApiService.class);
+        chatService = retrofit.create(ChatApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
         //1. 서버에 getInvitationCode 요청을 보냄
