@@ -25,7 +25,8 @@
         <activity
             android:name=".ui.activity.Chat.ChatActivity"
             android:exported="true"
-            android:theme="@style/NoActionBar" >
+            android:theme="@style/NoActionBar"
+            android:windowSoftInputMode="stateHidden|adjustResize">
         </activity>
         <activity
             android:name=".ui.activity.Album.SelectFolderActivity"

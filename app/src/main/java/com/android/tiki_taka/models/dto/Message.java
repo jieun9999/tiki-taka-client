@@ -9,6 +9,11 @@ public class Message {
     @SerializedName("sender_id")
     private int senderId;
 
+    @SerializedName("profile_image")
+    private String profileImageUrl;
+    // 클라이언트 상으로 는 Message 클래스에 프로필 이미지 필드를 가지고 있는것이 편리
+    // (message 테이블에는 프로필 이미지 칼럼이 존재하지 않더라도)
+
     @SerializedName("room_id")
     private int chatRoomId;
 
@@ -17,6 +22,15 @@ public class Message {
 
     @SerializedName("created_at")
     private String createdAt;
+
+    private boolean isSent; //사용자가 메세지를 보냈는지 여부
+
+
+    public Message(int senderId, int chatRoomId, String content) {
+        this.senderId = senderId;
+        this.chatRoomId = chatRoomId;
+        this.content = content;
+    }
 
     public int getMessageId() {
         return messageId;
@@ -56,5 +70,21 @@ public class Message {
 
     public void setChatRoomId(int chatRoomId) {
         this.chatRoomId = chatRoomId;
+    }
+
+    public boolean isSent() {
+        return isSent;
+    }
+
+    public void setSent(boolean sent) {
+        isSent = sent;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }
