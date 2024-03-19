@@ -6,12 +6,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.MessageAdapter;
 import com.android.tiki_taka.models.dto.CommentItem;
 import com.android.tiki_taka.models.dto.Message;
+import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.StoryApiService;
@@ -36,6 +40,8 @@ public class ChatActivity extends AppCompatActivity {
     private List<Message> messages = new ArrayList<>();
     private int chatRoomId;
 
+    //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +54,7 @@ public class ChatActivity extends AppCompatActivity {
         setupLayoutManager();
         setupAdapter();
         loadMessages();
+        setupSendCommentButtonClickListener();
     }
 
     private void setupNetworkAndRetrieveIds() {
@@ -62,10 +69,15 @@ public class ChatActivity extends AppCompatActivity {
     private void connectToChatServer(){
         new Thread(()->{
             try {
-                chatClient = new ChatClient("52.79.41.79", 1234);
+                // 서버의 로컬 ip 주소로 접속함
+                chatClient = new ChatClient("192.168.0.193", 1234);
+                Log.d("ChatClient", "Initialization successful.");
+
                 chatClient.sendUserId(userId);
                 // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
+
             } catch (IOException e) {
+                Log.e("ChatClient", "Initialization failed.", e);
                 e.printStackTrace();
             }
         }).start();
@@ -117,4 +129,63 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    private void setupSendCommentButtonClickListener(){
+        TextView sendCommentButton = findViewById(R.id.send_comment_view);
+        sendCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendMessage();
+            }
+        });
+    }
+
+    private void sendMessage(){
+        EditText inputChatView = findViewById(R.id.inputbox_chat);
+        String inputText = inputChatView.getText().toString();
+        Message message = new Message(userId, chatRoomId, inputText);
+            service.sendMessage(message).enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if(response.isSuccessful() && response.body() != null){
+                        if(response.body().isSuccess()){
+                            inputChatView.setText("");
+                            loadMessages();
+
+                            // 안드로이드에서 네트워크 연결과 같은 입출력(I/O) 작업은 메인 스레드(또는 UI 스레드)에서 실행해서는 안 됩니다
+                            // 서버 소켓을 통해 메세지를 보낼 때, 메세지 객체가 아니라 문자열로 전송하는 것이 일반적
+                            // 백그라운드 스레드에서 소켓을 통해 메세지 전송
+                            new Thread(() -> chatClient.sendMessage(inputText)).start();
+
+                        }else {
+                            Log.e("ERROR", "서버 응답이 실패");
+                        }
+
+                    }else {
+                        // success가 false일 때의 처리
+                        Log.e("ERROR", "채팅 보내기 실패");
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+                }
+
+            });
+
+    }
+
+    // 채팅 액티비티에서 나가게 되면 리소스를 정리
+    // 백그라운드 스레드를 사용할 때는 해당 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(chatClient != null){
+            try {
+                chatClient.closeConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

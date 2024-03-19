@@ -48,7 +48,7 @@ public class ChatClient {
     }
 
     //연결 종료 및 리소스 해제
-    public void closeConnection(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) throws IOException {
+    public void closeConnection() throws IOException {
         if(bufferedReader != null){
             bufferedReader.close();
         }
