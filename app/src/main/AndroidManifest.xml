@@ -27,6 +27,11 @@
             android:exported="true"
             android:theme="@style/NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".ui.activity.Album.SelectFolderActivity"
@@ -123,11 +128,6 @@
         <activity
             android:name=".ui.activity.Profile.HomeActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".ui.activity.Sign.SplashScreenActivity"

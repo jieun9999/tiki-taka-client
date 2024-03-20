@@ -26,10 +26,13 @@ public class Message {
     private boolean isSent; //사용자가 메세지를 보냈는지 여부
 
 
-    public Message(int senderId, int chatRoomId, String content) {
-        this.senderId = senderId;
-        this.chatRoomId = chatRoomId;
+    // 받은 메세지를 보여줄때 생성
+    //  profileImageUrl는 db table에서 가져옴
+    //  content, createdAt는 서버 소켓에서 가져옴
+    public Message(String profileImageUrl, String createdAt, String content){
+        this.createdAt = createdAt;
         this.content = content;
+        this.isSent = false;
     }
 
     public int getMessageId() {

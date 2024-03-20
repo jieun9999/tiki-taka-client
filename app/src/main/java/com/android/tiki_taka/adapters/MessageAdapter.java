@@ -118,4 +118,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알림
     }
 
+    public void addMessage(Message newMessage){
+        messages.add(newMessage);
+        notifyItemInserted(messages.size() -1);
+    }
+
 }

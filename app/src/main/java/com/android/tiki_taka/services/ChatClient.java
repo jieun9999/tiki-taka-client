@@ -1,5 +1,8 @@
 package com.android.tiki_taka.services;
 
+import com.android.tiki_taka.listeners.MessageListener;
+import com.android.tiki_taka.models.dto.Message;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,11 +21,13 @@ public class ChatClient {
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
+    private MessageListener messageListener;
 
-    public ChatClient(String host, int port) throws IOException {
+    public ChatClient(String host, int port, MessageListener messageListener) throws IOException {
         socket = new Socket(host, port);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        messageListener = messageListener;
     }
 
     public void sendUserId(int userId){
@@ -36,9 +41,9 @@ public class ChatClient {
         }
     }
 
-    public void sendMessage(String message){
+    public void sendMessage(String data){
         try {
-            bufferedWriter.write(message);
+            bufferedWriter.write(data);
             bufferedWriter.newLine(); // 메시지의 끝을 나타냄
             bufferedWriter.flush(); // 버퍼에 있는 데이터를 즉시 전송
         } catch (IOException e) {
@@ -46,6 +51,30 @@ public class ChatClient {
             // 오류 처리 로직 (예: 연결 종료, 재시도, 로깅 등)
         }
     }
+
+    public void listenMessage() throws IOException {
+        String msgFromGroupChat;
+        while (socket.isConnected()){
+            try {
+                msgFromGroupChat = bufferedReader.readLine();
+                final String message = msgFromGroupChat;
+
+                // 메세지 수신 시 콜백 호출
+                if(messageListener != null){
+                    messageListener.onMessageReceived(message);
+                }
+
+            } catch (IOException e) {
+               closeConnection();
+            }
+        }
+    }
+
+    private void updateUI(String createdAt, String message){
+        //리사이클러뷰에 메세지 추가
+        Message newMessage = new Message("파트너의 프로필", createdAt, message);
+    }
+
 
     //연결 종료 및 리소스 해제
     public void closeConnection() throws IOException {

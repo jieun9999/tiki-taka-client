@@ -1,7 +1,6 @@
 package com.android.tiki_taka.services;
 
 import com.android.tiki_taka.models.dto.ChatRoom;
-import com.android.tiki_taka.models.dto.CommentItem;
 import com.android.tiki_taka.models.dto.Message;
 import com.android.tiki_taka.models.response.ApiResponse;
 
@@ -22,6 +21,4 @@ public interface ChatApiService {
     @GET("Chat/getMessages.php")
     Call<List<Message>> getMessages(@Query("roomId") int roomId);
 
-    @POST("Chat/sendMessage.php")
-    Call<ApiResponse> sendMessage(@Body Message message);
 }
