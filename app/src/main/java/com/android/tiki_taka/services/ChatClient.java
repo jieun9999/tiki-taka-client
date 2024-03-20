@@ -1,5 +1,7 @@
 package com.android.tiki_taka.services;
 
+import android.util.Log;
+
 import com.android.tiki_taka.listeners.MessageListener;
 import com.android.tiki_taka.models.dto.Message;
 
@@ -23,12 +25,16 @@ public class ChatClient {
     private BufferedWriter bufferedWriter;
     private MessageListener messageListener;
 
-    public ChatClient(String host, int port, MessageListener messageListener) throws IOException {
+    public ChatClient(String host, int port) throws IOException {
         socket = new Socket(host, port);
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        messageListener = messageListener;
     }
+
+    public void setMessageListener(MessageListener listener) {
+        this.messageListener = listener;
+    }
+
 
     public void sendUserId(int userId){
         try {
@@ -53,26 +59,22 @@ public class ChatClient {
     }
 
     public void listenMessage() throws IOException {
-        String msgFromGroupChat;
+
         while (socket.isConnected()){
             try {
-                msgFromGroupChat = bufferedReader.readLine();
-                final String message = msgFromGroupChat;
+                String msgFromGroupChat = bufferedReader.readLine();
+//                Log.d("msgFromGroupChat", msgFromGroupChat);
+                // {"createdAt":"2024-03-20 13:00:46","content":"으"}
 
                 // 메세지 수신 시 콜백 호출
                 if(messageListener != null){
-                    messageListener.onMessageReceived(message);
+                    messageListener.onMessageReceived(msgFromGroupChat);
                 }
 
             } catch (IOException e) {
                closeConnection();
             }
         }
-    }
-
-    private void updateUI(String createdAt, String message){
-        //리사이클러뷰에 메세지 추가
-        Message newMessage = new Message("파트너의 프로필", createdAt, message);
     }
 
 

@@ -41,7 +41,7 @@ dependencies {
     // Retrofit 라이브러리
     implementation ("com.squareup.retrofit2:retrofit:2.6.4")
     // Gson 변환기 라이브러리
-    implementation ("com.squareup.retrofit2:converter-gson:2.6.4")
+    implementation ("com.squareup.retrofit2:converter-gson:2.10.0")
     // Scalars 변환기 라이브러리
     implementation ("com.squareup.retrofit2:converter-scalars:2.6.4")
     implementation ("de.hdodenhof:circleimageview:3.1.0")

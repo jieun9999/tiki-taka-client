@@ -1,9 +1,6 @@
 package com.android.tiki_taka.ui.activity.Chat;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -11,43 +8,45 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.MessageAdapter;
 import com.android.tiki_taka.listeners.MessageListener;
 import com.android.tiki_taka.models.dto.Message;
-import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class ChatActivity extends AppCompatActivity implements MessageListener {
+public class ChatActivity extends AppCompatActivity {
     ChatApiService service;
     ProfileApiService profileService;
-    private int userId;
+    private int currentUserId;
     private ChatClient chatClient;
     private RecyclerView recyclerView;
     private MessageAdapter messageAdapter;
     private List<Message> messages = new ArrayList<>();
     private int chatRoomId;
-    private String partnerImg;
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -63,7 +62,6 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         setupLayoutManager();
         setupAdapter();
         loadMessages();
-        getPartnerProfile();
 
         //2. 서버 연결 및 수신 & 전송 준비
         connectToChatServer();
@@ -74,7 +72,7 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(ChatApiService.class);
         profileService =retrofit.create(ProfileApiService.class);
-        userId = SharedPreferencesHelper.getUserId(this);
+        currentUserId = SharedPreferencesHelper.getUserId(this);
         chatRoomId = SharedPreferencesHelper.getRoomId(this);
     }
 
@@ -112,54 +110,12 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         });
     }
 
-    private void getPartnerProfile(){
-        profileService.getPtnrModalData(userId).enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                processPtnModalDataResponse(response);
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
-            }
-        });
-    }
-
-    private void processPtnModalDataResponse(Response<ResponseBody> response) {
-        if (response.isSuccessful() && response.body() != null) {
-            try {
-                // 서버로부터 응답 본문을 문자열로 변환
-                String responseString = response.body().string();
-                //문자열을 JSON객체로 변환
-                JSONObject jsonObject = new JSONObject(responseString);
-
-                if (jsonObject.getBoolean("success")) {
-                    handleUserData(jsonObject);
-                }
-
-            } catch (IOException | JSONException e) {
-                throw new RuntimeException(e);
-            }
-
-        } else {
-            // 응답 실패
-            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
-        }
-
-    }
-
-    private void handleUserData(JSONObject jsonObject) throws JSONException {
-        // 성공적으로 데이터를 가져온 경우
-        JSONObject userData = jsonObject.getJSONObject("data");
-        partnerImg = userData.optString("profile_image", "");
-    }
 
 
     private void handleLoadingMessages(Response<List<Message>> response){
         List<Message> messages = response.body();
         if(messages != null){
-            messageAdapter.setData(messages, userId);
+            messageAdapter.setData(messages, currentUserId);
         }else {
             Log.e("Error", "messages null 입니다");
         }
@@ -172,10 +128,20 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         new Thread(()->{
             try {
                 // 서버의 로컬 ip 주소로 접속함
-                chatClient = new ChatClient("192.168.0.193", 1234, this);
+                chatClient = new ChatClient("192.168.0.193", 1234);
 
-                chatClient.sendUserId(userId);
                 // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
+                chatClient.sendUserId(currentUserId);
+
+                // 액티비티 흐름 중간에 chatClient가 생성된 후 인터페이스가 구현되어야 함
+                // 이전에는 액티비티 자체에 구현하였는데 그것은 액티비티 초기화시에 구현되어야 하므로 문제가 여기에는 적절하지 않음
+                chatClient.setMessageListener(new MessageListener() {
+                    @Override
+                    public void onMessageReceived(String message) {
+                        // 상대방의 메세지 띄우기
+                        runOnUiThread(() -> updateUIFromDB(message, ""));
+                    }
+                });
 
                 chatClient.listenMessage();
                 // 서버로부터 오는 메시지를 지속적으로 수신
@@ -209,7 +175,7 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         String inputText = inputChatView.getText().toString();
 
         JSONObject messageObject = new JSONObject();
-        messageObject.put("senderId", userId);
+        messageObject.put("senderId", currentUserId);
         messageObject.put("message", inputText);
         messageObject.put("chatRoomId", chatRoomId);
 
@@ -219,8 +185,28 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         // 안드로이드에서 네트워크 연결과 같은 입출력(I/O) 작업은 메인 스레드(또는 UI 스레드)에서 실행해서는 안 됩니다
         // 서버 소켓을 통해 메세지를 보낼 때, 메세지 객체가 아니라 문자열로 전송하는 것이 일반적
         // 백그라운드 스레드에서 소켓을 통해 메세지 전송
-        new Thread(() -> chatClient.sendMessage(message)).start();
+        new Thread(() ->{
+            // 서버 소켓에 메세지 전송
+            chatClient.sendMessage(message);
 
+            // 현재 시간 저장
+            String createdAt = nowDateFormatter();
+            // 자신이 보낸 메세지 ui 업데이트
+            runOnUiThread(() -> updateUIFromInputBox(createdAt, inputText, "" ));
+
+        }).start();
+
+    }
+
+    private String nowDateFormatter(){
+        LocalDateTime currentTime = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return currentTime.format(formatter);
+        }
+
+        return "";
     }
 
     // 채팅 액티비티에서 나가게 되면 리소스를 정리
@@ -237,17 +223,30 @@ public class ChatActivity extends AppCompatActivity implements MessageListener {
         }
     }
 
-    @Override
-    public void onMessageReceived(String message) {
-        runOnUiThread(() -> updateUI(message));
+
+    private void updateUIFromDB(String jsonMessage, int senderId) {
+        // senderId = 상대방
+
+        // 서버에서온 message json 문자열 파싱
+        JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
+
+        String createdAt = messageObject.get("createdAt").getAsString();
+        String content = messageObject.get("content").getAsString();
+
+        // 리사이클러뷰에 메세지 추가
+        Message newMessage = new Message(profileImg, createdAt, content);
+        messageAdapter.addMessage(newMessage, currentUserId);
+        recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
 
-    private void updateUI(String message) {
-        // message json 문자열 파싱
+    private void updateUIFromInputBox(String createdAt, String message, int senderId){
+        // senderId = 나
 
-//        // 리사이클러뷰에 메세지 추가
-//        Message newMessage = new Message(partnerImg, message, createdAt);
-//        messageAdapter.addMessage(newMessage);
-//        recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
+        // 리사이클러뷰에 메세지 추가
+        Message newMessage = new Message(profileImg, createdAt, message);
+        messageAdapter.addMessage(newMessage, currentUserId);
+        recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
+
+
 }

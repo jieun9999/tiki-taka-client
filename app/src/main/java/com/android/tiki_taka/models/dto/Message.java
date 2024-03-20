@@ -30,9 +30,9 @@ public class Message {
     //  profileImageUrl는 db table에서 가져옴
     //  content, createdAt는 서버 소켓에서 가져옴
     public Message(String profileImageUrl, String createdAt, String content){
+        this.profileImageUrl = profileImageUrl;
         this.createdAt = createdAt;
         this.content = content;
-        this.isSent = false;
     }
 
     public int getMessageId() {
