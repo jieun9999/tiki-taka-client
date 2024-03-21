@@ -124,7 +124,7 @@ public class StoryWritingActivity4 extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }

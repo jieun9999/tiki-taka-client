@@ -23,11 +23,10 @@ public class Message {
     @SerializedName("created_at")
     private String createdAt;
 
+    @SerializedName("date_marker")
+    private int dateMarker;
+    // 서버와의 일관성
     private boolean isSent; //사용자가 메세지를 보냈는지 여부
-
-    private boolean dateMarker;
-
-
 
     // 받은 메세지를 보여줄때 생성
     //  profileImageUrl는 db table에서 가져옴
@@ -39,9 +38,10 @@ public class Message {
     }
 
     //날짜 표시 객체
-    public Message(String createdAt) {
-        this.createdAt = createdAt;
-        this.dateMarker = true;
+    public Message(String content, int roomId) {
+        this.dateMarker = 1;
+        this.content = content;
+        this.chatRoomId = roomId;
     }
 
     public int getMessageId() {
@@ -100,11 +100,11 @@ public class Message {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public boolean isDateMarker() {
+    public int getDateMarker() {
         return dateMarker;
     }
 
-    public void setDateMarker(boolean dateMarker) {
+    public void setDateMarker(int dateMarker) {
         this.dateMarker = dateMarker;
     }
 }

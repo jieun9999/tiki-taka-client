@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.MessageAdapter;
+import com.android.tiki_taka.listeners.DateMarkerListener;
 import com.android.tiki_taka.listeners.MessageListener;
 import com.android.tiki_taka.models.dto.HomeProfiles;
 import com.android.tiki_taka.models.dto.Message;
@@ -50,7 +51,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements DateMarkerListener {
     ChatApiService service;
     ProfileApiService profileService;
     private int currentUserId;
@@ -301,7 +302,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // 리사이클러뷰에 메세지 추가
         Message newMessage = new Message(partnerProfileImg, createdAt, content);
-        messageAdapter.addMessage(newMessage, currentUserId);
+        messageAdapter.addMessage(newMessage, currentUserId, chatRoomId,this);
         recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
 
@@ -310,9 +311,53 @@ public class ChatActivity extends AppCompatActivity {
         // 리사이클러뷰에 메세지 추가
         Message newMessage = new Message(myProfileImg, createdAt, message);
         newMessage.setSenderId(currentUserId); // 내가 보낸 메세지 설정
-        messageAdapter.addMessage(newMessage, currentUserId);
+        messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
         recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
 
+    @Override
+    public void onMessageAdded(Message dateMarker) {
+        service.saveDateMarker(dateMarker).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                ProcessResponse(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable throwable) {
+                Log.e("Network Error", "네트워크 호출 실패: " + throwable.getMessage());
+            }
+        });
+    }
+
+    private void ProcessResponse( Response<ResponseBody> response){
+        if(response.isSuccessful()){
+            handleResponse(response);
+
+        } else {
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
+
+    private void handleResponse(Response<ResponseBody> response){
+        if (response.isSuccessful()) {
+            try {
+                String message = parseResponseData(response);
+                Log.d("success",message);
+
+            } catch (JSONException | IOException e) {
+                e.printStackTrace();
+                Log.e("Error","catch문 오류 발생");
+            }
+        } else {
+            Log.e("Error","서버 응답 오류");
+        }
+    }
+
+    private String parseResponseData(Response<ResponseBody> response) throws JSONException, IOException {
+        String responseJson = response.body().string();
+        JSONObject jsonObject = new JSONObject(responseJson);
+        return jsonObject.getString("message");
+    }
 
 }

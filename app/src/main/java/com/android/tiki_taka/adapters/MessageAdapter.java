@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.tiki_taka.R;
+import com.android.tiki_taka.listeners.DateMarkerListener;
 import com.android.tiki_taka.models.dto.Message;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.TimeUtils;
@@ -37,7 +38,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int getItemViewType(int position) {
         Message message = messages.get(position);
 
-        if(message.isDateMarker()){
+        if(message.getDateMarker() == 1){
             return VIEW_DATE_MARKER;
         } else if (message.isSent()) {
             return VIEW_TYPE_MESSAGE_SENT;
@@ -59,11 +60,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.left_chat_message, parent, false);
             return new ReceivedMessageViewHolder(view);
-        }else {
+        }else if(viewType == VIEW_DATE_MARKER) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.chat_date_bar, parent, false);
             return new DateMarkerViewHolder(view);
         }
+        return null;
     }
 
     @Override
@@ -73,10 +75,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             ((SentMessageViewHolder)holder).bind(message);
         }else if(holder.getItemViewType() == VIEW_TYPE_MESSAGE_RECEIVED){
             ((ReceivedMessageViewHolder)holder).bind(message);
-        }else {
+        }else if(holder.getItemViewType() == VIEW_DATE_MARKER) {
             ((DateMarkerViewHolder)holder).bind(message);
         }
-
     }
 
     @Override
@@ -130,7 +131,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         void bind(Message message){
-            dateMarker.setText(message.getCreatedAt());
+            dateMarker.setText(message.getContent());
         }
     }
 
@@ -142,14 +143,20 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         //isSent 값은 어댑터 뷰의 바인딩 로직보다는, 데이터를 처리하는 로직에서 수행하는 것이 더 적절함
         // 서버로부터 데이터를 받아와서 리스트에 추가될 때 설정
         for (Message message: newData){
-            boolean isSent = message.getSenderId() == userId;
-            message.setSent(isSent);
+            if(message.getDateMarker() == 0){
+                boolean isSent = message.getSenderId() == userId;
+                message.setSent(isSent);
+            }
             messages.add(message);
         }
         notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알림
     }
 
-    public void addMessage(Message newMessage, int userId){
+    public void addMessage(Message newMessage, int userId, int roomId, DateMarkerListener dateMarkerListener){
+        // 뷰타입 설정
+        boolean isSent = newMessage.getSenderId() == userId;
+        newMessage.setSent(isSent);
+
         if(!messages.isEmpty()){
             // 마지막 메세지와 날짜 비교
             Message lastMessage = messages.get(messages.size() -1);
@@ -159,20 +166,18 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             String lastMessageDateWithoutTime = TimeUtils.getDateWithoutTime(lastMessage.getCreatedAt());// null이 나옴 , 12:27 AM
 
             if(!newMessageDateWithoutTime.equals(lastMessageDateWithoutTime)){
-                messages.add(new Message(newMessageDateWithoutTime));
+                Message dateMarker = new Message(newMessageDateWithoutTime, roomId);
+                messages.add(dateMarker);
+                if(dateMarkerListener != null && newMessage.isSent()){
+                    dateMarkerListener.onMessageAdded(dateMarker);
+                    // UI 업데이트 후 서버에 데이터 전송
+                }
             }
         }
 
-        // 뷰타입 설정
-        boolean isSent = newMessage.getSenderId() == userId;
-        newMessage.setSent(isSent);
-        newMessage.setCreatedAt(newMessage.getCreatedAt());
         // 객체 속성은 추가할때는 건들이지 않고, 뷰 바인딩에서 수정
         messages.add(newMessage);
         notifyItemInserted(messages.size() -1);
     }
-
-
-
 
 }

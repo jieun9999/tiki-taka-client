@@ -21,4 +21,7 @@ public interface ChatApiService {
     @GET("Chat/getMessages.php")
     Call<List<Message>> getMessages(@Query("roomId") int roomId);
 
+    @POST("Chat/saveDateMarker.php")
+    Call<ResponseBody> saveDateMarker(@Body Message message);
+
 }
