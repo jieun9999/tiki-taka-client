@@ -229,13 +229,18 @@ public class ChatActivity extends AppCompatActivity {
         // 서버 소켓을 통해 메세지를 보낼 때, 메세지 객체가 아니라 문자열로 전송하는 것이 일반적
         // 백그라운드 스레드에서 소켓을 통해 메세지 전송
         new Thread(() ->{
-            // 서버 소켓에 메세지 전송
-            chatClient.sendMessage(message);
-
             // 현재 시간 저장
             String createdAt = nowDateFormatter();
+
             // 자신이 보낸 메세지 ui 업데이트
-            runOnUiThread(() -> updateUIFromInputBox(createdAt, inputText, myProfileImg ));
+            runOnUiThread(() -> {
+                        inputChatView.setText("");
+                        updateUIFromInputBox(createdAt, inputText, myProfileImg);
+                    }
+            );
+
+            // 서버 소켓에 메세지 전송
+            chatClient.sendMessage(message);
 
         }).start();
 
