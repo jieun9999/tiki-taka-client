@@ -15,7 +15,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.MessageAdapter;
 import com.android.tiki_taka.listeners.MessageListener;
+import com.android.tiki_taka.models.dto.HomeProfiles;
 import com.android.tiki_taka.models.dto.Message;
+import com.android.tiki_taka.models.dto.PartnerDataManager;
+import com.android.tiki_taka.models.dto.PartnerProfile;
+import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
@@ -33,6 +37,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,6 +52,8 @@ public class ChatActivity extends AppCompatActivity {
     private MessageAdapter messageAdapter;
     private List<Message> messages = new ArrayList<>();
     private int chatRoomId;
+    String myProfileImg;
+    String partnerProfileImg;
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -62,6 +69,7 @@ public class ChatActivity extends AppCompatActivity {
         setupLayoutManager();
         setupAdapter();
         loadMessages();
+        getHomeProfile(currentUserId);
 
         //2. 서버 연결 및 수신 & 전송 준비
         connectToChatServer();
@@ -110,6 +118,41 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    // 상대방과 나의 프로필 이미지를 초기화할때 가져와서, 이미 할당해둔 상태에서
+    // updateUIFromDB()나 updateUIFromInputBox()가 실행될때 인자로 넣어준다
+    private void getHomeProfile(int currentUserId){
+        // 1. 유저 프로필 정보 가져오기
+        Call<HomeProfiles> call = profileService.getHomeProfile(currentUserId);
+        call.enqueue(new Callback<HomeProfiles>() {
+            @Override
+            public void onResponse(Call<HomeProfiles> call, Response<HomeProfiles> response) {
+                processHomeProfileResponse(response);
+
+            }
+
+            @Override
+            public void onFailure(Call<HomeProfiles> call, Throwable t) {
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void processHomeProfileResponse(Response<HomeProfiles> response){
+        if (response.isSuccessful() && response.body() != null) {
+            //서버에서 홈프로필 정보를 가져옴
+            HomeProfiles homeProfiles = response.body();
+            // 유저 프로필 정보 처리
+            UserProfile userProfile = homeProfiles.getUserProfile();
+            // 파트너 프로필 정보 처리
+            PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
+
+            myProfileImg = userProfile.getProfileImage();
+            partnerProfileImg = partnerProfile.getProfileImage();
+
+        } else {
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
 
 
     private void handleLoadingMessages(Response<List<Message>> response){
@@ -139,7 +182,7 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void onMessageReceived(String message) {
                         // 상대방의 메세지 띄우기
-                        runOnUiThread(() -> updateUIFromDB(message, ""));
+                        runOnUiThread(() -> updateUIFromDB(message, partnerProfileImg));
                     }
                 });
 
@@ -192,7 +235,7 @@ public class ChatActivity extends AppCompatActivity {
             // 현재 시간 저장
             String createdAt = nowDateFormatter();
             // 자신이 보낸 메세지 ui 업데이트
-            runOnUiThread(() -> updateUIFromInputBox(createdAt, inputText, "" ));
+            runOnUiThread(() -> updateUIFromInputBox(createdAt, inputText, myProfileImg ));
 
         }).start();
 
@@ -224,8 +267,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-    private void updateUIFromDB(String jsonMessage, int senderId) {
-        // senderId = 상대방
+
+    private void updateUIFromDB(String jsonMessage, String partnerProfileImg) {
 
         // 서버에서온 message json 문자열 파싱
         JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
@@ -234,19 +277,22 @@ public class ChatActivity extends AppCompatActivity {
         String content = messageObject.get("content").getAsString();
 
         // 리사이클러뷰에 메세지 추가
-        Message newMessage = new Message(profileImg, createdAt, content);
+        Message newMessage = new Message(partnerProfileImg, createdAt, content);
         messageAdapter.addMessage(newMessage, currentUserId);
         recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
 
-    private void updateUIFromInputBox(String createdAt, String message, int senderId){
-        // senderId = 나
+    private void updateUIFromInputBox(String createdAt, String message, String myProfileImg){
 
         // 리사이클러뷰에 메세지 추가
-        Message newMessage = new Message(profileImg, createdAt, message);
+        Message newMessage = new Message(myProfileImg, createdAt, message);
+        newMessage.setSenderId(currentUserId); // 내가 보낸 메세지 설정
         messageAdapter.addMessage(newMessage, currentUserId);
         recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
+
+
+
 
 
 }
