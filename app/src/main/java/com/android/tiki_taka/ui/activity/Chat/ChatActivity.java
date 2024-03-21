@@ -98,7 +98,9 @@ public class ChatActivity extends AppCompatActivity {
     private void setupAdapter(){
         messageAdapter = new MessageAdapter(messages);
         recyclerView.setAdapter(messageAdapter);
+        scrollToBottom();
     }
+
 
     private void loadMessages(){
         service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
@@ -106,6 +108,9 @@ public class ChatActivity extends AppCompatActivity {
             public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                 if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
                     handleLoadingMessages(response);
+
+                    //초기에 아이템이 렌더링 된 후에 스크롤 맨 아래로 이동
+                    scrollToBottom();
                 }else {
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
                 }
@@ -116,6 +121,12 @@ public class ChatActivity extends AppCompatActivity {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
+    }
+
+    private void scrollToBottom() {
+        if (messageAdapter.getItemCount() > 0) {
+            recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
+        }
     }
 
     // 상대방과 나의 프로필 이미지를 초기화할때 가져와서, 이미 할당해둔 상태에서
