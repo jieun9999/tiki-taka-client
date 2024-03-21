@@ -77,6 +77,35 @@ public class TimeUtils {
     }
     // "방금 전", "x분 전", "x시간 전", "x일 전" 등의 텍스트를 생성
 
+    public static String getDateWithoutTime(String dateTimeStr) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date date = inputFormat.parse(dateTimeStr);
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null; // 적절한 예외 처리 또는 로깅 필요
+        }
+    }
+
+    public static String convertToAmPm(String dateString) {
+        // 입력된 날짜 문자열을 파싱하기 위한 형식
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+
+        // 출력할 날짜 문자열의 형식 (예: 8:32PM, 1:00AM)
+        SimpleDateFormat outputFormat = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
+
+        try {
+            Date date = inputFormat.parse(dateString);
+
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "Invalid Date";
+        }
+    }
+
 }
 
 

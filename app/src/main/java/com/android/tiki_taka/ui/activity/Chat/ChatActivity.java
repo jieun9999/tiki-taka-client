@@ -1,5 +1,6 @@
 package com.android.tiki_taka.ui.activity.Chat;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,8 @@ import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
+import com.android.tiki_taka.utils.InitializeStack;
+import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.gson.JsonObject;
@@ -32,10 +35,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -86,7 +93,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupToolBarListeners(){
         ImageView cancelBtn = findViewById(R.id.imageView36);
-        cancelBtn.setOnClickListener( v -> finish());
+        cancelBtn.setOnClickListener( v -> {
+            finish();
+        });
     }
 
     private void setupLayoutManager(){
@@ -182,7 +191,7 @@ public class ChatActivity extends AppCompatActivity {
         new Thread(()->{
             try {
                 // 서버의 로컬 ip 주소로 접속함
-                chatClient = new ChatClient("192.168.0.193", 1234);
+                chatClient = new ChatClient("192.168.45.90", 1234);
 
                 // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
                 chatClient.sendUserId(currentUserId);
@@ -268,7 +277,7 @@ public class ChatActivity extends AppCompatActivity {
         return "";
     }
 
-    // 채팅 액티비티에서 나가게 되면 리소스를 정리
+        // 채팅 액티비티에서 나가게 되면 리소스를 정리
     // 백그라운드 스레드를 사용할 때는 해당 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
     @Override
     protected void onDestroy() {
@@ -281,8 +290,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
     private void updateUIFromDB(String jsonMessage, String partnerProfileImg) {
 
@@ -306,9 +313,6 @@ public class ChatActivity extends AppCompatActivity {
         messageAdapter.addMessage(newMessage, currentUserId);
         recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
-
-
-
 
 
 }

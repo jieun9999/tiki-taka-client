@@ -1,5 +1,6 @@
 package com.android.tiki_taka.ui.fragment;
 
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -34,10 +35,8 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 여기서 ChatActivity로 전환
         Intent intent = new Intent(getActivity(), ChatActivity.class);
         startActivity(intent);
-
-        getActivity().finish();
     }
+
 }

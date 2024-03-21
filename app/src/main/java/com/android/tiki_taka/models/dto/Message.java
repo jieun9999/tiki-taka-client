@@ -25,6 +25,9 @@ public class Message {
 
     private boolean isSent; //사용자가 메세지를 보냈는지 여부
 
+    private boolean dateMarker;
+
+
 
     // 받은 메세지를 보여줄때 생성
     //  profileImageUrl는 db table에서 가져옴
@@ -33,6 +36,12 @@ public class Message {
         this.profileImageUrl = profileImageUrl;
         this.createdAt = createdAt;
         this.content = content;
+    }
+
+    //날짜 표시 객체
+    public Message(String createdAt) {
+        this.createdAt = createdAt;
+        this.dateMarker = true;
     }
 
     public int getMessageId() {
@@ -89,5 +98,13 @@ public class Message {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public boolean isDateMarker() {
+        return dateMarker;
+    }
+
+    public void setDateMarker(boolean dateMarker) {
+        this.dateMarker = dateMarker;
     }
 }

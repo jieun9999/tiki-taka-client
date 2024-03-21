@@ -12,4 +12,5 @@ public class InitializeStack {
         intent.putExtra("OPEN_FRAGMENT", "ALBUM_FRAGMENT");
         context.startActivity(intent);
     }
+
 }

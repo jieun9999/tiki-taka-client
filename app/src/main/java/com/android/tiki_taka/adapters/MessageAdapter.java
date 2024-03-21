@@ -1,6 +1,7 @@
 package com.android.tiki_taka.adapters;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.Message;
 import com.android.tiki_taka.utils.ImageUtils;
+import com.android.tiki_taka.utils.TimeUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -21,6 +27,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private List<Message> messages;
     private static final int VIEW_TYPE_MESSAGE_SENT =1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVED = 2;
+    private static final int VIEW_DATE_MARKER =3;
 
     public MessageAdapter(List<Message> messages) {
         this.messages = messages;
@@ -29,11 +36,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
-        if(message.isSent()){
+
+        if(message.isDateMarker()){
+            return VIEW_DATE_MARKER;
+        } else if (message.isSent()) {
             return VIEW_TYPE_MESSAGE_SENT;
         }else {
             return VIEW_TYPE_MESSAGE_RECEIVED;
         }
+
     }
 
     @NonNull
@@ -44,10 +55,14 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.right_chat_message,parent,false);
             return new SentMessageViewHolder(view);
-        }else {
+        }else if(viewType == VIEW_TYPE_MESSAGE_RECEIVED) {
             view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.left_chat_message, parent, false);
             return new ReceivedMessageViewHolder(view);
+        }else {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.chat_date_bar, parent, false);
+            return new DateMarkerViewHolder(view);
         }
     }
 
@@ -56,8 +71,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         Message message = messages.get(position);
         if(holder.getItemViewType() == VIEW_TYPE_MESSAGE_SENT){
             ((SentMessageViewHolder)holder).bind(message);
-        }else {
+        }else if(holder.getItemViewType() == VIEW_TYPE_MESSAGE_RECEIVED){
             ((ReceivedMessageViewHolder)holder).bind(message);
+        }else {
+            ((DateMarkerViewHolder)holder).bind(message);
         }
 
     }
@@ -81,7 +98,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void bind(Message message){
             ImageUtils.loadImage(message.getProfileImageUrl(), profileImg, itemView.getContext());
             messageBody.setText(message.getContent());
-            timeStamp.setText(message.getCreatedAt());
+            timeStamp.setText(TimeUtils.convertToAmPm(message.getCreatedAt()));
         }
     }
 
@@ -99,11 +116,25 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         void bind(Message message){
             ImageUtils.loadImage(message.getProfileImageUrl(), profileImg, itemView.getContext());
             messageBody.setText(message.getContent());
-            timeStamp.setText(message.getCreatedAt());
+            timeStamp.setText(TimeUtils.convertToAmPm(message.getCreatedAt()));
         }
     }
 
-    // 데이터를 설정하는 setData 메서드 추가
+    //Date Marker ViewHolder
+    static class DateMarkerViewHolder extends RecyclerView.ViewHolder{
+        TextView dateMarker;
+        public DateMarkerViewHolder(@NonNull View itemView) {
+            super(itemView);
+            dateMarker = itemView.findViewById(R.id.dateText);
+
+        }
+
+        void bind(Message message){
+            dateMarker.setText(message.getCreatedAt());
+        }
+    }
+
+    // 데이터를 처음 설정하는 setData 메서드 추가
     @SuppressLint("NotifyDataSetChanged")
     public void setData(List<Message> newData, int userId){
         messages.clear();
@@ -119,11 +150,29 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public void addMessage(Message newMessage, int userId){
+        if(!messages.isEmpty()){
+            // 마지막 메세지와 날짜 비교
+            Message lastMessage = messages.get(messages.size() -1);
+
+            // 날짜가 다르면, 날짜 뷰 표시 로직 구현
+            String newMessageDateWithoutTime = TimeUtils.getDateWithoutTime(newMessage.getCreatedAt());
+            String lastMessageDateWithoutTime = TimeUtils.getDateWithoutTime(lastMessage.getCreatedAt());// null이 나옴 , 12:27 AM
+
+            if(!newMessageDateWithoutTime.equals(lastMessageDateWithoutTime)){
+                messages.add(new Message(newMessageDateWithoutTime));
+            }
+        }
+
         // 뷰타입 설정
         boolean isSent = newMessage.getSenderId() == userId;
         newMessage.setSent(isSent);
+        newMessage.setCreatedAt(newMessage.getCreatedAt());
+        // 객체 속성은 추가할때는 건들이지 않고, 뷰 바인딩에서 수정
         messages.add(newMessage);
         notifyItemInserted(messages.size() -1);
     }
+
+
+
 
 }
