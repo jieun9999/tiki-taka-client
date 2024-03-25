@@ -192,7 +192,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         new Thread(()->{
             try {
                 // 서버의 로컬 ip 주소로 접속함
-                chatClient = new ChatClient("192.168.45.90", 1234);
+                chatClient = new ChatClient("52.79.41.79", 1234);
 
                 // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
                 chatClient.sendUserId(currentUserId);
@@ -278,20 +278,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         return "";
     }
 
-        // 채팅 액티비티에서 나가게 되면 리소스를 정리
-    // 백그라운드 스레드를 사용할 때는 해당 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(chatClient != null){
-            try {
-                chatClient.closeConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private void updateUIFromDB(String jsonMessage, String partnerProfileImg) {
 
         // 서버에서온 message json 문자열 파싱
@@ -360,4 +346,17 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         return jsonObject.getString("message");
     }
 
+    // 채팅 액티비티에서 나가게 되면 리소스를 정리
+    // 백그라운드 스레드를 사용할 때는 해당 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(chatClient != null){
+            try {
+                chatClient.closeConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
