@@ -11,10 +11,7 @@
         android:icon="@drawable/baseline_photo_24"
         android:title="앨범" />
 
-    <item
-        android:id="@+id/chat_menu"
-        android:icon="@drawable/baseline_chat_24"
-        android:title="채팅" />
+    <item android:title=""></item>
 
     <item
         android:id="@+id/alarm_menu"

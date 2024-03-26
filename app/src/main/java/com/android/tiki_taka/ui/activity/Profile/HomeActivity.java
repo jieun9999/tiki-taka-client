@@ -10,13 +10,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
+import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
 import com.android.tiki_taka.ui.fragment.AlarmFragment;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
-import com.android.tiki_taka.ui.fragment.ChatFragment;
 import com.android.tiki_taka.ui.fragment.HomeFragment;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -37,7 +39,6 @@ public class HomeActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private HomeFragment homeFragment;
     private AlbumFragment albumFragment;
-    private ChatFragment chatFragment;
     private AlarmFragment alarmFragment;
     ProfileApiService service;
     int userId; // 유저 식별 정보
@@ -55,10 +56,18 @@ public class HomeActivity extends AppCompatActivity {
         // 연결끊기가 된 상태이면 바로 프로필_1 화면으로 이동(홈화면 진입 불가)
         checkConnectStateAndNavigateToProfileActivity1();
 
+        ImageView chatIcon =findViewById(R.id.chat_icon);
+        chatIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, ChatActivity.class);
+                startActivity(intent);
+            }
+        });
+
         fragmentManager = getSupportFragmentManager();
         homeFragment = new HomeFragment();
         albumFragment = new AlbumFragment();
-        chatFragment = new ChatFragment();
         alarmFragment = new AlarmFragment();
 
         // 인텐트에서 추가 정보 확인
@@ -77,6 +86,8 @@ public class HomeActivity extends AppCompatActivity {
         // BottomNavigationView 설정
         BottomNavigationView bottomNavigationView = findViewById(R.id.menu_bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(new ItemSelectedListener()); // ItemSelectedListener 클래스를 이용해 탭 선택 시의 동작을 정의합니다.
+
+
     }
 
 
@@ -86,15 +97,12 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
             Fragment selectedFragment = null;
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
 
             //선택된 탭에 따라 selectedFragment를 해당 프래그먼트(homeFragment, albumFragment, chatFragment)로 설정합니다.
             if (menuItem.getItemId() == R.id.home_menu) {
                 selectedFragment = homeFragment;
             } else if (menuItem.getItemId() == R.id.album_menu) {
                 selectedFragment = albumFragment;
-            } else if (menuItem.getItemId() == R.id.chat_menu) {
-                selectedFragment = chatFragment;
             } else if (menuItem.getItemId() == R.id.alarm_menu) {
                 selectedFragment = alarmFragment;
             }

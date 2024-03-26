@@ -25,6 +25,7 @@ import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
+import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -346,7 +347,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         return jsonObject.getString("message");
     }
 
-    // 채팅 액티비티에서 나가게 되면 리소스를 정리
+    // 채팅 액티비티에서 아예 나가게 되면 리소스를 정리
     // 백그라운드 스레드를 사용할 때는 해당 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
     @Override
     protected void onDestroy() {
