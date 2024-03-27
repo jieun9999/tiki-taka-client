@@ -3,7 +3,6 @@ package com.android.tiki_taka.services;
 import android.util.Log;
 
 import com.android.tiki_taka.listeners.MessageListener;
-import com.android.tiki_taka.models.dto.Message;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -79,15 +78,15 @@ public class ChatClient {
 
 
     //연결 종료 및 리소스 해제
+    //Closing a socket will also close the socket's InputStream and OutputStream:
     public void closeConnection() throws IOException {
-        if(bufferedReader != null){
-            bufferedReader.close();
-        }
-        if(bufferedWriter != null){
-            bufferedReader.close();
-        }
         if(socket != null){
-            socket.close();
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("closeConnection", "Error closing Socket", e);
+            }
         }
     }
 }

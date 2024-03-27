@@ -1,6 +1,5 @@
 package com.android.tiki_taka.ui.activity.Chat;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,15 +18,11 @@ import com.android.tiki_taka.listeners.DateMarkerListener;
 import com.android.tiki_taka.listeners.MessageListener;
 import com.android.tiki_taka.models.dto.HomeProfiles;
 import com.android.tiki_taka.models.dto.Message;
-import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.PartnerProfile;
 import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
-import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
-import com.android.tiki_taka.utils.InitializeStack;
-import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.gson.JsonObject;
@@ -37,14 +32,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -72,7 +63,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         setContentView(R.layout.activity_chat);
 
         setupNetworkAndRetrieveIds();
-        setupToolBarListeners();
 
         // 1. db에서 먼저 과거 메세지 이력을 가져옴
         setupLayoutManager();
@@ -83,6 +73,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         //2. 서버 연결 및 수신 & 전송 준비
         connectToChatServer();
         setupSendButtonClickListener();
+        setupToolBarListeners();
     }
 
     private void setupNetworkAndRetrieveIds() {
@@ -96,7 +87,27 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private void setupToolBarListeners(){
         ImageView cancelBtn = findViewById(R.id.imageView36);
         cancelBtn.setOnClickListener( v -> {
-            finish();
+
+            // 백그라운드 작업을 종료 후 액티비티 종료
+            // chatClient가 null이 되거나 다른 문제가 발생하는 상황을 방지할 수 있음
+
+            new Thread(() -> {
+                try {
+
+                    if(chatClient != null){
+                        chatClient.closeConnection();
+                        Log.d("클라이언트 연결 종료", "사용자" +currentUserId );
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                }finally {
+                    runOnUiThread(()-> finish());
+                }
+
+            }).start();
+
         });
     }
 
@@ -192,7 +203,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private void connectToChatServer(){
         new Thread(()->{
             try {
-                // 서버의 로컬 ip 주소로 접속함
+                // 웹 서버 주소로 접속함
                 chatClient = new ChatClient("52.79.41.79", 1234);
 
                 // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
@@ -348,16 +359,19 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     }
 
     // 채팅 액티비티에서 아예 나가게 되면 리소스를 정리
-    // 백그라운드 스레드를 사용할 때는 해당 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
+    // 메인 스레드에서 네트워크 연결과 같은 블로킹(시간이 오래 걸리는) 작업을 진행하는 것은 피해야 함
+    // 대신 보조 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if(chatClient != null){
-            try {
-                chatClient.closeConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            new Thread(()->{
+                try {
+                    chatClient.closeConnection();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 }
