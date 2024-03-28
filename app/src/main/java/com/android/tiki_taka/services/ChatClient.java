@@ -53,7 +53,6 @@ public class ChatClient {
             bufferedWriter.flush(); // 버퍼에 있는 데이터를 즉시 전송
         } catch (IOException e) {
             e.printStackTrace();
-            // 오류 처리 로직 (예: 연결 종료, 재시도, 로깅 등)
         }
     }
 

@@ -1,5 +1,7 @@
 package com.android.tiki_taka.ui.activity.Chat;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,7 +10,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,6 +59,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private int chatRoomId;
     String myProfileImg;
     String partnerProfileImg;
+    private static final int REQUEST_CODE_POST_NOTIFICATION = 101; // 요청 코드는 상수로 정의
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -74,6 +80,9 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         connectToChatServer();
         setupSendButtonClickListener();
         setupToolBarListeners();
+
+        // 알림 권한을 요청하는 메소드 호출
+        requestNotificationPermission();
     }
 
     private void setupNetworkAndRetrieveIds() {
@@ -82,33 +91,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         profileService =retrofit.create(ProfileApiService.class);
         currentUserId = SharedPreferencesHelper.getUserId(this);
         chatRoomId = SharedPreferencesHelper.getRoomId(this);
-    }
-
-    private void setupToolBarListeners(){
-        ImageView cancelBtn = findViewById(R.id.imageView36);
-        cancelBtn.setOnClickListener( v -> {
-
-            // 백그라운드 작업을 종료 후 액티비티 종료
-            // chatClient가 null이 되거나 다른 문제가 발생하는 상황을 방지할 수 있음
-
-            new Thread(() -> {
-                try {
-
-                    if(chatClient != null){
-                        chatClient.closeConnection();
-                        Log.d("클라이언트 연결 종료", "사용자" +currentUserId );
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-
-                }finally {
-                    runOnUiThread(()-> finish());
-                }
-
-            }).start();
-
-        });
     }
 
     private void setupLayoutManager(){
@@ -358,6 +340,33 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         return jsonObject.getString("message");
     }
 
+    private void setupToolBarListeners(){
+        ImageView cancelBtn = findViewById(R.id.imageView36);
+        cancelBtn.setOnClickListener( v -> {
+
+            // 백그라운드 작업을 종료 후 액티비티 종료
+            // chatClient가 null이 되거나 다른 문제가 발생하는 상황을 방지할 수 있음
+
+            new Thread(() -> {
+                try {
+
+                    if(chatClient != null){
+                        chatClient.closeConnection();
+                        Log.d("클라이언트 연결 종료", "사용자" +currentUserId );
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                }finally {
+                    runOnUiThread(()-> finish());
+                }
+
+            }).start();
+
+        });
+    }
+
     // 채팅 액티비티에서 아예 나가게 되면 리소스를 정리
     // 메인 스레드에서 네트워크 연결과 같은 블로킹(시간이 오래 걸리는) 작업을 진행하는 것은 피해야 함
     // 대신 보조 스레드에서 열린 네트워크 연결, 파일 핸들, 스트림 등을 적절하게 닫아주는 것이 중요
@@ -372,6 +381,31 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                     e.printStackTrace();
                 }
             }).start();
+        }
+    }
+
+    private void requestNotificationPermission() {
+        // Android 13 (API level 33) 이상에서만 알림 권한 요청이 필요
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // 권한이 이미 부여되었는지 확인
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // 권한이 없다면 사용자에게 요청
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATION);
+            }
+            // 권한이 이미 있다면 추가 작업이 필요 없습니다
+        }
+        // API level 33 미만에서는 별도의 권한 요청 없이 알림을 보낼 수 있습니다
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 사용자가 권한을 부여했다면 여기에서 알림 관련 추가 작업을 수행할 수 있습니다
+            } else {
+                // 사용자가 권한을 거부했다면, 권한 없이는 알림 기능을 사용할 수 없음을 알릴 수 있습니다
+            }
         }
     }
 }

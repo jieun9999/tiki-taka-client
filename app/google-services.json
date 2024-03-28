@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "198188077166",
+    "project_id": "tiki-taka-22f76",
+    "storage_bucket": "tiki-taka-22f76.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198188077166:android:846e079947b119a57ed67f",
+        "android_client_info": {
+          "package_name": "com.android.tiki_taka"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl-e1rI9BQvxIWHBrMNPEKeBwQ83JXkc0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
