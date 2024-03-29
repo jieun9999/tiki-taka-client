@@ -59,10 +59,12 @@ dependencies {
     // 바텀 시트 다이얼로그 라이브러리
     implementation ("com.google.android.material:material:1.11.0")
     // FCM 기본설정
+    // Firebase Android BoM을 사용하면 앱에서 항상 호환되는 Firebase Android 라이브러리 버전을 사용합니다.
     implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    //FCM 사용 환경을 최적화하려면 프로젝트에서 Google 애널리틱스 사용 설정을 적극 권장합니다. Google 애널리틱스는 FCM의 메시지 전송 보고에 반드시 필요합니다.
     implementation("com.google.firebase:firebase-analytics")
     //FCM 을 수신할 수 있는 라이브러리
-    implementation ("com.google.firebase:firebase-messaging:23.4.1")
+    implementation ("com.google.firebase:firebase-messaging")
 
 
 }

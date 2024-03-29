@@ -6,6 +6,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -13,6 +15,9 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.android.tiki_taka.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -23,10 +28,44 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     String CHANNEL_NAME;
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        // 서비스가 생성될 때 호출되며, 여기서 FCM 토큰을 요청하는 것이 좋습니다.
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        String TAG = "토큰 발급";
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+
+                        // Log
+                        String msg = "FCM Token: " + token;
+                        Log.d(TAG, msg);
+                    }
+
+                });
+    }
+
+    @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        // 토큰을 클라우드 서버로 전송
-        // 파라미터로 전달된 token이 앱을 구분하기 위한 고유한 키가 됨
+        String TAG = "새 토큰 발급";
+        Log.d(TAG, "Refreshed token: " + token);
+        // 새 토큰이 생성될 때마다 onNewToken 콜백이 호출됨
+
+        // 토큰을 앱 서버로 전송
+        sendRegistrationToServer(token);
+    }
+
+    private void sendRegistrationToServer(String token) {
+        // 여기에 서버로 토큰을 보내는 코드를 추가하세요.
     }
 
     @Override
@@ -65,7 +104,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentText(body)
                 .setSmallIcon(R.drawable.ic_launcher_background);
         Notification notification = builder.build();
-
 
         // API level 33 이상일 경우, 권한 여부를 확인해야 한다
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

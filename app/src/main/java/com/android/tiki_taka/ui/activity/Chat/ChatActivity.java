@@ -10,7 +10,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -69,44 +72,93 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         setContentView(R.layout.activity_chat);
 
         setupNetworkAndRetrieveIds();
+        // 알림 권한을 요청하는 메소드 호출
+        askNotificationPermission();
 
-        // 1. db에서 먼저 과거 메세지 이력을 가져옴
+        // db에서 먼저 과거 메세지 이력을 가져옴
         setupLayoutManager();
         setupAdapter();
         loadMessages();
         getHomeProfile(currentUserId);
 
-        //2. 서버 연결 및 수신 & 전송 준비
+        // 서버 연결 및 수신 & 전송 준비
         connectToChatServer();
         setupSendButtonClickListener();
         setupToolBarListeners();
 
-        // 알림 권한을 요청하는 메소드 호출
-        requestNotificationPermission();
+
     }
 
     private void setupNetworkAndRetrieveIds() {
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(ChatApiService.class);
-        profileService =retrofit.create(ProfileApiService.class);
+        profileService = retrofit.create(ProfileApiService.class);
         currentUserId = SharedPreferencesHelper.getUserId(this);
         chatRoomId = SharedPreferencesHelper.getRoomId(this);
     }
 
-    private void setupLayoutManager(){
+    // Declare the launcher at the top of your Activity/Fragment:
+    private void askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // Display an educational UI to the user
+                new AlertDialog.Builder(this)
+                        .setTitle("Notification Permission Required")
+                        .setMessage("This app needs notification permission to inform you about important events. Do you want to allow it?")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            // Directly ask for the permission
+                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                        })
+                        .setNegativeButton("No thanks", (dialog, which) -> {
+                            // Allow the user to continue without granting the permission
+                            dialog.dismiss();
+                        })
+                        .show();
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+    // Android 12L(API 수준 32) 이하를 타겟팅하는 앱의 알림 권한
+    // 앱이 포그라운드에 있을 때 앱에서 알림 채널을 처음 만들면 Android에서 자동으로 사용자에게 권한을 요청합니다.
+    // 하지만 채널 생성 및 권한 요청 시기와 관련하여 중요한 주의사항이 있습니다.
+    // 앱이 백그라운드에서 실행 중일 때 첫 알림 채널을 만드는 경우(FCM 알림 수신 시 FCM SDK가 실행됨) 다음에 앱을 열 때까지 Android에 알림이 표시되지 않고 사용자에게 알림 권한을 요청하지 않습니다.
+    // 즉, 앱을 열고 사용자가 권한을 수락하기 전에 수신된 알림은 잃게 됩니다.
+
+
+    // 권한 요청의 결과에 따라 다르게 실행되는 콜백 메서드를 정의
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // FCM SDK (and your app) can post notifications.
+                } else {
+                    new AlertDialog.Builder(this)
+                            .setTitle("Notification Permission Denied")
+                            .setMessage("You have denied notification permission. As a result, you won't receive important notifications from this app.")
+                            .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                            .show();
+                }
+            });
+
+    private void setupLayoutManager() {
         recyclerView = findViewById(R.id.chatRecyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
     }
 
-    private void setupAdapter(){
+    private void setupAdapter() {
         messageAdapter = new MessageAdapter(messages);
         recyclerView.setAdapter(messageAdapter);
         scrollToBottom();
     }
 
 
-    private void loadMessages(){
+    private void loadMessages() {
         service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
             @Override
             public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
@@ -115,7 +167,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
                     //초기에 아이템이 렌더링 된 후에 스크롤 맨 아래로 이동
                     scrollToBottom();
-                }else {
+                } else {
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
                 }
             }
@@ -135,7 +187,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     // 상대방과 나의 프로필 이미지를 초기화할때 가져와서, 이미 할당해둔 상태에서
     // updateUIFromDB()나 updateUIFromInputBox()가 실행될때 인자로 넣어준다
-    private void getHomeProfile(int currentUserId){
+    private void getHomeProfile(int currentUserId) {
         // 1. 유저 프로필 정보 가져오기
         Call<HomeProfiles> call = profileService.getHomeProfile(currentUserId);
         call.enqueue(new Callback<HomeProfiles>() {
@@ -152,7 +204,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         });
     }
 
-    private void processHomeProfileResponse(Response<HomeProfiles> response){
+    private void processHomeProfileResponse(Response<HomeProfiles> response) {
         if (response.isSuccessful() && response.body() != null) {
             //서버에서 홈프로필 정보를 가져옴
             HomeProfiles homeProfiles = response.body();
@@ -170,11 +222,11 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     }
 
 
-    private void handleLoadingMessages(Response<List<Message>> response){
+    private void handleLoadingMessages(Response<List<Message>> response) {
         List<Message> messages = response.body();
-        if(messages != null){
+        if (messages != null) {
             messageAdapter.setData(messages, currentUserId);
-        }else {
+        } else {
             Log.e("Error", "messages null 입니다");
         }
 
@@ -182,8 +234,8 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     // new Thread()를 사용하여 connectToChatServer 메서드 내의 작업을 새로운 스레드에서 실행함으로써
     // NetworkOnMainThreadException 오류를 피하기
-    private void connectToChatServer(){
-        new Thread(()->{
+    private void connectToChatServer() {
+        new Thread(() -> {
             try {
                 // 웹 서버 주소로 접속함
                 chatClient = new ChatClient("52.79.41.79", 1234);
@@ -214,7 +266,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     }
 
-    private void setupSendButtonClickListener(){
+    private void setupSendButtonClickListener() {
         TextView sendButton = findViewById(R.id.send_view);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -243,7 +295,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         // 안드로이드에서 네트워크 연결과 같은 입출력(I/O) 작업은 메인 스레드(또는 UI 스레드)에서 실행해서는 안 됩니다
         // 서버 소켓을 통해 메세지를 보낼 때, 메세지 객체가 아니라 문자열로 전송하는 것이 일반적
         // 백그라운드 스레드에서 소켓을 통해 메세지 전송
-        new Thread(() ->{
+        new Thread(() -> {
             // 현재 시간 저장
             String createdAt = nowDateFormatter();
 
@@ -261,7 +313,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     }
 
-    private String nowDateFormatter(){
+    private String nowDateFormatter() {
         LocalDateTime currentTime = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             currentTime = LocalDateTime.now();
@@ -282,17 +334,17 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         // 리사이클러뷰에 메세지 추가
         Message newMessage = new Message(partnerProfileImg, createdAt, content);
-        messageAdapter.addMessage(newMessage, currentUserId, chatRoomId,this);
-        recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
+        messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
+        recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
     }
 
-    private void updateUIFromInputBox(String createdAt, String message, String myProfileImg){
+    private void updateUIFromInputBox(String createdAt, String message, String myProfileImg) {
 
         // 리사이클러뷰에 메세지 추가
         Message newMessage = new Message(myProfileImg, createdAt, message);
         newMessage.setSenderId(currentUserId); // 내가 보낸 메세지 설정
         messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
-        recyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
+        recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
     }
 
     @Override
@@ -310,8 +362,8 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         });
     }
 
-    private void ProcessResponse( Response<ResponseBody> response){
-        if(response.isSuccessful()){
+    private void ProcessResponse(Response<ResponseBody> response) {
+        if (response.isSuccessful()) {
             handleResponse(response);
 
         } else {
@@ -319,18 +371,18 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         }
     }
 
-    private void handleResponse(Response<ResponseBody> response){
+    private void handleResponse(Response<ResponseBody> response) {
         if (response.isSuccessful()) {
             try {
                 String message = parseResponseData(response);
-                Log.d("success",message);
+                Log.d("success", message);
 
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
-                Log.e("Error","catch문 오류 발생");
+                Log.e("Error", "catch문 오류 발생");
             }
         } else {
-            Log.e("Error","서버 응답 오류");
+            Log.e("Error", "서버 응답 오류");
         }
     }
 
@@ -340,9 +392,9 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         return jsonObject.getString("message");
     }
 
-    private void setupToolBarListeners(){
+    private void setupToolBarListeners() {
         ImageView cancelBtn = findViewById(R.id.imageView36);
-        cancelBtn.setOnClickListener( v -> {
+        cancelBtn.setOnClickListener(v -> {
 
             // 백그라운드 작업을 종료 후 액티비티 종료
             // chatClient가 null이 되거나 다른 문제가 발생하는 상황을 방지할 수 있음
@@ -350,16 +402,16 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             new Thread(() -> {
                 try {
 
-                    if(chatClient != null){
+                    if (chatClient != null) {
                         chatClient.closeConnection();
-                        Log.d("클라이언트 연결 종료", "사용자" +currentUserId );
+                        Log.d("클라이언트 연결 종료", "사용자" + currentUserId);
                     }
 
                 } catch (IOException e) {
                     e.printStackTrace();
 
-                }finally {
-                    runOnUiThread(()-> finish());
+                } finally {
+                    runOnUiThread(() -> finish());
                 }
 
             }).start();
@@ -373,8 +425,8 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(chatClient != null){
-            new Thread(()->{
+        if (chatClient != null) {
+            new Thread(() -> {
                 try {
                     chatClient.closeConnection();
                 } catch (IOException e) {
@@ -384,28 +436,4 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         }
     }
 
-    private void requestNotificationPermission() {
-        // Android 13 (API level 33) 이상에서만 알림 권한 요청이 필요
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // 권한이 이미 부여되었는지 확인
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                // 권한이 없다면 사용자에게 요청
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQUEST_CODE_POST_NOTIFICATION);
-            }
-            // 권한이 이미 있다면 추가 작업이 필요 없습니다
-        }
-        // API level 33 미만에서는 별도의 권한 요청 없이 알림을 보낼 수 있습니다
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_POST_NOTIFICATION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 사용자가 권한을 부여했다면 여기에서 알림 관련 추가 작업을 수행할 수 있습니다
-            } else {
-                // 사용자가 권한을 거부했다면, 권한 없이는 알림 기능을 사용할 수 없음을 알릴 수 있습니다
-            }
-        }
-    }
 }
