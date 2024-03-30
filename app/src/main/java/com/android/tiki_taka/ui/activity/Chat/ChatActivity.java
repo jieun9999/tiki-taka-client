@@ -62,7 +62,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private int chatRoomId;
     String myProfileImg;
     String partnerProfileImg;
-    private static final int REQUEST_CODE_POST_NOTIFICATION = 101; // 요청 코드는 상수로 정의
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -85,7 +84,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         connectToChatServer();
         setupSendButtonClickListener();
         setupToolBarListeners();
-
 
     }
 

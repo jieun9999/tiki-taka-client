@@ -1,6 +1,7 @@
 package com.android.tiki_taka.services;
 
 import com.android.tiki_taka.models.dto.ChatRoom;
+import com.android.tiki_taka.models.dto.FcmToken;
 import com.android.tiki_taka.models.dto.Message;
 import com.android.tiki_taka.models.response.ApiResponse;
 
@@ -24,4 +25,6 @@ public interface ChatApiService {
     @POST("Chat/saveDateMarker.php")
     Call<ResponseBody> saveDateMarker(@Body Message message);
 
+    @POST("Chat/saveToken.php")
+    Call<ApiResponse> saveToken(@Body FcmToken fcmToken);
 }

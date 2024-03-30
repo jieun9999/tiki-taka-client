@@ -7,7 +7,6 @@ import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -15,42 +14,34 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.android.tiki_taka.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.android.tiki_taka.models.dto.FcmToken;
+import com.android.tiki_taka.models.response.ApiResponse;
+import com.android.tiki_taka.utils.RetrofitClient;
+import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     String CHANNEL_ID;
     String CHANNEL_NAME;
+    int userId;
+    ChatApiService service;
 
+    // 서비스가 생성될 때 호출되며, 여기서 FCM 토큰을 요청하는 것이 좋습니다.
     @Override
     public void onCreate() {
         super.onCreate();
+        userId = SharedPreferencesHelper.getUserId(getApplicationContext());
+        Retrofit retrofit = RetrofitClient.getClient();
+        service = retrofit.create(ChatApiService.class);
 
-        // 서비스가 생성될 때 호출되며, 여기서 FCM 토큰을 요청하는 것이 좋습니다.
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        String TAG = "토큰 발급";
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-
-                        // Get new FCM registration token
-                        String token = task.getResult();
-
-                        // Log
-                        String msg = "FCM Token: " + token;
-                        Log.d(TAG, msg);
-                    }
-
-                });
     }
 
     @Override
@@ -58,14 +49,35 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onNewToken(token);
         String TAG = "새 토큰 발급";
         Log.d(TAG, "Refreshed token: " + token);
+        // fcm에서 각 기기에 발급해준 토큰
         // 새 토큰이 생성될 때마다 onNewToken 콜백이 호출됨
 
-        // 토큰을 앱 서버로 전송
+        // 토큰을 앱과 연결된 서버로 전송
         sendRegistrationToServer(token);
     }
 
     private void sendRegistrationToServer(String token) {
-        // 여기에 서버로 토큰을 보내는 코드를 추가하세요.
+
+        FcmToken fcmToken = new FcmToken(userId, token);
+        service.saveToken(fcmToken).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        // success가 true일 때의 처리
+
+                    }
+                }else {
+                    // success가 false일 때의 처리
+                    Log.e("ERROR", "토큰 저장 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable throwable) {
+                Log.e("ERROR", "네트워크 오류");
+            }
+        });
     }
 
     @Override
