@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -89,17 +90,24 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     static class SentMessageViewHolder extends RecyclerView.ViewHolder{
         CircleImageView profileImg;
         TextView messageBody, timeStamp;
+        ImageView heartIcon;
         public SentMessageViewHolder(@NonNull View itemView) {
             super(itemView);
             profileImg = itemView.findViewById(R.id.imageView_profile);
             messageBody = itemView.findViewById(R.id.textView_messageBody);
             timeStamp = itemView.findViewById(R.id.textView_timeStamp);
+            heartIcon = itemView.findViewById(R.id.imageView32);
         }
 
         void bind(Message message){
             ImageUtils.loadImage(message.getProfileImageUrl(), profileImg, itemView.getContext());
             messageBody.setText(message.getContent());
             timeStamp.setText(TimeUtils.convertToAmPm(message.getCreatedAt()));
+            if (message.getIsRead() == 1) {
+                heartIcon.setVisibility(View.GONE);
+            } else {
+                heartIcon.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -107,17 +115,24 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder{
         CircleImageView profileImg;
         TextView messageBody, timeStamp;
+        ImageView heartIcon;
         public ReceivedMessageViewHolder(@NonNull View itemView) {
             super(itemView);
             profileImg = itemView.findViewById(R.id.imageView_profile);
             messageBody = itemView.findViewById(R.id.textView_messageBody);
             timeStamp = itemView.findViewById(R.id.textView_timeStamp);
+            heartIcon = itemView.findViewById(R.id.imageView32);
         }
 
         void bind(Message message){
             ImageUtils.loadImage(message.getProfileImageUrl(), profileImg, itemView.getContext());
             messageBody.setText(message.getContent());
             timeStamp.setText(TimeUtils.convertToAmPm(message.getCreatedAt()));
+            if (message.getIsRead() == 1) {
+                heartIcon.setVisibility(View.GONE);
+            } else {
+                heartIcon.setVisibility(View.VISIBLE);
+            }
         }
     }
 

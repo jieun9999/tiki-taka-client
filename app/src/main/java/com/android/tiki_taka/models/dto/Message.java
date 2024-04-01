@@ -23,9 +23,13 @@ public class Message {
     @SerializedName("created_at")
     private String createdAt;
 
+    //서버와의 일관성을 위해 boolean을 int로 처리함
     @SerializedName("date_marker")
     private int dateMarker;
-    // 서버와의 일관성
+
+    @SerializedName("is_read")
+    private int isRead;
+
     private boolean isSent; //사용자가 메세지를 보냈는지 여부
 
     // 받은 메세지를 보여줄때 생성
@@ -106,5 +110,13 @@ public class Message {
 
     public void setDateMarker(int dateMarker) {
         this.dateMarker = dateMarker;
+    }
+
+    public int getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(int isRead) {
+        this.isRead = isRead;
     }
 }
