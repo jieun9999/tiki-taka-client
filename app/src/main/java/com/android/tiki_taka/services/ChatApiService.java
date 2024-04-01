@@ -3,7 +3,6 @@ package com.android.tiki_taka.services;
 import com.android.tiki_taka.models.dto.ChatRoom;
 import com.android.tiki_taka.models.dto.FcmToken;
 import com.android.tiki_taka.models.dto.Message;
-import com.android.tiki_taka.models.request.ReadMessageRequest;
 import com.android.tiki_taka.models.response.ApiResponse;
 
 import java.util.List;
@@ -32,6 +31,4 @@ public interface ChatApiService {
     @GET("Chat/loadLastReadMessageId.php")
     Call<Message> loadLastReadMessageId(@Query("currentUserId") int currentUserId);
 
-    @POST("Chat/markMessageAsRead.php")
-    Call<ApiResponse> markMessageAsRead(@Body ReadMessageRequest readMessageRequest);
 }

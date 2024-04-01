@@ -35,10 +35,11 @@ public class Message {
     // 받은 메세지를 보여줄때 생성
     //  profileImageUrl는 db table에서 가져옴
     //  content, createdAt는 서버 소켓에서 가져옴
-    public Message(String profileImageUrl, String createdAt, String content){
+    public Message(String profileImageUrl, String createdAt, String content, int isRead){
         this.profileImageUrl = profileImageUrl;
         this.createdAt = createdAt;
         this.content = content;
+        this.isRead =isRead;
     }
 
     //날짜 표시 객체

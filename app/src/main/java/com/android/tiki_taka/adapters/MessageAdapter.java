@@ -171,6 +171,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         // 뷰타입 설정
         boolean isSent = newMessage.getSenderId() == userId;
         newMessage.setSent(isSent);
+        //화면에 띄우자 마자 상대방 메세지 읽었기 때문에 1 없어짐
+        newMessage.setIsRead(1);
 
         if(!messages.isEmpty()){
             // 마지막 메세지와 날짜 비교
@@ -184,8 +186,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 Message dateMarker = new Message(newMessageDateWithoutTime, roomId);
                 messages.add(dateMarker);
                 if(dateMarkerListener != null && newMessage.isSent()){
-                    dateMarkerListener.onMessageAdded(dateMarker);
-                    // UI 업데이트 후 서버에 데이터 전송
+                    dateMarkerListener.onMessageAdded(dateMarker); // UI 업데이트 후 서버에 데이터 전송
+
                 }
             }
         }
@@ -195,13 +197,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyItemInserted(messages.size() -1);
     }
 
-    public Message getItem(int position){
-        if(position >= 0 && position < messages.size()){
-            return messages.get(position);
-        }
-        return  null;
-    }
-
     public int getMessageIdAtPosition(int position){
         if(position >= 0 && position< messages.size()){
             return messages.get(position).getMessageId();
@@ -209,4 +204,23 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             return -1;
         }
     }
+
+    // 가장 마지막에 읽은 메세지 까지 UI 업데이트
+    // 메시지의 '읽음' 상태를 업데이트하는 로직과 UI 업데이트를 분리하여 처리
+    public void setRead(int messageId, int readerId){
+        boolean hasUpdate = false;
+        for (int i = 0; i < messages.size(); i++) {
+            Message message = messages.get(i);
+            if(message.getMessageId() <= messageId && message.getSenderId() != readerId){
+                message.setIsRead(1);
+                hasUpdate = true;
+            }
+        }
+
+        if(hasUpdate){
+            // 전체 목록에 대해 UI 업데이트 알림
+            notifyItemRangeChanged(0, messages.size());
+        }
+    }
+
 }
