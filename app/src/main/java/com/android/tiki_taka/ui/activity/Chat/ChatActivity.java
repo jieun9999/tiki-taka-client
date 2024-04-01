@@ -74,22 +74,18 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         setContentView(R.layout.activity_chat);
 
         setupNetworkAndRetrieveIds();
-        // 알림 권한을 요청하는 메소드 호출
         askNotificationPermission();
 
-        // db에서 먼저 과거 메세지 이력을 가져옴
         setupLayoutManager();
         setupAdapter();
         loadLastReadMessageId();
         loadMessages();
         getHomeProfile(currentUserId);
 
-        // 서버 연결 및 수신 & 전송 준비
         connectToChatServer();
         setupSendButtonClickListener();
         setupToolBarListeners();
 
-        // 스크롤 시 읽음 처리
         markMessageAsReadOnScroll();
 
     }
@@ -161,6 +157,22 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         recyclerView.setAdapter(messageAdapter);
     }
 
+    private void loadLastReadMessageId(){
+        service.loadLastReadMessageId(currentUserId).enqueue(new Callback<Message>() {
+            @Override
+            public void onResponse(Call<Message> call, Response<Message> response) {
+                Message lastReadMessage = response.body();
+                lastReadMessageId = lastReadMessage.getMessageId();
+                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
+
+            }
+
+            @Override
+            public void onFailure(Call<Message> call, Throwable throwable) {
+                Log.e("ERROR", "lastReadMessage 네트워크 오류");
+            }
+        });
+    }
 
     private void loadMessages() {
         service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
@@ -428,23 +440,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         });
     }
 
-    private void loadLastReadMessageId(){
-        service.loadLastReadMessageId(currentUserId).enqueue(new Callback<Message>() {
-            @Override
-            public void onResponse(Call<Message> call, Response<Message> response) {
-                Message lastReadMessage = response.body();
-                lastReadMessageId = lastReadMessage.getMessageId();
-                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
 
-            }
-
-            @Override
-            public void onFailure(Call<Message> call, Throwable throwable) {
-                Log.e("ERROR", "lastReadMessage 네트워크 오류");
-            }
-        });
-
-    }
 
     private void markMessageAsReadOnScroll(){
         // RecyclerView를 스크롤할 때 발생하는 이벤트를 감지
