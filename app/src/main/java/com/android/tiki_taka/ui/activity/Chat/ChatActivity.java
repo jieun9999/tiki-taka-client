@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -15,7 +16,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +28,8 @@ import com.android.tiki_taka.models.dto.HomeProfiles;
 import com.android.tiki_taka.models.dto.Message;
 import com.android.tiki_taka.models.dto.PartnerProfile;
 import com.android.tiki_taka.models.dto.UserProfile;
+import com.android.tiki_taka.models.request.ReadMessageRequest;
+import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
@@ -62,6 +64,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private int chatRoomId;
     String myProfileImg;
     String partnerProfileImg;
+    int lastReadMessageId;
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -77,6 +80,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         // db에서 먼저 과거 메세지 이력을 가져옴
         setupLayoutManager();
         setupAdapter();
+        loadLastReadMessageId();
         loadMessages();
         getHomeProfile(currentUserId);
 
@@ -84,6 +88,9 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         connectToChatServer();
         setupSendButtonClickListener();
         setupToolBarListeners();
+
+        // 스크롤 시 읽음 처리
+        markMessageAsReadOnScroll();
 
     }
 
@@ -152,7 +159,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private void setupAdapter() {
         messageAdapter = new MessageAdapter(messages);
         recyclerView.setAdapter(messageAdapter);
-        scrollToBottom();
     }
 
 
@@ -163,8 +169,8 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
                     handleLoadingMessages(response);
 
-                    //초기에 아이템이 렌더링 된 후에 스크롤 맨 아래로 이동
-                    scrollToBottom();
+                    //초기에 아이템이 렌더링 된 후에 마지막 읽은 메세지로 이동
+                    scrollToLastReadMessage();
                 } else {
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
                 }
@@ -177,9 +183,13 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         });
     }
 
-    private void scrollToBottom() {
-        if (messageAdapter.getItemCount() > 0) {
-            recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
+    private void scrollToLastReadMessage() {
+        int itemCount = messageAdapter.getItemCount();
+        for (int position = 0; position < itemCount; position++){
+            if(messageAdapter.getMessageIdAtPosition(position) == lastReadMessageId){
+                recyclerView.scrollToPosition(position);
+                return;
+            }
         }
     }
 
@@ -224,6 +234,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         List<Message> messages = response.body();
         if (messages != null) {
             messageAdapter.setData(messages, currentUserId);
+
         } else {
             Log.e("Error", "messages null 입니다");
         }
@@ -414,6 +425,92 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
             }).start();
 
+        });
+    }
+
+    private void loadLastReadMessageId(){
+        service.loadLastReadMessageId(currentUserId).enqueue(new Callback<Message>() {
+            @Override
+            public void onResponse(Call<Message> call, Response<Message> response) {
+                Message lastReadMessage = response.body();
+                lastReadMessageId = lastReadMessage.getMessageId();
+                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
+
+            }
+
+            @Override
+            public void onFailure(Call<Message> call, Throwable throwable) {
+                Log.e("ERROR", "lastReadMessage 네트워크 오류");
+            }
+        });
+
+    }
+
+    private void markMessageAsReadOnScroll(){
+        // RecyclerView를 스크롤할 때 발생하는 이벤트를 감지
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private Handler handler = new Handler(); // UI 스레드에서 작업을 스케줄링
+
+            //읽음" 처리 로직을 담고 있는 Runnable 객체를 정의
+            private Runnable markAsReadRunnable = () ->{
+                Log.d("RunnableExecuted", "Executing markAsReadRunnable "+ lastReadMessageId);
+                if(lastReadMessageId != -1){
+                    markMessageAsReadToServer(currentUserId, lastReadMessageId);
+                    lastReadMessageId = -1; // 요청을 보낸 후 초기화
+                }
+            };
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                Log.d("Scroll", "Scrolled dx: " + dx + ", dy: " + dy);
+                if(dy > 0){
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
+
+                    Message message = messageAdapter.getItem(lastVisiblePosition);
+                    if(message != null && message.getMessageId() > lastReadMessageId){
+                        Log.d("UpdateLastRead", "Updating lastReadMessageId to: " + message.getMessageId());
+                        // 스크롤할 때 보이는 가장 마지막 메시지를 기준으로 서버에 읽음 처리 요청을 보냄
+                        lastReadMessageId = message.getMessageId();
+
+                        // 이전에 Handler에 예약된 모든 markAsReadRunnable 작업을 취소
+                        handler.removeCallbacks(markAsReadRunnable);
+
+                        // 사용자가 스크롤을 멈춘 후 1초가 지나면 요청을 보냄
+                        // 각 스크롤 이벤트마다 markAsReadRunnable을 실행하도록 예약하는 부분
+                        handler.postDelayed(markAsReadRunnable, 1000);
+                        Log.d("RunnableScheduled", "markAsReadRunnable scheduled");
+
+                    }
+
+                }
+
+            }
+        });
+    }
+
+    private void markMessageAsReadToServer(int currentUserId, int lastReadMessageId){
+        ReadMessageRequest readMessageRequest = new ReadMessageRequest(currentUserId, lastReadMessageId);
+        service.markMessageAsRead(readMessageRequest).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if(response.isSuccessful() && response.body() != null){
+                    if(response.body().isSuccess()){
+                        // success가 true일 때의 처리
+                        Log.d("SUCCESS", "읽음 처리 저장 성공!");
+                        // 하트 사라지는 ui 업데이트
+                    }
+                }else {
+                    // success가 false일 때의 처리
+                    Log.e("ERROR", "읽음 처리 저장 실패");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable throwable) {
+                Log.e("ERROR", "markMessageAsRead 네트워크 오류");
+            }
         });
     }
 

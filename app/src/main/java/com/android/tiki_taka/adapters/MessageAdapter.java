@@ -180,4 +180,18 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyItemInserted(messages.size() -1);
     }
 
+    public Message getItem(int position){
+        if(position >= 0 && position < messages.size()){
+            return messages.get(position);
+        }
+        return  null;
+    }
+
+    public int getMessageIdAtPosition(int position){
+        if(position >= 0 && position< messages.size()){
+            return messages.get(position).getMessageId();
+        }else {
+            return -1;
+        }
+    }
 }

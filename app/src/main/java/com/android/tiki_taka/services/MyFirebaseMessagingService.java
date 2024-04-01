@@ -64,7 +64,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if(response.isSuccessful() && response.body() != null){
                     if(response.body().isSuccess()){
-                        // success가 true일 때의 처리
+                         // success가 true일 때의 처리
 
                     }
                 }else {
