@@ -83,20 +83,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageSent(@NonNull String msgId) {
         super.onMessageSent(msgId);
-        // 클라우드 서버에서 메세지를 전송하면 자동으로 호출
-        // 이 메세드 내에서 메세지를 처리하여 사용자에게 알림을 보낸다
+        // 메시지가 FCM 서버로 성공적으로 전송된 후 호출
+        // 일반적으로 이 메서드를 사용하여 사용자에게 직접적인 알림을 표시하는 경우는 드뭅니다. 대신, 메시지 전송 과정에서의 성공 여부를 추적하거나, 추가적인 후속 조치가 필요한 경우 사용합니다.
     }
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        // 메세지를 수신할때 호출되는 메세드
-        // remoteMessage에 수신된 메세지가 전달된다.
+        Log.d("remoteMessage", String.valueOf(remoteMessage));
 
-        // 아래 코드는 메세지 정보를 받아 notification으로 등록하는 코드다
+        // 이 메서드는 FCM으로부터 메시지를 수신할 때 호출됩니다
+        CHANNEL_ID = "message_notifications";
+        CHANNEL_NAME ="메세지 알림";
+
+        // 1. 알림 채널 설정
         NotificationManagerCompat notificationManager =
                 NotificationManagerCompat.from(getApplicationContext());
 
+        // 2. 알림 생성 및 표시
         NotificationCompat.Builder builder = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
@@ -117,6 +121,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setSmallIcon(R.drawable.ic_launcher_background);
         Notification notification = builder.build();
 
+        // 3. 알림 권한 확인
         // API level 33 이상일 경우, 권한 여부를 확인해야 한다
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
