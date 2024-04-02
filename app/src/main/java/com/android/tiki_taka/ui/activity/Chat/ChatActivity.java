@@ -57,6 +57,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private MessageAdapter messageAdapter;
     private List<Message> messages = new ArrayList<>();
     private int chatRoomId;
+    int partnerId;
     String myProfileImg;
     String partnerProfileImg;
     int lastReadMessageId;
@@ -258,6 +259,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
 
             myProfileImg = userProfile.getProfileImage();
+            partnerId = partnerProfile.getUserId();
             partnerProfileImg = partnerProfile.getProfileImage();
 
         } else {
@@ -319,6 +321,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         messageObject.addProperty("senderId", currentUserId);
         messageObject.addProperty("message", inputText);
         messageObject.addProperty("chatRoomId", chatRoomId);
+        messageObject.addProperty("partnerId", partnerId);
 
         String message = messageObject.toString();
 
