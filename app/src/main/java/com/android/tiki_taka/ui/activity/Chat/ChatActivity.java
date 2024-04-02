@@ -73,7 +73,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         setupLayoutManager();
         setupAdapter();
-        loadLastReadMessageId();
         loadMessages();
         getHomeProfile(currentUserId);
 
@@ -152,22 +151,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         recyclerView.setAdapter(messageAdapter);
     }
 
-    private void loadLastReadMessageId(){
-        service.loadLastReadMessageId(currentUserId).enqueue(new Callback<Message>() {
-            @Override
-            public void onResponse(Call<Message> call, Response<Message> response) {
-                Message lastReadMessage = response.body();
-                lastReadMessageId = lastReadMessage.getMessageId();
-                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
-
-            }
-
-            @Override
-            public void onFailure(Call<Message> call, Throwable throwable) {
-                Log.e("ERROR", "lastReadMessage 네트워크 오류");
-            }
-        });
-    }
 
     private void loadMessages() {
         service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
@@ -192,9 +175,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                     recyclerView.post(()->{
                         //ui 업데이트 후 실행될 작업
                         // 이것도 서버 소켓에 전송을 해줘야 함 !!!!
-                        markMessageAsReadToServer(currentUserId, getLastVisibleMessageId());
-                        Log.d("getLastVisibleMessageId", String.valueOf(getLastVisibleMessageId()));
-
+                        markAllMessagesAsReadToServer(currentUserId, nowDateTime());
                     });
 
                 } else {
@@ -210,28 +191,30 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         });
     }
 
-    //서버와의 실시간 소켓 연결을 통해 읽음 처리 요청을 보냄
-    private void markMessageAsReadToServer(int currentUserId, int lastReadMessageId){
-        // 서버에 보내기 위해 google.gson 라이브러리를 사용하여 JsonObject 형식의 메세지 생성
-        JsonObject readMessageRequest = new JsonObject();
-        readMessageRequest.addProperty("type","readMessage");
-        readMessageRequest.addProperty("readerId", currentUserId);
-        readMessageRequest.addProperty("lastReadMessageId", lastReadMessageId);
+    private String nowDateTime(){
+        LocalDateTime now = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+           return now.format(formatter);
+        }
+        return null;
+    }
 
-        new Thread(()->{
-            // 서버 소켓에 메세지 전송
+    //서버와의 실시간 소켓 연결을 통해 읽음 처리 요청을 보냄
+    private void markAllMessagesAsReadToServer(int currentUserId, String dateTime){
+        JsonObject readMessageRequest = new JsonObject();
+        readMessageRequest.addProperty("type", "readMessages");
+        readMessageRequest.addProperty("readerId", currentUserId);
+        readMessageRequest.addProperty("dateTime", dateTime);
+
+        // 메시지 객체를 문자열로 변환하여 서버 소켓에 메세지 전송
+        new Thread(() -> {
             chatClient.sendMessage(readMessageRequest.toString());
+
         }).start();
     }
 
-
-    // 화면에 표시되는 메시지 중에서 가장 마지막에 있는 메시지의 ID를 구하기
-    // RecyclerView가 초기화 된 후 실행해야 함
-    private int getLastVisibleMessageId() {
-            LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-            int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
-            return messageAdapter.getMessageIdAtPosition(lastVisibleItemPosition);
-    }
 
     private void scrollToLastReadMessage() {
         int itemCount = messageAdapter.getItemCount();
@@ -299,7 +282,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 chatClient.setMessageListener(new MessageListener() {
                     @Override
                     public void onMessageReceived(String message) {
-                        // 상대방의 메세지 띄우기
+                        // 상대방의 메세지 띄우기 OR 나의 메세지 1 사라지게 하기
                         runOnUiThread(() -> updateUIFromDB(message, partnerProfileImg));
                     }
                 });
@@ -371,10 +354,9 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         return "";
     }
 
-    private void updateUIFromDB(String jsonMessage, String partnerProfileImg) {
+    private void  updateUIFromDB(String jsonMessage, String partnerProfileImg) {
 
         // 상대방에게서 온 것이 새로운 메세지  or 읽었음 표시 인지에 따라 업데이트가 달라짐
-        // 서버에서온 message json 문자열 파싱
         JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
 
         String type = messageObject.get("type").getAsString();
@@ -383,16 +365,16 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             String content = messageObject.get("content").getAsString();
 
             // 리사이클러뷰에 메세지 추가
-            Message newMessage = new Message(partnerProfileImg, createdAt, content, 0);
+            Message newMessage = new Message(partnerProfileImg, createdAt, content, 1);
+            // 이미 상대방의 메세지를 본다고 가정하기 때문에, ui에서 1이 사라진 상태로 업데이트 함
             messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
-            recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
 
-        }else if(type.equals("readMessage")) {
-            int readerId = messageObject.get("readerId").getAsInt();
+        }else if(type.equals("readMessages")) {
+            //db 업데이트 한 가장 최신의 메세지 id
             int lastReadMessageId = messageObject.get("lastReadMessageId").getAsInt();
 
-            // ~~~ 특정 메세지까지 읽음 속성이 1이 되도록 바꿈
-            messageAdapter.setRead(lastReadMessageId, readerId);
+            // 상대방이 메세지 읽음 => 나의 메세지 ui에서 1이 사라짐
+            messageAdapter.setRead(lastReadMessageId, currentUserId);
             }
 
     }
@@ -487,36 +469,20 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
             //읽음" 처리 로직을 담고 있는 Runnable 객체를 정의
             private Runnable markAsReadRunnable = () ->{
-                Log.d("RunnableExecuted", "Executing markAsReadRunnable "+ lastReadMessageId);
-                if(lastReadMessageId != -1){
-                    // 서버에 읽음 처리 전송
-                    markMessageAsReadToServer(currentUserId, lastReadMessageId);
-                    lastReadMessageId = -1; // 요청을 보낸 후 초기화
-                }
+                // 현재 시간을 dateTime 형식으로 전달
+                markAllMessagesAsReadToServer(currentUserId, nowDateTime());
+
             };
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                Log.d("Scroll", "Scrolled dx: " + dx + ", dy: " + dy);
-                if(dy > 0){
-                    int lastVisibleMessageId = getLastVisibleMessageId();
-                    if(lastVisibleMessageId > lastReadMessageId){
-                        Log.d("UpdateLastRead", "Updating lastReadMessageId to: " + lastVisibleMessageId);
-                        // 스크롤할 때 보이는 가장 마지막 메시지를 기준으로 서버에 읽음 처리 요청을 보냄
-                        lastReadMessageId = lastVisibleMessageId;
-                        // 이전에 Handler에 예약된 모든 markAsReadRunnable 작업을 취소
-                        handler.removeCallbacks(markAsReadRunnable);
-
-                        // 사용자가 스크롤을 멈춘 후 0.5초가 지나면 요청을 보냄
-                        // 각 스크롤 이벤트마다 markAsReadRunnable을 실행하도록 예약하는 부분
-                        handler.postDelayed(markAsReadRunnable,500);
-                        Log.d("RunnableScheduled", "markAsReadRunnable scheduled");
-
-                    }
-
+                if (dy > 0) { // 사용자가 아래로 스크롤
+                    // 이전에 예약된 모든 작업 취소
+                    handler.removeCallbacks(markAsReadRunnable);
+                    // 사용자가 스크롤을 멈춘 후 0.5초 후에 실행
+                    handler.postDelayed(markAsReadRunnable, 500);
                 }
-
             }
         });
     }
