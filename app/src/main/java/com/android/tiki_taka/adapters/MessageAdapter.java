@@ -205,12 +205,29 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     // 가장 마지막에 읽은 메세지 까지 UI 업데이트
     // 메시지의 '읽음' 상태를 업데이트하는 로직과 UI 업데이트를 분리하여 처리
-    public void setRead(int messageId, int currentUserId){
+    public void setReadMyMessage(int messageId, int currentUserId){
         boolean hasUpdate = false;
         for (int i = 0; i < messages.size(); i++) {
             Message message = messages.get(i);
             // 내가 쓴 메세지의 1을 사라지게 함
             if(message.getMessageId() <= messageId && message.getSenderId() == currentUserId){
+                message.setIsRead(1);
+                hasUpdate = true;
+            }
+        }
+
+        if(hasUpdate){
+            // 전체 목록에 대해 UI 업데이트 알림
+            notifyItemRangeChanged(0, messages.size());
+        }
+    }
+
+    public void setReadPartnerMessage(int messageId, int currentUserId){
+        boolean hasUpdate = false;
+        for (int i = 0; i < messages.size(); i++) {
+            Message message = messages.get(i);
+            // 상대방이 쓴 메세지의 1을 사라지게 함
+            if(message.getMessageId() <= messageId && message.getSenderId() != currentUserId){
                 message.setIsRead(1);
                 hasUpdate = true;
             }

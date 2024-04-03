@@ -184,11 +184,15 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                 if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
                     handleLoadingMessages(response);
-
                     // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
                     if (notificationMessageId != -1 && notificationRoomId != -1) {
                         // 1. 알림을 클릭해서 채팅방에 들어갈 때
                         scrollToNotificationMessage(notificationMessageId);
+                        // 읽음 처리를 해줌 (상대방 메세지 1 사라짐)
+                        markAllMessagesAsReadToServer(currentUserId, nowDateTime());
+                        // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
+                        updateReadMessageInLocal(notificationMessageId);
+
                     }else {
                         // 2. 그냥 채팅방에 들어갈 때
                         scrollToLastReadMessage();
@@ -269,6 +273,11 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             chatClient.sendMessage(readMessageRequest.toString());
 
         }).start();
+    }
+
+    private void updateReadMessageInLocal(int notificationMessageId){
+        //내 기기에서 상대방이 쓴 메세지 ui에서 1이 사라짐
+        messageAdapter.setReadPartnerMessage(notificationMessageId, currentUserId);
     }
 
 
@@ -405,11 +414,13 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
         String type = messageObject.get("type").getAsString();
         if (type.equals("newMessage")) {
+            int messageId = messageObject.get("messageId").getAsInt();
+            int senderId = messageObject.get("senderId").getAsInt();
             String createdAt = messageObject.get("createdAt").getAsString();
             String content = messageObject.get("content").getAsString();
 
             // 리사이클러뷰에 메세지 추가
-            Message newMessage = new Message(partnerProfileImg, createdAt, content, 1);
+            Message newMessage = new Message(partnerProfileImg, messageId, senderId, createdAt, content, 1);
             // 이미 상대방의 메세지를 본다고 가정하기 때문에, ui에서 1이 사라진 상태로 업데이트 함
             messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
 
@@ -418,7 +429,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             int lastReadMessageId = messageObject.get("lastReadMessageId").getAsInt();
 
             // 상대방이 메세지 읽음 => 나의 메세지 ui에서 1이 사라짐
-            messageAdapter.setRead(lastReadMessageId, currentUserId);
+            messageAdapter.setReadMyMessage(lastReadMessageId, currentUserId);
             }
 
     }
@@ -426,11 +437,11 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private void updateUIFromInputBox(String createdAt, String message, String myProfileImg) {
 
         // 리사이클러뷰에 메세지 추가
-        Message newMessage = new Message(myProfileImg, createdAt, message, 0);
-        newMessage.setSenderId(currentUserId); // 내가 보낸 메세지 설정
+        Message newMessage = new Message(myProfileImg, currentUserId, createdAt, message, 0);
         messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
         recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
     }
+
 
     @Override
     public void onMessageAdded(Message dateMarker) {
