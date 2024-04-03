@@ -103,7 +103,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
         CHANNEL_ID = "message_notifications";
         CHANNEL_NAME ="메세지 알림";
-        NOTIFICATION_ID = 1;
+        NOTIFICATION_ID = (int) System.currentTimeMillis(); // 현재 시간을 밀리초 단위로 사용하여 고유한 ID 생성
 
         // 데이터 페이로드
         Map<String, String> data = remoteMessage.getData();

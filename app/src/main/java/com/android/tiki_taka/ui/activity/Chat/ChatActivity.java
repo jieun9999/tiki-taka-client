@@ -188,8 +188,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                     if (notificationMessageId != -1 && notificationRoomId != -1) {
                         // 1. 알림을 클릭해서 채팅방에 들어갈 때
                         scrollToNotificationMessage(notificationMessageId);
-                        // 읽음 처리를 해줌 (상대방 메세지 1 사라짐)
-                        markAllMessagesAsReadToServer(currentUserId, nowDateTime());
                         // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
                         updateReadMessageInLocal(notificationMessageId);
 
@@ -207,13 +205,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 List<Message> messages = response.body();
                 if (messages != null) {
                     messageAdapter.setData(messages, currentUserId);
-
-                    // 초기 렌더링시 화면에 보이는 메세지들은 초기화 되자마자 읽음 처리 되어야 함
-                    recyclerView.post(()->{
-                        //ui 업데이트 후 실행될 작업
-                        // 이것도 서버 소켓에 전송을 해줘야 함 !!!!
-                        markAllMessagesAsReadToServer(currentUserId, nowDateTime());
-                    });
 
                 } else {
                     Log.e("Error", "messages null 입니다");
@@ -270,6 +261,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         // 메시지 객체를 문자열로 변환하여 서버 소켓에 메세지 전송
         new Thread(() -> {
+            Log.d("readMessageRequest", readMessageRequest.toString());
             chatClient.sendMessage(readMessageRequest.toString());
 
         }).start();
@@ -329,6 +321,12 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
                 // 서버가 쉐어드에 저장되어 있는 userId에 접근하지 못하기 때문에, 서버에게 직접 id를 전송해야 함
                 chatClient.sendUserId(currentUserId);
+
+                // 알림을 클릭해서 들어온 경우에
+                if (notificationMessageId != -1 && notificationRoomId != -1) {
+                    // 읽음 처리를 해줌 (상대방 메세지 1 사라짐)
+                    markAllMessagesAsReadToServer(currentUserId, nowDateTime());
+                }
 
                 // 액티비티 흐름 중간에 chatClient가 생성된 후 인터페이스가 구현되어야 함
                 // 이전에는 액티비티 자체에 구현하였는데 그것은 액티비티 초기화시에 구현되어야 하므로 문제가 여기에는 적절하지 않음
@@ -533,6 +531,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
                 if (dy > 0) { // 사용자가 아래로 스크롤
+
                     // 이전에 예약된 모든 작업 취소
                     handler.removeCallbacks(markAsReadRunnable);
                     // 사용자가 스크롤을 멈춘 후 0.5초 후에 실행
