@@ -98,13 +98,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        // remoteMessage 추출
-        String title = remoteMessage.getNotification().getTitle();
-        String body = remoteMessage.getNotification().getBody();
         // 데이터 페이로드
         Map<String, String> data = remoteMessage.getData();
-        int messageId = Integer.parseInt(data.get("message_id"));
-        int roomId = Integer.parseInt(data.get("room_id"));
+        String title = data.get("title");
+        String body = data.get("body");
+        int messageId = Integer.parseInt(data.get("messageId"));
+        int roomId = Integer.parseInt(data.get("roomId"));
 
         // 인텐트 생성 및 대상 액티비티 지정
         Intent intent = new Intent(this, ChatActivity.class);
