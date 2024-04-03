@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.FcmToken;
@@ -21,6 +23,7 @@ import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.bumptech.glide.Glide;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -98,63 +101,82 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        // 데이터 페이로드
-        Map<String, String> data = remoteMessage.getData();
-        String title = data.get("title");
-        String body = data.get("body");
-        int messageId = Integer.parseInt(data.get("messageId"));
-        int roomId = Integer.parseInt(data.get("roomId"));
-
-        // 인텐트 생성 및 대상 액티비티 지정
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("messageId", messageId); // 알림에 메시지 정보 포함하기
-        intent.putExtra("roomId", roomId);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
-        PendingIntent pendingIntent = PendingIntent.getActivity(this,0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
-        // 이렇게 하면 사용자가 실수로 알림을 여러 번 클릭하더라도, 액티비티는 한 번만 열립니다.
-
         CHANNEL_ID = "message_notifications";
         CHANNEL_NAME ="메세지 알림";
         NOTIFICATION_ID = 1;
 
-        // 1. 알림 채널 설정
-        NotificationManagerCompat notificationManager =
-                NotificationManagerCompat.from(getApplicationContext());
+        // 데이터 페이로드
+        Map<String, String> data = remoteMessage.getData();
+        Log.d("data", data.toString());
+        String title = data.get("title");
+        String userProfile = data.get("userProfile");
+        String body = data.get("body");
+        int messageId = Integer.parseInt(data.get("messageId"));
+        int roomId = Integer.parseInt(data.get("roomId"));
 
-        // 2. 알림 생성 및 표시
-        NotificationCompat.Builder builder = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
-                NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                        CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
-                notificationManager.createNotificationChannel(channel);
+        // Glide를 사용해 비동기적으로 이미지 로드 후 알림에 설정
+        new Thread(() -> {
+            try {
+                // Glide를 사용하여 비트맵 동기적으로 로드
+                Bitmap bitmap = Glide.with(getApplicationContext())
+                        .asBitmap()
+                        .load(userProfile)
+                        .submit()
+                        .get();
+
+                // 인텐트 생성 및 대상 액티비티 지정
+                Intent intent = new Intent(this, ChatActivity.class);
+                intent.putExtra("messageId", messageId); // 알림에 메시지 정보 포함하기
+                intent.putExtra("roomId", roomId);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                // 이렇게 하면 사용자가 실수로 알림을 여러 번 클릭하더라도, 액티비티는 한 번만 열립니다.
+
+                // 1. 알림 채널 설정
+                NotificationManagerCompat notificationManager =
+                        NotificationManagerCompat.from(getApplicationContext());
+
+                // 2. 알림 생성 및 표시
+                NotificationCompat.Builder builder = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
+                        NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                                CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+                        notificationManager.createNotificationChannel(channel);
+                    }
+                    builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
+                } else {
+                    builder = new NotificationCompat.Builder(getApplicationContext());
+                }
+
+                builder.setContentTitle(title)
+                        .setContentText(body)
+                        .setSmallIcon(R.drawable.fluent_emoji_bell)// 알림의 작은 아이콘 설정
+                        .setLargeIcon(bitmap) // 로드된 비트맵을 대형 아이콘으로 설정
+                        .setAutoCancel(true) //사용자가 해당 알림을 클릭했을 때 알림 사라짐
+                        .setContentIntent(pendingIntent);
+
+                Notification notification = builder.build();
+
+                // 3. 알림 권한 확인
+                // API level 33 이상일 경우, 권한 여부를 확인해야 한다
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        // 권한이 없을 경우, 권한 요청은 채팅 액티비티에서
+                    } else {
+                        // 권한이 있을 때의 알림 전송 로직
+                        notificationManager.notify(NOTIFICATION_ID, notification);
+                    }
+                } else {
+                    // API level 33 미만일 경우, 권한 없이 알림 전송 로직
+                    notificationManager.notify(NOTIFICATION_ID, notification);
+                }
+
             }
-            builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
-        } else {
-            builder = new NotificationCompat.Builder(getApplicationContext());
-        }
-
-        builder.setContentTitle(title)
-                .setContentText(body)
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setAutoCancel(true) //사용자가 해당 알림을 클릭했을 때 알림 사라짐
-                .setContentIntent(pendingIntent);
-
-        Notification notification = builder.build();
-
-        // 3. 알림 권한 확인
-        // API level 33 이상일 경우, 권한 여부를 확인해야 한다
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                // 권한이 없을 경우, 권한 요청은 채팅 액티비티에서
-            } else {
-                // 권한이 있을 때의 알림 전송 로직
-                notificationManager.notify(NOTIFICATION_ID, notification);
+            catch (Exception e) {
+                e.printStackTrace();
             }
-        } else {
-            // API level 33 미만일 경우, 권한 없이 알림 전송 로직
-            notificationManager.notify(NOTIFICATION_ID, notification);
-        }
+        }).start();
     }
 
 }

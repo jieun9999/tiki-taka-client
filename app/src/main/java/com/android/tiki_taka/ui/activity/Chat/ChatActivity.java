@@ -384,7 +384,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         // 상대방에게서 온 것이 새로운 메세지  or 읽었음 표시 인지에 따라 업데이트가 달라짐
         JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
-
         String type = messageObject.get("type").getAsString();
         if (type.equals("newMessage")) {
             String createdAt = messageObject.get("createdAt").getAsString();
