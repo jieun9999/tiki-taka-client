@@ -61,6 +61,8 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     String myProfileImg;
     String partnerProfileImg;
     int lastReadMessageId;
+    int notificationMessageId;
+    int notificationRoomId;
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -91,6 +93,9 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         profileService = retrofit.create(ProfileApiService.class);
         currentUserId = SharedPreferencesHelper.getUserId(this);
         chatRoomId = SharedPreferencesHelper.getRoomId(this);
+        // 알림 인텐트에서 추가 데이터를 가져옴
+        notificationMessageId =  getIntent().getIntExtra("messageId",-1);
+        notificationRoomId = getIntent().getIntExtra("roomId", -1);
     }
 
     // Declare the launcher at the top of your Activity/Fragment:
@@ -153,14 +158,22 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     }
 
 
+    // 메시지 렌더링 후에 스크롤 위치를 설정
     private void loadMessages() {
         service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
             @Override
             public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                 if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
-
                     handleLoadingMessages(response);
-                    scrollToLastReadMessage();
+
+                    // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
+                    if (notificationMessageId != -1 && notificationRoomId != -1) {
+                        // 1. 알림을 클릭해서 채팅방에 들어갈 때
+                        scrollToNotificationMessage(notificationMessageId);
+                    }else {
+                        // 2. 그냥 채팅방에 들어갈 때
+                        scrollToLastReadMessage();
+                    }
 
                 } else {
                     Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
@@ -191,6 +204,29 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             }
         });
     }
+            // 채팅방 ID와 메시지 ID를 사용하여 해당 메시지 위치로 이동하는 로직 구현
+            private void scrollToNotificationMessage(int notificationMessageId){
+                int itemCount = messageAdapter.getItemCount();
+                for (int position = 0; position < itemCount; position++) {
+                    if(messageAdapter.getMessageIdAtPosition(position) == notificationMessageId){
+                        // 스크롤 이동
+                        recyclerView.scrollToPosition(position);
+                        return;
+                    }
+                }
+            }
+
+            private void scrollToLastReadMessage() {
+                int itemCount = messageAdapter.getItemCount();
+                for (int position = 0; position < itemCount; position++){
+                    if(messageAdapter.getMessageIdAtPosition(position) == lastReadMessageId){
+                        // 스크롤 이동
+                        recyclerView.scrollToPosition(position);
+                        return;
+                    }
+                }
+            }
+
 
     private String nowDateTime(){
         LocalDateTime now = null;
@@ -215,19 +251,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         }).start();
     }
-
-
-    private void scrollToLastReadMessage() {
-        int itemCount = messageAdapter.getItemCount();
-        for (int position = 0; position < itemCount; position++){
-            if(messageAdapter.getMessageIdAtPosition(position) == lastReadMessageId){
-                // 스크롤 이동
-                recyclerView.scrollToPosition(position);
-                return;
-            }
-        }
-    }
-
 
 
     // 상대방과 나의 프로필 이미지를 초기화할때 가져와서, 이미 할당해둔 상태에서

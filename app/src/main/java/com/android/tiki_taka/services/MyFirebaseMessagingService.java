@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
@@ -16,10 +18,13 @@ import androidx.core.content.ContextCompat;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.FcmToken;
 import com.android.tiki_taka.models.response.ApiResponse;
+import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,6 +36,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     String CHANNEL_ID;
     String CHANNEL_NAME;
+    int NOTIFICATION_ID; // 알림의 고유 ID
     int userId;
     ChatApiService service;
 
@@ -80,21 +86,37 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         });
     }
 
+    // 메시지가 FCM 서버로 성공적으로 전송된 후 호출
+    // 일반적으로 이 메서드를 사용하여 사용자에게 직접적인 알림을 표시하는 경우는 드뭅니다. 대신, 메시지 전송 과정에서의 성공 여부를 추적하거나, 추가적인 후속 조치가 필요한 경우 사용합니다.
     @Override
     public void onMessageSent(@NonNull String msgId) {
         super.onMessageSent(msgId);
-        // 메시지가 FCM 서버로 성공적으로 전송된 후 호출
-        // 일반적으로 이 메서드를 사용하여 사용자에게 직접적인 알림을 표시하는 경우는 드뭅니다. 대신, 메시지 전송 과정에서의 성공 여부를 추적하거나, 추가적인 후속 조치가 필요한 경우 사용합니다.
+
     }
 
+    // 이 메서드는 FCM으로부터 메시지를 수신할 때 호출됩니다
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        Log.d("remoteMessage", String.valueOf(remoteMessage));
+        // remoteMessage 추출
+        String title = remoteMessage.getNotification().getTitle();
+        String body = remoteMessage.getNotification().getBody();
+        // 데이터 페이로드
+        Map<String, String> data = remoteMessage.getData();
+        int messageId = Integer.parseInt(data.get("message_id"));
+        int roomId = Integer.parseInt(data.get("room_id"));
 
-        // 이 메서드는 FCM으로부터 메시지를 수신할 때 호출됩니다
+        // 인텐트 생성 및 대상 액티비티 지정
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("messageId", messageId); // 알림에 메시지 정보 포함하기
+        intent.putExtra("roomId", roomId);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+        // 이렇게 하면 사용자가 실수로 알림을 여러 번 클릭하더라도, 액티비티는 한 번만 열립니다.
+
         CHANNEL_ID = "message_notifications";
         CHANNEL_NAME ="메세지 알림";
+        NOTIFICATION_ID = 1;
 
         // 1. 알림 채널 설정
         NotificationManagerCompat notificationManager =
@@ -113,12 +135,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             builder = new NotificationCompat.Builder(getApplicationContext());
         }
 
-        String title = remoteMessage.getNotification().getTitle();
-        String body = remoteMessage.getNotification().getBody();
-
         builder.setContentTitle(title)
                 .setContentText(body)
-                .setSmallIcon(R.drawable.ic_launcher_background);
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setAutoCancel(true) //사용자가 해당 알림을 클릭했을 때 알림 사라짐
+                .setContentIntent(pendingIntent);
+
         Notification notification = builder.build();
 
         // 3. 알림 권한 확인
@@ -128,11 +150,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 // 권한이 없을 경우, 권한 요청은 채팅 액티비티에서
             } else {
                 // 권한이 있을 때의 알림 전송 로직
-                notificationManager.notify(1, notification);
+                notificationManager.notify(NOTIFICATION_ID, notification);
             }
         } else {
             // API level 33 미만일 경우, 권한 없이 알림 전송 로직
-            notificationManager.notify(1, notification);
+            notificationManager.notify(NOTIFICATION_ID, notification);
         }
     }
 
