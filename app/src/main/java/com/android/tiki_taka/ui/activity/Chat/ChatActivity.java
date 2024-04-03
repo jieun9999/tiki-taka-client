@@ -76,6 +76,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         setupLayoutManager();
         setupAdapter();
+        loadLastReadMessageId();
         loadMessages();
         getHomeProfile(currentUserId);
 
@@ -155,6 +156,24 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     private void setupAdapter() {
         messageAdapter = new MessageAdapter(messages);
         recyclerView.setAdapter(messageAdapter);
+    }
+
+    private void loadLastReadMessageId(){
+        service.loadLastReadMessageId(currentUserId).enqueue(new Callback<Message>() {
+            @Override
+            public void onResponse(Call<Message> call, Response<Message> response) {
+                Message lastReadMessage = response.body();
+                lastReadMessageId = lastReadMessage.getMessageId();
+                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
+
+            }
+
+            @Override
+            public void onFailure(Call<Message> call, Throwable throwable) {
+                Log.e("ERROR", "lastReadMessage 네트워크 오류");
+            }
+        });
+
     }
 
 
