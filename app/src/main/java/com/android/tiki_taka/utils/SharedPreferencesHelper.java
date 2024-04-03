@@ -21,12 +21,6 @@ public class SharedPreferencesHelper {
         return sharedPreferences.getInt("userId", DEFAULT_USER_ID);
     }
 
-    public static void setUserId(Context context, int userId) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("userId", userId);
-        editor.apply();
-    }
 
     public static void clearShared(Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences("MySharedPref", MODE_PRIVATE);
@@ -48,4 +42,6 @@ public class SharedPreferencesHelper {
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
         return sharedPreferences.getInt("roomId", DEFAULT_USER_ID);
     }
+
+
 }

@@ -31,6 +31,7 @@ import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ChatApiService;
 import com.android.tiki_taka.services.ChatClient;
 import com.android.tiki_taka.services.ProfileApiService;
+import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.google.gson.JsonObject;
@@ -71,6 +72,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        NotificationUtils.clearNotifications(this);
         setupNetworkAndRetrieveIds();
         askNotificationPermission();
 
@@ -179,45 +181,46 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     // 메시지 렌더링 후에 스크롤 위치를 설정
     private void loadMessages() {
-        service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
-            @Override
-            public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
-                if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
-                    handleLoadingMessages(response);
-                    // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
-                    if (notificationMessageId != -1 && notificationRoomId != -1) {
-                        // 1. 알림을 클릭해서 채팅방에 들어갈 때
-                        scrollToNotificationMessage(notificationMessageId);
-                        // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
-                        updateReadMessageInLocal(notificationMessageId);
+                service.getMessages(chatRoomId).enqueue(new Callback<List<Message>>() {
+                    @Override
+                    public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
+                        if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
+                            handleLoadingMessages(response);
+                            // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
+                            if (notificationMessageId != -1 && notificationRoomId != -1) {
+                                // 1. 알림을 클릭해서 채팅방에 들어갈 때
+                                scrollToNotificationMessage(notificationMessageId);
+                                // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
+                                updateReadMessageInLocal(notificationMessageId);
 
-                    }else {
-                        // 2. 그냥 채팅방에 들어갈 때
-                        scrollToLastReadMessage();
+                            }else {
+                                // 2. 그냥 채팅방에 들어갈 때
+                                scrollToLastReadMessage();
+                            }
+
+                        } else {
+                            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+                        }
                     }
 
-                } else {
-                    Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
-                }
+                    private void handleLoadingMessages(Response<List<Message>> response) {
+                        List<Message> messages = response.body();
+                        if (messages != null) {
+                            messageAdapter.setData(messages, currentUserId);
+
+                        } else {
+                            Log.e("Error", "messages null 입니다");
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Message>> call, Throwable t) {
+                        Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+                    }
+                });
             }
 
-            private void handleLoadingMessages(Response<List<Message>> response) {
-                List<Message> messages = response.body();
-                if (messages != null) {
-                    messageAdapter.setData(messages, currentUserId);
-
-                } else {
-                    Log.e("Error", "messages null 입니다");
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<List<Message>> call, Throwable t) {
-                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
-            }
-        });
-    }
             // 채팅방 ID와 메시지 ID를 사용하여 해당 메시지 위치로 이동하는 로직 구현
             private void scrollToNotificationMessage(int notificationMessageId){
                 int itemCount = messageAdapter.getItemCount();
@@ -539,6 +542,15 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 여러개의 알림이 떠있을 경우, 여러번 클릭해도 읽음 처리가 바로 업데이트 되게 하기
+
+        // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
+        updateReadMessageInLocal(notificationMessageId);
     }
 
     // 채팅 액티비티에서 아예 나가게 되면 리소스를 정리
