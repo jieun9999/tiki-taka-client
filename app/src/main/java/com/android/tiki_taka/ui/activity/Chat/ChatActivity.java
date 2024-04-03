@@ -96,9 +96,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         profileService = retrofit.create(ProfileApiService.class);
         currentUserId = SharedPreferencesHelper.getUserId(this);
         chatRoomId = SharedPreferencesHelper.getRoomId(this);
-        // 알림 인텐트에서 추가 데이터를 가져옴
-        notificationMessageId =  getIntent().getIntExtra("messageId",-1);
-        notificationRoomId = getIntent().getIntExtra("roomId", -1);
+
     }
 
     // Declare the launcher at the top of your Activity/Fragment:
@@ -186,6 +184,10 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                     public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                         if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
                             handleLoadingMessages(response);
+                            // 알림 인텐트에서 추가 데이터를 가져옴
+                            notificationMessageId =  getIntent().getIntExtra("messageId",-1);
+                            notificationRoomId = getIntent().getIntExtra("roomId", -1);
+
                             // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
                             if (notificationMessageId != -1 && notificationRoomId != -1) {
                                 // 1. 알림을 클릭해서 채팅방에 들어갈 때
@@ -542,15 +544,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 }
             }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // 여러개의 알림이 떠있을 경우, 여러번 클릭해도 읽음 처리가 바로 업데이트 되게 하기
-
-        // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
-        updateReadMessageInLocal(notificationMessageId);
     }
 
     // 채팅 액티비티에서 아예 나가게 되면 리소스를 정리

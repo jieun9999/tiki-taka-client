@@ -107,6 +107,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
         String CHANNEL_ID = "message_notifications";
         String CHANNEL_NAME ="메세지 알림";
+        int REQUEST_CODE = (int) System.currentTimeMillis();
         // InboxStyle 알림용 고정된 NOTIFICATION_ID
         final int INBOX_STYLE_NOTIFICATION_ID = 1000;
 
@@ -134,8 +135,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 intent.putExtra("messageId", messageId); // 알림에 메시지 정보 포함하기
                 intent.putExtra("roomId", roomId);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
-                // 클릭 시 데이터 전달 등 각각의 일을 처리하게하고 싶다면 pendingIntent의 request code(NOTIFICATION_ID)도 다르게 주어야함.
-                PendingIntent pendingIntent = PendingIntent.getActivity(this, INBOX_STYLE_NOTIFICATION_ID, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                // 이런식으로 알림마다 REQUEST_CODE를 다르게 줘야지 여러 메세지 중 최신 메세지로 이동
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                 // 이렇게 하면 사용자가 실수로 알림을 여러 번 클릭하더라도, 액티비티는 한 번만 열립니다.
 
                 // 1. 알림 채널 설정
