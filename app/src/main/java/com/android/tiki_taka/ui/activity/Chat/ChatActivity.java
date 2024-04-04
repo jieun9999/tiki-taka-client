@@ -211,8 +211,9 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
                             // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
                             if (notificationMessageId != -1 && notificationRoomId != -1) {
-                                // 1. 알림을 클릭해서 채팅방에 들어갈 때
-                                scrollToNotificationMessage(notificationMessageId);
+                                // 1. 알림을 클릭해서 채팅방에 들어갈 때 (가장 최근의 알림 아이템 위치로 이동하는 것이 아니라, 가장 오래된 알림으로 이동해야 한다)
+                                scrollToNotificationMessage(lastReadMessageId);
+                                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
                                 // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
                                 updateReadMessageInLocal(notificationMessageId);
 
