@@ -64,6 +64,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     int lastReadMessageId;
     int notificationMessageId;
     int notificationRoomId;
+    boolean readAllMessages;
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
 
@@ -76,17 +77,17 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         setupNetworkAndRetrieveIds();
         askNotificationPermission();
 
+        confirmReadAllMessages();
         setupLayoutManager();
         setupAdapter();
         loadLastReadMessageId();
+
         loadMessages();
         getHomeProfile(currentUserId);
 
         connectToChatServer();
         setupSendButtonClickListener();
         setupToolBarListeners();
-
-        markMessageAsReadOnScroll();
 
     }
 
@@ -147,6 +148,26 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 }
             });
 
+    private void confirmReadAllMessages(){
+        service.readAllMessages(currentUserId).enqueue(new Callback<Boolean>() {
+            @Override
+            public void onResponse(Call<Boolean> call, Response<Boolean> response) {
+                if(response.body() == true){
+                    readAllMessages = true;
+                    Log.d("readAllMessages", "true");
+                }else{
+                    readAllMessages = false;
+                    Log.d("readAllMessages", "false");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Boolean> call, Throwable throwable) {
+                Log.e("ERROR", "readAllMessages 네트워크 오류");
+            }
+        });
+    }
+
     private void setupLayoutManager() {
         recyclerView = findViewById(R.id.chatRecyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -197,7 +218,13 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
                             }else {
                                 // 2. 그냥 채팅방에 들어갈 때
-                                scrollToLastReadMessage();
+                                if(readAllMessages){
+                                    // 내가 상대방의 메세지를 다 읽었을때는, 맨 마지막 메세지로 이동
+                                    scrollToLastMessages();
+                                }else {
+                                    // 내가 상대방의 메세지를 일부만 읽었을때는 마지막 읽은 메세지로 이동
+                                    scrollToLastReadMessage();
+                                }
                             }
 
                         } else {
@@ -235,27 +262,25 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 }
             }
 
-            private void scrollToLastReadMessage() {
-                int itemCount = messageAdapter.getItemCount();
-                for (int position = 0; position < itemCount; position++){
-                    if(messageAdapter.getMessageIdAtPosition(position) == lastReadMessageId){
-                        // 스크롤 이동
-                        recyclerView.scrollToPosition(position);
-                        return;
-                    }
+            private void scrollToLastMessages(){
+                // 가장 마지막 아이템으로 스크롤
+                int lastPosition = messageAdapter.getItemCount() - 1;
+                if (lastPosition >= 0) {
+                    recyclerView.scrollToPosition(lastPosition);
                 }
             }
 
-
-    private String nowDateTime(){
-        LocalDateTime now = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-           return now.format(formatter);
+        private void scrollToLastReadMessage() {
+            int itemCount = messageAdapter.getItemCount();
+            for (int position = 0; position < itemCount; position++){
+                if(messageAdapter.getMessageIdAtPosition(position) == lastReadMessageId){
+                    // 스크롤 이동
+                    recyclerView.scrollToPosition(position);
+                    return;
+                }
+            }
         }
-        return null;
-    }
+
 
     //서버와의 실시간 소켓 연결을 통해 읽음 처리 요청을 보냄
     private void markAllMessagesAsReadToServer(int currentUserId, String dateTime){
@@ -330,7 +355,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 // 알림을 클릭해서 들어온 경우에
                 if (notificationMessageId != -1 && notificationRoomId != -1) {
                     // 읽음 처리를 해줌 (상대방 메세지 1 사라짐)
-                    markAllMessagesAsReadToServer(currentUserId, nowDateTime());
+                    markAllMessagesAsReadToServer(currentUserId, NotificationUtils.nowDateTime());
                 }
 
                 // 액티비티 흐름 중간에 chatClient가 생성된 후 인터페이스가 구현되어야 함
@@ -338,11 +363,11 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 chatClient.setMessageListener(new MessageListener() {
                     @Override
                     public void onMessageReceived(String message) {
-                        // 상대방의 메세지 띄우기 OR 나의 메세지 1 사라지게 하기
+
+                        // 리사이클러뷰에 추가 + 스크롤 내리기 + 읽었다고 서버 소켓에 보냄
                         runOnUiThread(() -> updateUIFromDB(message, partnerProfileImg));
                     }
                 });
-
                 chatClient.listenMessage();
                 // 서버로부터 오는 메시지를 지속적으로 수신
                 // 수신받은 메세지를 'updateUI' 메세드를 통해 실시간으로 RecyclerView에 메세지를 추가함
@@ -415,6 +440,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
         // 상대방에게서 온 것이 새로운 메세지  or 읽었음 표시 인지에 따라 업데이트가 달라짐
         JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
+        Log.d("messageObject", String.valueOf(messageObject));
         String type = messageObject.get("type").getAsString();
         if (type.equals("newMessage")) {
             int messageId = messageObject.get("messageId").getAsInt();
@@ -426,6 +452,10 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             Message newMessage = new Message(partnerProfileImg, messageId, senderId, createdAt, content, 1);
             // 이미 상대방의 메세지를 본다고 가정하기 때문에, ui에서 1이 사라진 상태로 업데이트 함
             messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
+            // 스크롤을 제일 아래로 내림
+            scrollToLastMessages();
+            // 수신받은 메세지가 newMessage 타입이니까, 바로 읽음 요청을 서버로 보낸다
+            markAllMessagesAsReadToServer(currentUserId, NotificationUtils.nowDateTime());
 
         }else if(type.equals("readMessages")) {
             //db 업데이트 한 가장 최신의 메세지 id
@@ -518,33 +548,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         });
     }
 
-
-
-    private void markMessageAsReadOnScroll(){
-        // RecyclerView를 스크롤할 때 발생하는 이벤트를 감지
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            private Handler handler = new Handler(); // UI 스레드에서 작업을 스케줄링
-
-            //읽음" 처리 로직을 담고 있는 Runnable 객체를 정의
-            private Runnable markAsReadRunnable = () ->{
-                // 현재 시간을 dateTime 형식으로 전달
-                markAllMessagesAsReadToServer(currentUserId, nowDateTime());
-
-            };
-
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (dy > 0) { // 사용자가 아래로 스크롤
-
-                    // 이전에 예약된 모든 작업 취소
-                    handler.removeCallbacks(markAsReadRunnable);
-                    // 사용자가 스크롤을 멈춘 후 0.5초 후에 실행
-                    handler.postDelayed(markAsReadRunnable, 500);
-                }
-            }
-        });
-    }
 
     // 채팅 액티비티에서 아예 나가게 되면 리소스를 정리
     // 메인 스레드에서 네트워크 연결과 같은 블로킹(시간이 오래 걸리는) 작업을 진행하는 것은 피해야 함

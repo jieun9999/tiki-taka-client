@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,6 +71,16 @@ public class NotificationUtils {
         SharedPreferences.Editor editor = prefs.edit();
         editor.remove(NOTIFICATIONS_KEY); // 알림 리스트 키에 해당하는 데이터를 삭제
         editor.apply(); // 변경사항 적용
+    }
+
+    public static String nowDateTime(){
+        LocalDateTime now = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return now.format(formatter);
+        }
+        return null;
     }
 
 }

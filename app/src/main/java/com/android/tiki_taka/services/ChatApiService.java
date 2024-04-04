@@ -31,4 +31,7 @@ public interface ChatApiService {
     @GET("Chat/loadLastReadMessageId.php")
     Call<Message> loadLastReadMessageId(@Query("currentUserId") int currentUserId);
 
+    @GET("Chat/readAllMessages.php")
+    Call<Boolean> readAllMessages(@Query("userId") int userId);
+
 }
