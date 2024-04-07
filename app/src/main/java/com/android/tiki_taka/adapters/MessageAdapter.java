@@ -167,6 +167,8 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알림
     }
 
+    // 1. 상대방에게 받은 메세지를 띄울 때
+    // 2. 내가 보낸 메세지를 나에게 띄울 때
     public void addMessage(Message newMessage, int userId, int roomId, DateMarkerListener dateMarkerListener){
         // 뷰타입 설정
         boolean isSent = newMessage.getSenderId() == userId;
@@ -178,7 +180,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
             // 날짜가 다르면, 날짜 뷰 표시 로직 구현
             String newMessageDateWithoutTime = TimeUtils.getDateWithoutTime(newMessage.getCreatedAt());
-            String lastMessageDateWithoutTime = TimeUtils.getDateWithoutTime(lastMessage.getCreatedAt());// null이 나옴 , 12:27 AM
+            Log.d("newMessageDateWithoutTime", newMessageDateWithoutTime);
+            String lastMessageDateWithoutTime = TimeUtils.getDateWithoutTime(lastMessage.getCreatedAt());
+            Log.d("lastMessageDateWithoutTime", lastMessageDateWithoutTime);
 
             if(!newMessageDateWithoutTime.equals(lastMessageDateWithoutTime)){
                 Message dateMarker = new Message(newMessageDateWithoutTime, roomId);

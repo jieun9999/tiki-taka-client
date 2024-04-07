@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -34,12 +32,11 @@ import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.android.tiki_taka.utils.TimeUtils;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +64,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     boolean readAllMessages;
 
     //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,14 +72,13 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         NotificationUtils.clearNotifications(this);
         setupNetworkAndRetrieveIds();
         askNotificationPermission();
+        getHomeProfile(currentUserId);
 
         confirmReadAllMessages();
         setupLayoutManager();
         setupAdapter();
         loadLastReadMessageId();
-
         loadMessages();
-        getHomeProfile(currentUserId);
 
         connectToChatServer();
         setupSendButtonClickListener();
@@ -97,6 +92,10 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         profileService = retrofit.create(ProfileApiService.class);
         currentUserId = SharedPreferencesHelper.getUserId(this);
         chatRoomId = SharedPreferencesHelper.getRoomId(this);
+
+        // 알림 인텐트에서 추가 데이터를 가져옴
+        notificationMessageId =  getIntent().getIntExtra("messageId",-1);
+        notificationRoomId = getIntent().getIntExtra("roomId", -1);
 
     }
 
@@ -148,16 +147,52 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 }
             });
 
+    // 상대방과 나의 프로필 이미지를 초기화할때 가져와서, 이미 할당해둔 상태에서
+    // updateUIFromDB()나 updateUIFromInputBox()가 실행될때 인자로 넣어준다
+    private void getHomeProfile(int currentUserId) {
+        // 유저 프로필 정보 가져오기
+        Call<HomeProfiles> call = profileService.getHomeProfile(currentUserId);
+        call.enqueue(new Callback<HomeProfiles>() {
+            @Override
+            public void onResponse(Call<HomeProfiles> call, Response<HomeProfiles> response) {
+                processHomeProfileResponse(response);
+
+            }
+
+            @Override
+            public void onFailure(Call<HomeProfiles> call, Throwable t) {
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void processHomeProfileResponse(Response<HomeProfiles> response) {
+        if (response.isSuccessful() && response.body() != null) {
+            HomeProfiles homeProfiles = response.body();
+            UserProfile userProfile = homeProfiles.getUserProfile();
+            PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
+
+            myProfileImg = userProfile.getProfileImage();
+            partnerId = partnerProfile.getUserId();
+            partnerProfileImg = partnerProfile.getProfileImage();
+
+        } else {
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
+    }
+
     private void confirmReadAllMessages(){
         service.readAllMessages(currentUserId).enqueue(new Callback<Boolean>() {
             @Override
             public void onResponse(Call<Boolean> call, Response<Boolean> response) {
-                if(response.body() == true){
-                    readAllMessages = true;
-                    Log.d("readAllMessages", "true");
-                }else{
-                    readAllMessages = false;
-                    Log.d("readAllMessages", "false");
+                if(response.body() != null){
+                    if(response.body()){
+                        readAllMessages = true;
+                    }else{
+                        readAllMessages = false;
+                    }
+                }else {
+                    Log.e("ERROR", "readAllMessages 서버 오류");
                 }
             }
 
@@ -185,7 +220,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             public void onResponse(Call<Message> call, Response<Message> response) {
                 Message lastReadMessage = response.body();
                 lastReadMessageId = lastReadMessage.getMessageId();
-                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
 
             }
 
@@ -205,15 +239,13 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                     public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                         if (response.isSuccessful() && response.body() != null) {   // 요청 성공 + 응답 존재
                             handleLoadingMessages(response);
-                            // 알림 인텐트에서 추가 데이터를 가져옴
-                            notificationMessageId =  getIntent().getIntExtra("messageId",-1);
-                            notificationRoomId = getIntent().getIntExtra("roomId", -1);
 
                             // 이 과정에서 주의해야 할 점은 스크롤 명령이 UI 스레드에서 실행되어야 한다는 것입니다.
+
+                            // 1. 알림을 클릭해서 채팅방에 들어갈 때
                             if (notificationMessageId != -1 && notificationRoomId != -1) {
-                                // 1. 알림을 클릭해서 채팅방에 들어갈 때 (가장 최근의 알림 아이템 위치로 이동하는 것이 아니라, 가장 오래된 알림으로 이동해야 한다)
-                                scrollToNotificationMessage(lastReadMessageId);
-                                Log.d("lastReadMessageId", String.valueOf(lastReadMessageId));
+                                // 마지막 읽은 메세지로 스크롤 이동
+                                scrollToLastReadMessage();
                                 // 로컬에서 읽음 처리를 해줌 (내 기기에서 상대방 메세지 1 사라짐)
                                 updateReadMessageInLocal(notificationMessageId);
 
@@ -241,7 +273,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                         } else {
                             Log.e("Error", "messages null 입니다");
                         }
-
                     }
 
                     @Override
@@ -249,18 +280,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                         Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
                     }
                 });
-            }
-
-            // 채팅방 ID와 메시지 ID를 사용하여 해당 메시지 위치로 이동하는 로직 구현
-            private void scrollToNotificationMessage(int notificationMessageId){
-                int itemCount = messageAdapter.getItemCount();
-                for (int position = 0; position < itemCount; position++) {
-                    if(messageAdapter.getMessageIdAtPosition(position) == notificationMessageId){
-                        // 스크롤 이동
-                        recyclerView.scrollToPosition(position);
-                        return;
-                    }
-                }
             }
 
             private void scrollToLastMessages(){
@@ -283,64 +302,10 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         }
 
 
-    //서버와의 실시간 소켓 연결을 통해 읽음 처리 요청을 보냄
-    private void markAllMessagesAsReadToServer(int currentUserId, String dateTime){
-        JsonObject readMessageRequest = new JsonObject();
-        readMessageRequest.addProperty("type", "readMessages");
-        readMessageRequest.addProperty("readerId", currentUserId);
-        readMessageRequest.addProperty("dateTime", dateTime);
-
-        // 메시지 객체를 문자열로 변환하여 서버 소켓에 메세지 전송
-        new Thread(() -> {
-            Log.d("readMessageRequest", readMessageRequest.toString());
-            chatClient.sendMessage(readMessageRequest.toString());
-
-        }).start();
-    }
-
     private void updateReadMessageInLocal(int notificationMessageId){
         //내 기기에서 상대방이 쓴 메세지 ui에서 1이 사라짐
         messageAdapter.setReadPartnerMessage(notificationMessageId, currentUserId);
     }
-
-
-    // 상대방과 나의 프로필 이미지를 초기화할때 가져와서, 이미 할당해둔 상태에서
-    // updateUIFromDB()나 updateUIFromInputBox()가 실행될때 인자로 넣어준다
-    private void getHomeProfile(int currentUserId) {
-        // 1. 유저 프로필 정보 가져오기
-        Call<HomeProfiles> call = profileService.getHomeProfile(currentUserId);
-        call.enqueue(new Callback<HomeProfiles>() {
-            @Override
-            public void onResponse(Call<HomeProfiles> call, Response<HomeProfiles> response) {
-                processHomeProfileResponse(response);
-
-            }
-
-            @Override
-            public void onFailure(Call<HomeProfiles> call, Throwable t) {
-                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
-            }
-        });
-    }
-
-    private void processHomeProfileResponse(Response<HomeProfiles> response) {
-        if (response.isSuccessful() && response.body() != null) {
-            //서버에서 홈프로필 정보를 가져옴
-            HomeProfiles homeProfiles = response.body();
-            // 유저 프로필 정보 처리
-            UserProfile userProfile = homeProfiles.getUserProfile();
-            // 파트너 프로필 정보 처리
-            PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
-
-            myProfileImg = userProfile.getProfileImage();
-            partnerId = partnerProfile.getUserId();
-            partnerProfileImg = partnerProfile.getProfileImage();
-
-        } else {
-            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
-        }
-    }
-
 
     // new Thread()를 사용하여 connectToChatServer 메서드 내의 작업을 새로운 스레드에서 실행함으로써
     // NetworkOnMainThreadException 오류를 피하기
@@ -382,6 +347,51 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     }
 
+    //서버와의 실시간 소켓 연결을 통해 읽음 처리 요청을 보냄
+    private void markAllMessagesAsReadToServer(int currentUserId, String dateTime){
+        JsonObject readMessageRequest = new JsonObject();
+        readMessageRequest.addProperty("type", "readMessages");
+        readMessageRequest.addProperty("readerId", currentUserId);
+        readMessageRequest.addProperty("dateTime", dateTime);
+
+        // 메시지 객체를 문자열로 변환하여 서버 소켓에 메세지 전송
+        new Thread(() -> {
+            chatClient.sendMessage(readMessageRequest.toString());
+            Log.d("readMessageRequest", readMessageRequest.toString());
+
+        }).start();
+    }
+    private void  updateUIFromDB(String jsonMessage, String partnerProfileImg) {
+
+        // 상대방에게서 온 것이 새로운 메세지  or 읽었음 메세지 인지에 따라 업데이트가 달라짐
+        JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
+        String type = messageObject.get("type").getAsString();
+
+        if (type.equals("newMessage")) {
+            int messageId = messageObject.get("messageId").getAsInt();
+            int senderId = messageObject.get("senderId").getAsInt();
+            String createdAt = messageObject.get("createdAt").getAsString();
+            String content = messageObject.get("content").getAsString();
+
+            // 리사이클러뷰에 메세지 추가
+            // 이미 상대방의 메세지를 본다고 가정하기 때문에, ui에서 1이 사라진 상태로 업데이트 함
+            Message newMessage = new Message(partnerProfileImg, messageId, senderId, createdAt, content, 1);
+            messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
+            // 스크롤을 제일 아래로 내림
+            scrollToLastMessages();
+            // 수신받은 메세지가 newMessage 타입이니까, 바로 읽음 요청을 서버로 보낸다
+            markAllMessagesAsReadToServer(currentUserId, NotificationUtils.nowDateTime());
+
+        }else if(type.equals("readMessages")) {
+            //db 업데이트 한 가장 최신의 메세지 id
+            int lastReadMessageId = messageObject.get("lastReadMessageId").getAsInt();
+
+            // 상대방이 메세지 읽음 => 나의 메세지 ui에서 1이 사라짐
+            messageAdapter.setReadMyMessage(lastReadMessageId, currentUserId);
+            }
+
+    }
+
     private void setupSendButtonClickListener() {
         TextView sendButton = findViewById(R.id.send_view);
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -409,8 +419,8 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         // 서버 소켓을 통해 메세지를 보낼 때, 메세지 객체가 아니라 문자열로 전송하는 것이 일반적
         // 백그라운드 스레드에서 소켓을 통해 메세지 전송
         new Thread(() -> {
-            // 현재 시간 저장
-            String createdAt = nowDateFormatter();
+            // 현재 시간 저장해서 서버로 전송
+            String createdAt = TimeUtils.nowDateFormatter();
 
             // 자신이 보낸 메세지 ui 업데이트
             runOnUiThread(() -> {
@@ -426,48 +436,6 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
 
     }
 
-    private String nowDateFormatter() {
-        LocalDateTime currentTime = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            currentTime = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            return currentTime.format(formatter);
-        }
-
-        return "";
-    }
-
-    private void  updateUIFromDB(String jsonMessage, String partnerProfileImg) {
-
-        // 상대방에게서 온 것이 새로운 메세지  or 읽었음 표시 인지에 따라 업데이트가 달라짐
-        JsonObject messageObject = JsonParser.parseString(jsonMessage).getAsJsonObject();
-        Log.d("messageObject", String.valueOf(messageObject));
-        String type = messageObject.get("type").getAsString();
-        if (type.equals("newMessage")) {
-            int messageId = messageObject.get("messageId").getAsInt();
-            int senderId = messageObject.get("senderId").getAsInt();
-            String createdAt = messageObject.get("createdAt").getAsString();
-            String content = messageObject.get("content").getAsString();
-
-            // 리사이클러뷰에 메세지 추가
-            Message newMessage = new Message(partnerProfileImg, messageId, senderId, createdAt, content, 1);
-            // 이미 상대방의 메세지를 본다고 가정하기 때문에, ui에서 1이 사라진 상태로 업데이트 함
-            messageAdapter.addMessage(newMessage, currentUserId, chatRoomId, this);
-            // 스크롤을 제일 아래로 내림
-            scrollToLastMessages();
-            // 수신받은 메세지가 newMessage 타입이니까, 바로 읽음 요청을 서버로 보낸다
-            markAllMessagesAsReadToServer(currentUserId, NotificationUtils.nowDateTime());
-
-        }else if(type.equals("readMessages")) {
-            //db 업데이트 한 가장 최신의 메세지 id
-            int lastReadMessageId = messageObject.get("lastReadMessageId").getAsInt();
-
-            // 상대방이 메세지 읽음 => 나의 메세지 ui에서 1이 사라짐
-            messageAdapter.setReadMyMessage(lastReadMessageId, currentUserId);
-            }
-
-    }
-
     private void updateUIFromInputBox(String createdAt, String message, String myProfileImg) {
 
         // 리사이클러뷰에 메세지 추가
@@ -476,7 +444,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
         recyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
     }
 
-
+    // 리사이클러뷰에 추가된 dateMarker를 db에 저장하는 요청
     @Override
     public void onMessageAdded(Message dateMarker) {
         service.saveDateMarker(dateMarker).enqueue(new Callback<ResponseBody>() {
@@ -493,45 +461,23 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
     }
 
     private void ProcessResponse(Response<ResponseBody> response) {
-        if (response.isSuccessful()) {
-            handleResponse(response);
+        if (response.isSuccessful() && response.body() != null) {
+            Log.d("success", "a date marker is saved!");
 
         } else {
             Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
         }
     }
 
-    private void handleResponse(Response<ResponseBody> response) {
-        if (response.isSuccessful()) {
-            try {
-                String message = parseResponseData(response);
-                Log.d("success", message);
-
-            } catch ( IOException e) {
-                e.printStackTrace();
-                Log.e("Error", "catch문 오류 발생");
-            }
-        } else {
-            Log.e("Error", "서버 응답 오류");
-        }
-    }
-
-    private String parseResponseData(Response<ResponseBody> response) throws IOException {
-        String responseJson = response.body().string();
-        JsonObject jsonObject = JsonParser.parseString(responseJson).getAsJsonObject();
-        return jsonObject.get("message").getAsString();
-    }
-
+    // 이는 사용자가 액티비티를 벗어날 때(예: 뒤로가기 버튼 사용, 앱 종료 등) 리소스를 정리하고 네트워크 연결을 안전하게 닫아줍니다.
     private void setupToolBarListeners() {
         ImageView cancelBtn = findViewById(R.id.imageView36);
         cancelBtn.setOnClickListener(v -> {
 
             // 백그라운드 작업을 종료 후 액티비티 종료
             // chatClient가 null이 되거나 다른 문제가 발생하는 상황을 방지할 수 있음
-
             new Thread(() -> {
                 try {
-
                     if (chatClient != null) {
                         chatClient.closeConnection();
                         Log.d("클라이언트 연결 종료", "사용자" + currentUserId);

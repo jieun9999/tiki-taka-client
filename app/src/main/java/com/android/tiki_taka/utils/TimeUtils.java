@@ -1,10 +1,13 @@
 package com.android.tiki_taka.utils;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.text.format.DateUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
@@ -106,6 +109,16 @@ public class TimeUtils {
         }
     }
 
+    public static String nowDateFormatter() {
+        LocalDateTime currentTime = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            currentTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return currentTime.format(formatter);
+        }
+
+        return "";
+    }
 }
 
 

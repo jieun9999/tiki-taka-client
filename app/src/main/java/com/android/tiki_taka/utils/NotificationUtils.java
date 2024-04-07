@@ -73,12 +73,14 @@ public class NotificationUtils {
         editor.apply(); // 변경사항 적용
     }
 
+    // 클라이언트 시간이 서버 시간보다 약 4초 정도 빠르므로, 시간 보정으로 +5초를 더한다
     public static String nowDateTime(){
         LocalDateTime now = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             now = LocalDateTime.now();
+            LocalDateTime adjustedTime = now.plusSeconds(5); // 현재 시간에 5초 추가
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            return now.format(formatter);
+            return adjustedTime.format(formatter);
         }
         return null;
     }
