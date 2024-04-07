@@ -109,7 +109,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String CHANNEL_NAME ="메세지 알림";
         int REQUEST_CODE = (int) System.currentTimeMillis();
         // InboxStyle 알림용 고정된 NOTIFICATION_ID
-        final int INBOX_STYLE_NOTIFICATION_ID = 1000;
+        // 새로운 알림이 생성되지 않고, 기존 알림에 메세지가 추가되도록 함
+        final int NOTIFICATION_ID = 1000;
 
         // 데이터 페이로드
         Map<String, String> data = remoteMessage.getData();
@@ -170,12 +171,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 }
 
                 // 단 하나의 inbox style ui
-                // 새로운 알림이 도착할 때마다 이전의 개별 알림을 제거하고, 대신에 모든 메시지를 포함하는 InboxStyle 알림을 생성하여 표시합니다.
-
+                // 새로운 알림이 도착할 때마다 가존 알림을 업데이트함.
                 // 개별 알림용 그룹 키
                 final String NOTIFICATION_GROUP_KEY = "NOTIFICATION_GROUP_KEY";
-                // 그룹 기반 알림의 경우, 모든 이전 알림 사라짐
-                notificationManager.cancelAll();
 
                 builder.setContentTitle(title)
                         .setContentText(body)
@@ -196,11 +194,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         // 권한이 없을 경우, 권한 요청은 채팅 액티비티에서
                     } else {
                         // 권한이 있을 때의 알림 전송 로직
-                        notificationManager.notify(INBOX_STYLE_NOTIFICATION_ID, notification);
+                        notificationManager.notify(NOTIFICATION_ID, notification);
                     }
                 } else {
                     // API level 33 미만일 경우, 권한 없이 알림 전송 로직
-                    notificationManager.notify(INBOX_STYLE_NOTIFICATION_ID, notification);
+                    notificationManager.notify(NOTIFICATION_ID, notification);
                 }
 
             }
