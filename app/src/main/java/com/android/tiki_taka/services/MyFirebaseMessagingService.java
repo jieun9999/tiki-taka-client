@@ -42,6 +42,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     int userId;
     ChatApiService service;
 
+    // fcm 서버에서 받은 데이터들
+    String title;
+    String userProfile;
+    String body;
+    int messageId;
+    int roomId;
+    int folderId;
+
+
     // 서비스가 생성될 때 호출되며, 여기서 FCM 토큰을 요청하는 것이 좋습니다.
     @Override
     public void onCreate() {
@@ -105,32 +114,51 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        String CHANNEL_ID = "message_notifications";
-        String CHANNEL_NAME ="메세지 알림";
+
+        // 데이터 페이로드로 알림 종류 구분
+        Map<String, String> data = remoteMessage.getData();
+        Log.d("data", data.toString());
+        String flag = data.get("flag");
+
+        switch(flag){
+            case "chat_notification":
+                // 채팅 알림 처리
+                parsingChatData(data);
+                break;
+            case "story_notification":
+                // 스토리 알림 처리
+                parsingStoryData(data);
+                break;
+        }
+
+    }
+
+    private void parsingChatData(Map<String, String> data){
+        title = data.get("title");
+        userProfile = data.get("userProfile");
+        body = data.get("body");
+        messageId = Integer.parseInt(data.get("messageId"));
+        roomId = Integer.parseInt(data.get("roomId"));
+    }
+
+    private void parsingStoryData(Map<String, String> data){
+        title = data.get("title");
+        userProfile = data.get("userProfile");
+        body = data.get("body");
+        folderId = Integer.parseInt(data.get("folderId"));
+    }
+
+    private void sendNotification(){
+        String CHANNEL_ID = "chat_notification";
+        String CHANNEL_NAME ="채팅 알림";
         int REQUEST_CODE = (int) System.currentTimeMillis();
         // InboxStyle 알림용 고정된 NOTIFICATION_ID
         // 새로운 알림이 생성되지 않고, 기존 알림에 메세지가 추가되도록 함
         final int NOTIFICATION_ID = 1000;
 
-        // 데이터 페이로드
-        Map<String, String> data = remoteMessage.getData();
-        Log.d("data", data.toString());
-        String title = data.get("title");
-        String userProfile = data.get("userProfile");
-        String body = data.get("body");
-        int messageId = Integer.parseInt(data.get("messageId"));
-        int roomId = Integer.parseInt(data.get("roomId"));
-
         // Glide를 사용해 비동기적으로 이미지 로드 후 알림에 설정
         new Thread(() -> {
             try {
-                // Glide를 사용하여 비트맵 동기적으로 로드
-                Bitmap bitmap = Glide.with(getApplicationContext())
-                        .asBitmap()
-                        .load(userProfile)
-                        .submit()
-                        .get();
-
                 // 인텐트 생성 및 대상 액티비티 지정
                 Intent intent = new Intent(this, ChatActivity.class);
                 intent.putExtra("messageId", messageId); // 알림에 메시지 정보 포함하기
@@ -156,7 +184,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 } else {
                     builder = new NotificationCompat.Builder(getApplicationContext());
                 }
-
                 // 쉐어드에서 저장한 알림 리스트 가져와서 새로운 알림 추가하고 쉐어드에 저장
                 NotificationUtils.addNotification(getApplicationContext(), body);
 
@@ -169,11 +196,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 for (String message : notificationMessages) {
                     inboxStyle.addLine(message);
                 }
-
                 // 단 하나의 inbox style ui
                 // 새로운 알림이 도착할 때마다 가존 알림을 업데이트함.
                 // 개별 알림용 그룹 키
                 final String NOTIFICATION_GROUP_KEY = "NOTIFICATION_GROUP_KEY";
+
+                // Glide를 사용하여 비트맵 동기적으로 로드
+                Bitmap bitmap = Glide.with(getApplicationContext())
+                        .asBitmap()
+                        .load(userProfile)
+                        .submit()
+                        .get();
 
                 builder.setContentTitle(title)
                         .setContentText(body)
@@ -200,7 +233,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     // API level 33 미만일 경우, 권한 없이 알림 전송 로직
                     notificationManager.notify(NOTIFICATION_ID, notification);
                 }
-
             }
             catch (Exception e) {
                 e.printStackTrace();
