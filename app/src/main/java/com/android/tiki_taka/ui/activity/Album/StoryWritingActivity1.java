@@ -62,6 +62,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     String displayImage;
     private static final int EDIT_FOLDER = 123;
     private static final int INPUT_IMAGE_COMMENT = 456;
+    int partnerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+        partnerId = SharedPreferencesHelper.getPartnerId(this);
     }
 
     private void extractIntentData(){
@@ -220,7 +222,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         if (includeFolderId) {
             cardRequest = new StoryCardRequest(userId, folderId, uriStrings, storyTitle, location, thumbnailUri, comments);
         } else {
-            cardRequest = new StoryCardRequest(userId, uriStrings, storyTitle, location, thumbnailUri, comments);
+            cardRequest = new StoryCardRequest(userId, uriStrings, storyTitle, location, thumbnailUri, comments, partnerId);
         }
     }
 

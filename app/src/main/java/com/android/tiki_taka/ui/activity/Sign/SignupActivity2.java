@@ -178,6 +178,9 @@ public class SignupActivity2 extends AppCompatActivity {
             // 초대번호 일치
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
+            // 쉐어드에 파트너 id 저장
+            SharedPreferencesHelper.setPartnerId(this, partnerId);
+
             // db에 채팅방 생성
             makeChatRoomInDB(partnerId);
 

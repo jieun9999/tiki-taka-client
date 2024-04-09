@@ -85,7 +85,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     if(response.isSuccessful() && response.body() != null){
                         if(response.body().isSuccess()){
                             // success가 true일 때의 처리
-
                         }
                     }else {
                         // success가 false일 때의 처리
@@ -124,10 +123,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             case "chat_notification":
                 // 채팅 알림 처리
                 parsingChatData(data);
+                sendChatNotification();
                 break;
             case "story_notification":
                 // 스토리 알림 처리
                 parsingStoryData(data);
+                sendStoryNotification();
                 break;
         }
 
@@ -148,12 +149,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         folderId = Integer.parseInt(data.get("folderId"));
     }
 
-    private void sendNotification(){
+    private void sendChatNotification(){
+        // CHANNEL_ID와 CHANNEL_NAME은 쌍을 이루어 알림 채널을 정의, 시스템 설정에서 각 알림을 관리할 수 있음
         String CHANNEL_ID = "chat_notification";
         String CHANNEL_NAME ="채팅 알림";
-        int REQUEST_CODE = (int) System.currentTimeMillis();
-        // InboxStyle 알림용 고정된 NOTIFICATION_ID
-        // 새로운 알림이 생성되지 않고, 기존 알림에 메세지가 추가되도록 함
+        int REQUEST_CODE = 1;
+
+        // InboxStyle 알림용 고정된 NOTIFICATION_ID, 새로운 알림이 생성되지 않고, 기존 알림에 메세지가 추가되도록 함
         final int NOTIFICATION_ID = 1000;
 
         // Glide를 사용해 비동기적으로 이미지 로드 후 알림에 설정
@@ -216,6 +218,79 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setAutoCancel(true) //사용자가 해당 알림을 클릭했을 때 알림 사라짐
                         .setContentIntent(pendingIntent)
                         .setGroup(NOTIFICATION_GROUP_KEY) // 모든 알림을 같은 그룹에 속하게 설정
+                        .setGroupSummary(true);
+
+                Notification notification = builder.build();
+
+                // 3. 알림 권한 확인
+                // API level 33 이상일 경우, 권한 여부를 확인해야 한다
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        // 권한이 없을 경우, 권한 요청은 채팅 액티비티에서
+                    } else {
+                        // 권한이 있을 때의 알림 전송 로직
+                        notificationManager.notify(NOTIFICATION_ID, notification);
+                    }
+                } else {
+                    // API level 33 미만일 경우, 권한 없이 알림 전송 로직
+                    notificationManager.notify(NOTIFICATION_ID, notification);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void sendStoryNotification(){
+        String CHANNEL_ID = "story_notification";
+        String CHANNEL_NAME ="스토리 알림";
+        //  여러 알림이 있을 때, 각각의 알림에 대해 다른 행동(예: 다른 메시지 보여주기)을 하고 싶다면, 각각의 PendingIntent에 대해 고유한 REQUEST_CODE를 할당해야 합니다.
+        int REQUEST_CODE =  (int) System.currentTimeMillis();
+        // 여러 개의 개별 알림 생성
+        int NOTIFICATION_ID = (int) System.currentTimeMillis();
+
+        // Glide를 사용해 비동기적으로 이미지 로드 후 알림에 설정
+        new Thread(() -> {
+            try {
+                // 인텐트 생성 및 대상 액티비티 지정
+                Intent intent = new Intent(this, ChatActivity.class);
+                intent.putExtra("folderId", folderId); // 알림에 메시지 정보 포함하기
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
+                // 이런식으로 알림마다 REQUEST_CODE를 다르게 줘야지 여러 메세지 중 최신 메세지로 이동
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                // 이렇게 하면 사용자가 실수로 알림을 여러 번 클릭하더라도, 액티비티는 한 번만 열립니다.
+
+                // 1. 알림 채널 설정
+                NotificationManagerCompat notificationManager =
+                        NotificationManagerCompat.from(getApplicationContext());
+
+                // 2. 알림 생성 및 표시
+                NotificationCompat.Builder builder = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
+                        NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                                CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH); //긴급 (알림음o, 헤드업)
+                        notificationManager.createNotificationChannel(channel);
+                    }
+                    builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
+                } else {
+                    builder = new NotificationCompat.Builder(getApplicationContext());
+                }
+
+                // Glide를 사용하여 비트맵 동기적으로 로드
+                Bitmap bitmap = Glide.with(getApplicationContext())
+                        .asBitmap()
+                        .load(userProfile)
+                        .submit()
+                        .get();
+
+                builder.setContentTitle(title)
+                        .setContentText(body)
+                        .setSmallIcon(R.drawable.fluent_emoji_bell)// 알림의 작은 아이콘 설정
+                        .setLargeIcon(bitmap) // 로드된 비트맵을 대형 아이콘으로 설정
+                        .setAutoCancel(true) //사용자가 해당 알림을 클릭했을 때 알림 사라짐
+                        .setContentIntent(pendingIntent)
                         .setGroupSummary(true);
 
                 Notification notification = builder.build();
