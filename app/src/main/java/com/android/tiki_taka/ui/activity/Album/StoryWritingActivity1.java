@@ -18,6 +18,7 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.models.dto.StoryFolder;
+import com.android.tiki_taka.models.request.CardIdRequest;
 import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
@@ -34,10 +35,15 @@ import com.android.tiki_taka.utils.VideoUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -63,6 +69,14 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private static final int EDIT_FOLDER = 123;
     private static final int INPUT_IMAGE_COMMENT = 456;
     int partnerId;
+    private MultipartBody.Part displayImagePart;
+    private List<MultipartBody.Part> urisParts;
+
+    private RequestBody userIdBody;
+    private RequestBody titleBody;
+    private RequestBody locationBody;
+    private List<RequestBody> commentsBodies;
+    private RequestBody partnerIdBody;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -218,11 +232,42 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
-    private void createStoryCardRequest(boolean includeFolderId, int userId, int folderId, String storyTitle, String location, String thumbnailUri,  ArrayList<String> uriStrings, ArrayList<String> comments) {
+    private void createStoryCardRequest(boolean includeFolderId, int userId, int folderId, String storyTitle, String location, String thumbnailUri,  ArrayList<String> uris, ArrayList<String> comments) {
         if (includeFolderId) {
-            cardRequest = new StoryCardRequest(userId, folderId, uriStrings, storyTitle, location, thumbnailUri, comments);
+            cardRequest = new StoryCardRequest(userId, folderId, uris, storyTitle, location, thumbnailUri, comments);
         } else {
-            cardRequest = new StoryCardRequest(userId, uriStrings, storyTitle, location, thumbnailUri, comments, partnerId);
+            //<멀티 파트 요청에 맞게 필드 변환>
+            // 이미지 URI 리스트 (uris)
+            urisParts = new ArrayList<>();
+            for (String uriString : uris) {
+                File file = new File(UriUtils.getRealPathFromURIString(this,uriString));
+                RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
+                urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
+            }
+            Log.d("UploadDebug", "urisParts size: " + urisParts.size());
+
+            // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
+            File displayImageFile = new File(UriUtils.getRealPathFromURIString(this, thumbnailUri));
+            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
+            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
+
+            // userId: RequestBody로 변환
+            userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
+            // title: RequestBody로 변환
+            titleBody = RequestBody.create(MediaType.parse("text/plain"), storyTitle != null ? storyTitle : "");
+            // location: RequestBody로 변환
+            locationBody = RequestBody.create(MediaType.parse("text/plain"), location != null ? location : "");
+            // comments: 각각의 댓글을 RequestBody로 변환한 후 리스트로 묶음
+            commentsBodies = new ArrayList<>();
+            if(comments != null){
+                for (String comment : comments) {
+                    RequestBody commentBody = RequestBody.create(MediaType.parse("text/plain"), comment);
+                    commentsBodies.add(commentBody);
+                }
+            }
+            // partnerId: RequestBody로 변환
+            partnerIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(partnerId));
+
         }
     }
 
@@ -235,7 +280,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     private void insertImageStoryCardsInDB(){
-        service.saveImageStoryCards(cardRequest).enqueue(new Callback<SuccessAndMessageResponse>() {
+        service.saveImageStoryCards(urisParts, displayImagePart, userIdBody, titleBody, titleBody, commentsBodies, partnerIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 ProcessInsertingCardsResponse(response);

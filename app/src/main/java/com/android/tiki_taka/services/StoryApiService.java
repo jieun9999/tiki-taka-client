@@ -16,11 +16,15 @@ import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 public interface StoryApiService {
@@ -34,8 +38,17 @@ public interface StoryApiService {
     @GET("Story/getStoryCards.php")
     Call<StoryCardsResponse> getStoryCards(@Query("folderId") int folderId);
 
+    @Multipart
     @POST("Story/saveImageStoryCards.php")
-    Call<SuccessAndMessageResponse> saveImageStoryCards(@Body StoryCardRequest cardRequest);
+    Call<SuccessAndMessageResponse> saveImageStoryCards(
+            @Part List<MultipartBody.Part> uris,
+            @Part MultipartBody.Part displayImage,
+            @Part("userId") RequestBody userId,
+            @Part("title") RequestBody title,
+            @Part("location") RequestBody location,
+            @Part("comments") List<RequestBody> comments,
+            @Part("partnerId") RequestBody partnerId
+            );
 
     @POST("Story/saveMemoStoryCard.php")
     Call<ResponseBody> saveMemoStoryCard(@Body StoryCardRequest cardRequest);
