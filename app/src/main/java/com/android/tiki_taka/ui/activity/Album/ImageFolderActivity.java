@@ -95,8 +95,14 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
 
     private void loadThumbnailAndStoryCards(){
         Intent intent = getIntent();
-        folderId = intent.getIntExtra("CLICKED_ITEM_ID", -1); // "CLICKED_ITEM_ID" 키로 저장된 int 값을 가져옴
-
+        // case 1: PUSH 알림을 클릭해서 온 경우
+        boolean storyNotification = intent.getBooleanExtra("storyNotification", false);
+        if(storyNotification){
+            folderId = intent.getIntExtra("folderId", -1);
+        }else {
+            // case 2: 폴더를 클릭해서 온 경우
+            folderId = intent.getIntExtra("CLICKED_ITEM_ID", -1); // "CLICKED_ITEM_ID" 키로 저장된 int 값을 가져옴
+        }
         // 가져온 아이템 ID를 사용하여 세부 정보를 표시하거나 데이터를 로드
         if (folderId != -1) {
             loadThumbNail();

@@ -20,6 +20,7 @@ import androidx.core.graphics.drawable.IconCompat;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.FcmToken;
 import com.android.tiki_taka.models.response.ApiResponse;
+import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;
 import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -254,7 +255,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         new Thread(() -> {
             try {
                 // 인텐트 생성 및 대상 액티비티 지정
-                Intent intent = new Intent(this, ChatActivity.class);
+                Intent intent = new Intent(this, ImageFolderActivity.class);
+                intent.putExtra("storyNotification", true);
                 intent.putExtra("folderId", folderId); // 알림에 메시지 정보 포함하기
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
                 // 이런식으로 알림마다 REQUEST_CODE를 다르게 줘야지 여러 메세지 중 최신 메세지로 이동
