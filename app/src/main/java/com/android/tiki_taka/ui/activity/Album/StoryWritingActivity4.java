@@ -95,14 +95,14 @@ public class StoryWritingActivity4 extends AppCompatActivity {
         String title = makeTitleFromTexts(memoText);
         EditText locationView = findViewById(R.id.locationEditText);
         String location = locationView.getText().toString();
-        StoryCardRequest cardRequest = new StoryCardRequest(userId, memoText,title, location);
+        StoryCardRequest cardRequest = new StoryCardRequest(userId, memoText,title, location, SharedPreferencesHelper.getPartnerId(this));
         return cardRequest;
     }
 
     private StoryCardRequest createStoryCardRequestFromInput(int folderId){
         EditText noteEditTextView = findViewById(R.id.memoEditText);
         String memoText = noteEditTextView.getText().toString();
-        StoryCardRequest cardRequest = new StoryCardRequest(userId, folderId, memoText);
+        StoryCardRequest cardRequest = new StoryCardRequest(userId, folderId, memoText, SharedPreferencesHelper.getPartnerId(this));
         return cardRequest;
     }
 
@@ -143,7 +143,7 @@ public class StoryWritingActivity4 extends AppCompatActivity {
         if (response.isSuccessful()) {
             try {
                 String message = parseResponseData(response);
-                Log.d("success",message);
+                Log.d("success", message);
                 InitializeStack.navigateToAlbumFragment(this);
 
             } catch (JSONException | IOException e) {

@@ -78,7 +78,15 @@ public class WithCommentStoryCard2 extends AppCompatActivity implements DeleteCo
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-        cardId = IntentHelper.getId(this);
+        Intent intent = getIntent();
+        boolean storyNotification = intent.getBooleanExtra("storyNotification", false);
+        if(storyNotification){
+            // case 1: PUSH 알림을 클릭해서 온 경우
+            cardId = intent.getIntExtra("Id", -1);
+        }else {
+            // case 2: 메모를 클릭해서 온 경우
+            cardId = IntentHelper.getId(this);
+        }
     }
 
     private void loadCardDetails(){

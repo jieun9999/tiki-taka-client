@@ -29,11 +29,12 @@ public class StoryCardRequest {
     }
 
     // 메모 스토리 카드
-    public StoryCardRequest(int userId, String text, String title, String location) {
+    public StoryCardRequest(int userId, String text, String title, String location, int partnerId) {
         this.userId = userId;
         this.text = text;
         this.title = title;
         this.location = location;
+        this.partnerId = partnerId;
     }
 
     // 기존 폴더에 스토리 카드(카메라, 사진) 추가
@@ -49,16 +50,18 @@ public class StoryCardRequest {
     }
 
     // 기존 폴더에 메모 스토리 카드 추가
-    public StoryCardRequest(int userId, int folderId, String text) {
+    public StoryCardRequest(int userId, int folderId, String text, int partnerId) {
         this.userId = userId;
         this.folderId = folderId;
         this.text = text;
+        this.partnerId = partnerId;
     }
 
     // 메모 카드 내용 편집
-    public StoryCardRequest(int cardId, String text) {
+    public StoryCardRequest(int cardId, String text, int partnerId) {
         this.cardId = cardId;
         this.text = text;
+        this.partnerId = partnerId;
     }
 
     public int getUserId() {

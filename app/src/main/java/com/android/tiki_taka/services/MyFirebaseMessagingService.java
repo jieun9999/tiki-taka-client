@@ -15,12 +15,12 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.IconCompat;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.FcmToken;
 import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;
+import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard2;
 import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -50,6 +50,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     int messageId;
     int roomId;
     int folderId;
+    int cardId;
 
 
     // 서비스가 생성될 때 호출되며, 여기서 FCM 토큰을 요청하는 것이 좋습니다.
@@ -126,10 +127,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 parsingChatData(data);
                 sendChatNotification();
                 break;
-            case "story_notification":
-                // 스토리 알림 처리
+            case "story_image_notification":
+                // 이미지(사진, 갤러리) 알림 처리
                 parsingStoryData(data);
-                sendStoryNotification();
+                sendStoryNotification(ImageFolderActivity.class, folderId);
+                break;
+            case "story_memo_notification":
+                // 메모 알림 처리
+                parsingStoryData(data);
+                sendStoryNotification(WithCommentStoryCard2.class, cardId);
                 break;
         }
 
@@ -147,7 +153,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         title = data.get("title");
         userProfile = data.get("userProfile");
         body = data.get("body");
-        folderId = Integer.parseInt(data.get("folderId"));
+        // 둘중에 하나가 Null이 될 수 있으므로 기본값을 설정해준다
+        folderId = data.get("folderId") != null ? Integer.parseInt(data.get("folderId")) : -1;
+        cardId = data.get("cardId") != null ? Integer.parseInt(data.get("cardId")) : -1;
     }
 
     private void sendChatNotification(){
@@ -243,7 +251,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }).start();
     }
 
-    private void sendStoryNotification(){
+    private void sendStoryNotification(Class<?> targetActivity, int Id){
         String CHANNEL_ID = "story_notification";
         String CHANNEL_NAME ="스토리 알림";
         //  여러 알림이 있을 때, 각각의 알림에 대해 다른 행동(예: 다른 메시지 보여주기)을 하고 싶다면, 각각의 PendingIntent에 대해 고유한 REQUEST_CODE를 할당해야 합니다.
@@ -255,9 +263,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         new Thread(() -> {
             try {
                 // 인텐트 생성 및 대상 액티비티 지정
-                Intent intent = new Intent(this, ImageFolderActivity.class);
+                Intent intent = new Intent(this, targetActivity);
                 intent.putExtra("storyNotification", true);
-                intent.putExtra("folderId", folderId); // 알림에 메시지 정보 포함하기
+                intent.putExtra("Id", Id); // 알림에 메시지 정보 포함하기
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
                 // 이런식으로 알림마다 REQUEST_CODE를 다르게 줘야지 여러 메세지 중 최신 메세지로 이동
                 PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);

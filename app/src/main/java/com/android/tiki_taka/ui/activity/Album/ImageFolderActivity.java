@@ -98,7 +98,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         // case 1: PUSH 알림을 클릭해서 온 경우
         boolean storyNotification = intent.getBooleanExtra("storyNotification", false);
         if(storyNotification){
-            folderId = intent.getIntExtra("folderId", -1);
+            folderId = intent.getIntExtra("Id", -1);
         }else {
             // case 2: 폴더를 클릭해서 온 경우
             folderId = intent.getIntExtra("CLICKED_ITEM_ID", -1); // "CLICKED_ITEM_ID" 키로 저장된 int 값을 가져옴
