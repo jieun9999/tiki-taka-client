@@ -37,7 +37,7 @@ public class StoryCardRequest {
     }
 
     // 기존 폴더에 스토리 카드(카메라, 사진) 추가
-    public StoryCardRequest(int userId, int folderId, ArrayList<String> uris, String title, String location, String displayImage, ArrayList<String> comments) {
+    public StoryCardRequest(int userId, int folderId, ArrayList<String> uris, String title, String location, String displayImage, ArrayList<String> comments, int partnerId) {
         this.userId = userId;
         this.folderId =folderId;
         this.uris = uris;
@@ -45,6 +45,7 @@ public class StoryCardRequest {
         this.location = location;
         this.displayImage = displayImage;
         this.comments = comments;
+        this.partnerId = partnerId;
     }
 
     // 기존 폴더에 메모 스토리 카드 추가

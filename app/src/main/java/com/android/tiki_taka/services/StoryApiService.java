@@ -42,12 +42,13 @@ public interface StoryApiService {
     @POST("Story/saveImageStoryCards.php")
     Call<SuccessAndMessageResponse> saveImageStoryCards(
             @Part List<MultipartBody.Part> uris,
-            @Part MultipartBody.Part displayImage,
+            @Part MultipartBody.Part displayImage, //이미지와 텍스트 모두 전송 가능
             @Part("userId") RequestBody userId,
             @Part("title") RequestBody title,
             @Part("location") RequestBody location,
             @Part("comments") List<RequestBody> comments,
-            @Part("partnerId") RequestBody partnerId
+            @Part("partnerId") RequestBody partnerId,
+            @Part("folderId") RequestBody folderId
             );
 
     @POST("Story/saveMemoStoryCard.php")
