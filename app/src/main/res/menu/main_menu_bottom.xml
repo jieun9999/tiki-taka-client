@@ -13,9 +13,4 @@
 
     <item android:title=""></item>
 
-    <item
-        android:id="@+id/alarm_menu"
-        android:icon="@drawable/baseline_access_alarm_24"
-        android:title="알림" />
-
 </menu>

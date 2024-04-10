@@ -17,7 +17,6 @@ import android.widget.Toast;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
-import com.android.tiki_taka.ui.fragment.AlarmFragment;
 import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.ui.fragment.HomeFragment;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -39,7 +38,6 @@ public class HomeActivity extends AppCompatActivity {
     private FragmentManager fragmentManager;
     private HomeFragment homeFragment;
     private AlbumFragment albumFragment;
-    private AlarmFragment alarmFragment;
     ProfileApiService service;
     int userId; // 유저 식별 정보
 
@@ -68,7 +66,6 @@ public class HomeActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
         homeFragment = new HomeFragment();
         albumFragment = new AlbumFragment();
-        alarmFragment = new AlarmFragment();
 
         // 인텐트에서 추가 정보 확인
         String openFragment = getIntent().getStringExtra("OPEN_FRAGMENT");
@@ -103,8 +100,6 @@ public class HomeActivity extends AppCompatActivity {
                 selectedFragment = homeFragment;
             } else if (menuItem.getItemId() == R.id.album_menu) {
                 selectedFragment = albumFragment;
-            } else if (menuItem.getItemId() == R.id.alarm_menu) {
-                selectedFragment = alarmFragment;
             }
 
             //선택된 프래그먼트(selectedFragment)로 실제 프래그먼트 전환을 수행하는 코드
