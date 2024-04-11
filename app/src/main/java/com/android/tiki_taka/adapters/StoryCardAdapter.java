@@ -200,7 +200,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         StoryCard card = storyCards.get(position);
         int userId = SharedPreferencesHelper.getUserId(holder.itemView.getContext());
-        int partnerId = PartnerDataManager.getPartnerId();
+        int partnerId = SharedPreferencesHelper.getPartnerId(holder.itemView.getContext());
         String partnerImg = PartnerDataManager.getPartnerImg();
         
         if (holder.getItemViewType() == IMAGE_TYPE){
@@ -250,7 +250,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             //나와 상대방의 좋아요 상태 렌더링
             Pair<Integer, Integer> likes = LikesUtils.getLikesFor2Users(card, userId, partnerId);
-            renderLikes( videoViewHolder.myLikesView, videoViewHolder.partnerLikesView, videoViewHolder.partnerLikesProfileView, likes, partnerImg);
+            renderLikes(videoViewHolder.myLikesView, videoViewHolder.partnerLikesView, videoViewHolder.partnerLikesProfileView, likes, partnerImg);
 
             // 비동기적으로 댓글 데이터 요청
             loadPreviewComments(card.getCardId(), videoViewHolder.commentAdapter);
@@ -278,6 +278,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             }
         });
     }
+
 
     private void renderLikes(ImageView myLikesImageView, FrameLayout partnerLikesView,  ImageView partnerLikesProfileView, Pair<Integer, Integer> likes, String partnerImg){
         int myLikes = likes.first;

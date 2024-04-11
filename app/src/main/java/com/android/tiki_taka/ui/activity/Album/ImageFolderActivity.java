@@ -16,10 +16,15 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryCardAdapter;
 import com.android.tiki_taka.listeners.ItemClickListener;
+import com.android.tiki_taka.models.dto.HomeProfiles;
+import com.android.tiki_taka.models.dto.PartnerDataManager;
+import com.android.tiki_taka.models.dto.PartnerProfile;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
+import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
+import com.android.tiki_taka.services.ProfileApiService;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.TimeUtils;
@@ -41,6 +46,7 @@ import retrofit2.Retrofit;
 public class ImageFolderActivity extends AppCompatActivity implements ItemClickListener {
     int folderId;
     StoryApiService service;
+    ProfileApiService profileService;
     int userId;
     int clickedCardId;
     StoryCardAdapter adapter;
@@ -59,6 +65,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
 
         setUpCustomToolBar();
         setupNetworkAndRetrieveId();
+        getHomeProfile();
         setRecyclerView();
         loadThumbnailAndStoryCards();
         setupEditStoryFolder();
@@ -81,8 +88,40 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
     private void setupNetworkAndRetrieveId(){
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
+        profileService = retrofit.create(ProfileApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
+    }
 
+    private void getHomeProfile(){
+        // 1. 유저 프로필 정보 가져오기
+        Call<HomeProfiles> call = profileService.getHomeProfile(userId);
+        call.enqueue(new Callback<HomeProfiles>() {
+            @Override
+            public void onResponse(Call<HomeProfiles> call, Response<HomeProfiles> response) {
+                processHomeProfileResponse(response);
+
+            }
+
+            @Override
+            public void onFailure(Call<HomeProfiles> call, Throwable t) {
+                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+            }
+        });
+    }
+
+    private void processHomeProfileResponse(Response<HomeProfiles> response){
+        if (response.isSuccessful() && response.body() != null) {
+            //서버에서 홈프로필 정보를 가져옴
+            HomeProfiles homeProfiles = response.body();
+            // 유저 프로필 정보 처리
+            // 파트너 프로필 정보 처리
+            PartnerProfile partnerProfile = homeProfiles.getPartnerProfile();
+            //파트너 아이디, 이미지 static 설정
+            PartnerDataManager.setPartnerImg(partnerProfile.getProfileImage());
+
+        } else {
+            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+        }
     }
 
     private void setRecyclerView(){
@@ -105,6 +144,7 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         }
         // 가져온 아이템 ID를 사용하여 세부 정보를 표시하거나 데이터를 로드
         if (folderId != -1) {
+            // 여기서 상대방의 이미지를 가져온다
             loadThumbNail();
             loadStoryCards();
 
