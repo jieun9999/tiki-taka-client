@@ -25,8 +25,6 @@ import com.android.tiki_taka.models.dto.CommentItem;
 import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.ui.activity.Album.LocalVideoPlayerActivity;
-import com.android.tiki_taka.ui.activity.Album.YoutubeVideoPlayerActivity;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;

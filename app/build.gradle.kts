@@ -65,6 +65,9 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     //FCM 을 수신할 수 있는 라이브러리
     implementation ("com.google.firebase:firebase-messaging")
-
+   //Exoplayer 라이브러리
+    implementation ("com.google.android.exoplayer:exoplayer-core:2.19.1");
+    implementation ("com.google.android.exoplayer:exoplayer-ui:2.19.1");
+    implementation ("com.google.android.exoplayer:exoplayer-hls:2.19.1");
 
 }

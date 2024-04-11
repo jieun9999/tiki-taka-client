@@ -4,9 +4,7 @@
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="false" />
-
-    <!--   INTERNET 퍼미션 추가!   -->
+        android:required="false" /> <!-- INTERNET 퍼미션 추가! -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -24,11 +22,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.activity.Album.ExoPlayerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.Chat.ChatActivity"
             android:exported="true"
             android:theme="@style/NoActionBar"
-            android:windowSoftInputMode="stateHidden|adjustResize">
-        </activity>
+            android:windowSoftInputMode="stateHidden|adjustResize"></activity>
         <activity
             android:name=".ui.activity.Album.SelectFolderActivity"
             android:exported="true"
@@ -45,7 +45,7 @@
             android:name=".ui.activity.Album.SelectionActivity2"
             android:exported="true" />
         <activity
-            android:name=".ui.activity.Album.LocalVideoPlayerActivity"
+            android:name=".ui.activity.Album.VideoViewActivity"
             android:exported="true" />
         <activity
             android:name=".ui.activity.Album.YoutubeVideoPlayerActivity"
@@ -141,18 +141,15 @@
             android:exported="true" />
         <activity
             android:name=".ui.activity.Sign.SignupActivity2"
-            android:exported="true" >
-        </activity>
+            android:exported="true"></activity>
         <activity
             android:name=".ui.activity.Sign.SignupActivity1"
-            android:exported="true" >
-        </activity>
-
-        <!--   서비스를 추가하고 인텐트 필터를 설정한다.   -->
-        <service android:name=".services.MyFirebaseMessagingService"
+            android:exported="true"></activity> <!-- 서비스를 추가하고 인텐트 필터를 설정한다. -->
+        <service
+            android:name=".services.MyFirebaseMessagingService"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 

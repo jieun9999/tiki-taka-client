@@ -9,17 +9,16 @@ import android.widget.VideoView;
 
 import com.android.tiki_taka.R;
 
-public class LocalVideoPlayerActivity extends AppCompatActivity {
+public class VideoViewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_local_video_player);
 
         VideoView videoView = findViewById(R.id.videoView);
-        String videoUriString = getIntent().getStringExtra("videoUriString");
+        String videoUriString = getIntent().getStringExtra("videoUri");
         if (videoUriString != null) {
             Uri videoUri = Uri.parse(videoUriString);
-
             videoView.setVideoURI(videoUri);
             videoView.start();
 
