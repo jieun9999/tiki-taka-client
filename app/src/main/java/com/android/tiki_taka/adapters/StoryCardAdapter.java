@@ -230,11 +230,10 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         } else if (holder.getItemViewType() == VIDEO_TYPE) {
             VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
-            String videoThumbnail = card.getVideoThumbnail();
             String video = card.getVideo();
 
-            if(videoThumbnail.startsWith("https://")){
-                ImageUtils.loadImage(videoThumbnail,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
+            if(video.startsWith("https://")){
+                ImageUtils.loadImage(video,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
 
             } else {
                 // 크롭한 사진은 화질이 너무 저하되서 글라이드 동영상 uri로 렌더링

@@ -39,6 +39,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
     private StoryFolderAdapter adapter;
     StoryApiService service;
     int userId; // 유저 식별 정보
+    int partnerId;
 
     public AlbumFragment() {
 
@@ -52,7 +53,7 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(getContext());
-
+        partnerId = SharedPreferencesHelper.getPartnerId(getContext());
     }
 
     @Override
@@ -83,7 +84,8 @@ public class AlbumFragment extends Fragment implements ItemClickListener {
     }
 
     private void loadStoryFolders() {
-        service.getStoryFolders(userId).enqueue(new Callback<StoryFoldersResponse>() {
+        // 사용자 본인과 상대방이 쓴 모든 스토리 폴더들을 가져와야 하기 때문에 userId와 partnerId를 인자로 넣어야 함
+        service.getStoryFolders(userId, partnerId).enqueue(new Callback<StoryFoldersResponse>() {
             @Override
             public void onResponse(Call<StoryFoldersResponse> call, Response<StoryFoldersResponse> response) {
                 processStoryFolderResponse(response);

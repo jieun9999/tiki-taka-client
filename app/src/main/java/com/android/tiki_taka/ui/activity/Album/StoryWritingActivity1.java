@@ -306,7 +306,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         });
     }
 
-    private void createVideoCardRequest( String thumbnail,  ArrayList<String> uris) throws IOException {
+    private void createVideoCardRequest(String thumbnail,  ArrayList<String> uris) throws IOException {
 
         //<멀티 파트 요청에 맞게 필드 변환>
         // 이미지 URI 리스트 (uris)

@@ -29,7 +29,7 @@ import retrofit2.http.Query;
 
 public interface StoryApiService {
     @GET("Story/getStoryFolders.php")
-    Call<StoryFoldersResponse> getStoryFolders(@Query("userId") int userId);
+    Call<StoryFoldersResponse> getStoryFolders(@Query("userId") int userId, @Query("partnerId") int partnerId);
     // <StoryFoldersResponse>는 서버에서 받아올 데이터 형식을 지정
 
    @GET("Story/getFolderData.php")

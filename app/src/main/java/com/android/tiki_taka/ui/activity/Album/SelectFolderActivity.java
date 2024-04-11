@@ -41,6 +41,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
     ChangeFolderAdapter adapter;
     RecyclerView recyclerView;
     int selectedFolderId;
+    int partnerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +60,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
         cardId = IntentHelper.getId(this);
+        partnerId = SharedPreferencesHelper.getPartnerId(this);
 
     }
 
@@ -71,7 +73,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
     }
 
     private void loadStoryFolders() {
-        service.getStoryFolders(userId).enqueue(new Callback<StoryFoldersResponse>() {
+        service.getStoryFolders(userId, partnerId).enqueue(new Callback<StoryFoldersResponse>() {
             @Override
             public void onResponse(Call<StoryFoldersResponse> call, Response<StoryFoldersResponse> response) {
                 processStoryFolderResponse(response);
