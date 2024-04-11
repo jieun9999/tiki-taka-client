@@ -201,12 +201,21 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
     }
 
-    private void savePhotoCards() throws IOException {
+    private void saveCards() throws IOException {
 
         ArrayList<String> uriStrings = convertUrisToStringList(selectedUris);
-        String thumbnailUri = determineThumbnailUri(isExistingFolder, editedThumbnailUri, displayImage, firstUri);
-        createStoryCardRequest(isExistingFolder, userId, folderId, storyTitle, location, thumbnailUri, uriStrings, comments);
-        updateDatabase(firstUri);
+        String thumbnailUri = determineThumbnailUri(editedThumbnailUri, displayImage, firstUri);
+
+        if(UriUtils.isImageUri(firstUri, this)){
+            //이미지 저장 시
+            createImageCardRequest(thumbnailUri, uriStrings);
+            insertImageStoryCardsInDB();
+
+        } else if (UriUtils.isVideoUri(firstUri, this)) {
+            //동영상 저장 시
+            createVideoCardRequest(thumbnailUri, uriStrings);
+            insertVideoStoryCardInDB();
+        }
 
     }
 
@@ -218,8 +227,8 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         return uriStrings;
     }
 
-    private String determineThumbnailUri(boolean includeFolderId, String editedThumbnailUri, String displayImage, Uri firstUri){
-        if (includeFolderId) {
+    private String determineThumbnailUri(String editedThumbnailUri, String displayImage, Uri firstUri){
+        if (isExistingFolder) {
             // 기존 폴더에 추가하는 로직 처리
             if (TextUtils.isEmpty(editedThumbnailUri)) {
                 // 편집된 썸네일이 존재 하는지 여부에 따라 갈림
@@ -233,13 +242,13 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
-    private void createStoryCardRequest(boolean includeFolderId, int userId, int folderId, String storyTitle, String location, String thumbnail,  ArrayList<String> uris, ArrayList<String> comments) throws IOException {
+    private void createImageCardRequest( String thumbnail,  ArrayList<String> uris) throws IOException {
 
         //<멀티 파트 요청에 맞게 필드 변환>
         // 이미지 URI 리스트 (uris)
         urisParts = new ArrayList<>();
         for (String uriString : uris) {
-            File file = new File(UriUtils.getRealPathFromURIString(this,uriString));
+            File file = new File(UriUtils.getRealPathFromURIString(this, uriString));
             RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
             urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
         }
@@ -275,20 +284,12 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         // partnerId: RequestBody로 변환
         partnerIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(partnerId));
 
-        if (includeFolderId) {
+        if (isExistingFolder) {
             // 기존 폴더에 추가하는 경우에는 folderIdBody를 인자로 추가함
             folderIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(folderId));
 
         }
 
-    }
-
-    private void updateDatabase(Uri firstUri) {
-        if(UriUtils.isImageUri(firstUri, this)){
-            insertImageStoryCardsInDB();
-        }else if(UriUtils.isVideoUri(firstUri, this)) {
-            insertVideoStoryCardInDB();
-        }
     }
 
     private void insertImageStoryCardsInDB(){
@@ -305,8 +306,58 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         });
     }
 
+    private void createVideoCardRequest( String thumbnail,  ArrayList<String> uris) throws IOException {
+
+        //<멀티 파트 요청에 맞게 필드 변환>
+        // 이미지 URI 리스트 (uris)
+        urisParts = new ArrayList<>();
+        for (String uriString : uris) {
+            File file = new File(UriUtils.getRealPathFromURIString(this, uriString));
+            RequestBody fileBody = RequestBody.create(MediaType.parse("video/*"), file);
+            urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
+        }
+
+        // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
+        // 썸네일이 로컬 경로인지, 웹 경로인지에 따라서 다르게 처리함
+        if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+            // 웹 URL 의 경우, 파일 이름을 웹경로로 지정하여 서버에서 바로 찾을 수 있도록 함
+            // 파일 이름으로 웹 경로인 thumbnail을 직접 넘겨서, 서버에서 full-path 항목으로 접근 가능함
+            RequestBody displayImageUrlBody = RequestBody.create(MediaType.parse("text/plain"), thumbnail);
+            displayImagePart = MultipartBody.Part.createFormData("displayImage", thumbnail, displayImageUrlBody);
+        } else{
+            // 로컬 파일 시스템의 경로인 경우 (예: content:// URI)
+            File displayImageFile = new File(UriUtils.getRealPathFromURIString(this, thumbnail));
+            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
+            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
+        }
+
+        // userId: RequestBody로 변환
+        userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
+        // title: RequestBody로 변환
+        titleBody = RequestBody.create(MediaType.parse("text/plain"), storyTitle != null ? storyTitle : "");
+        // location: RequestBody로 변환
+        locationBody = RequestBody.create(MediaType.parse("text/plain"), location != null ? location : "");
+        // comments: 각각의 댓글을 RequestBody로 변환한 후 리스트로 묶음
+        commentsBodies = new ArrayList<>();
+        if(comments != null){
+            for (String comment : comments) {
+                RequestBody commentBody = RequestBody.create(MediaType.parse("text/plain"), comment);
+                commentsBodies.add(commentBody);
+            }
+        }
+        // partnerId: RequestBody로 변환
+        partnerIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(partnerId));
+
+        if (isExistingFolder) {
+            // 기존 폴더에 추가하는 경우에는 folderIdBody를 인자로 추가함
+            folderIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(folderId));
+
+        }
+
+    }
+
     private void insertVideoStoryCardInDB(){
-        service.saveVideoStoryCard(cardRequest).enqueue(new Callback<SuccessAndMessageResponse>() {
+        service.saveVideoStoryCard(urisParts, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 ProcessInsertingCardsResponse(response);
@@ -370,7 +421,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         TextView uploadBtn = findViewById(R.id.textView34);
         uploadBtn.setOnClickListener(v -> {
             try {
-                savePhotoCards();
+                saveCards();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

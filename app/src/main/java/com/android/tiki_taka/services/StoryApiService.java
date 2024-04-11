@@ -57,8 +57,18 @@ public interface StoryApiService {
     @POST("Story/updateMemoStoryCard.php")
     Call<ResponseBody> updateMemoStoryCard(@Body StoryCardRequest cardRequest);
 
+   @Multipart
    @POST("Story/saveVideoStoryCard.php")
-   Call<SuccessAndMessageResponse> saveVideoStoryCard(@Body StoryCardRequest cardRequest);
+   Call<SuccessAndMessageResponse> saveVideoStoryCard(
+           @Part List<MultipartBody.Part> uris, // 하나 이상의 동영상 파일
+           @Part MultipartBody.Part displayImage, //이미지와 텍스트 모두 전송 가능
+           @Part("userId") RequestBody userId,
+           @Part("title") RequestBody title,
+           @Part("location") RequestBody location,
+           @Part("comments") List<RequestBody> comments,
+           @Part("partnerId") RequestBody partnerId,
+           @Part("folderId") RequestBody folderId
+   );
 
     @GET("Story/getCardDetails.php")
     Call<StoryCard> getCardDetails(@Query("cardId") int cardId);

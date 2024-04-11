@@ -128,7 +128,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 sendChatNotification();
                 break;
             case "story_image_notification":
-                // 이미지(사진, 갤러리) 알림 처리
+            case "story_video_notification":
+                // 이미지 또는 동영상(사진, 갤러리, 비디오) 알림 처리
                 parsingStoryData(data);
                 sendStoryNotification(ImageFolderActivity.class, folderId);
                 break;
