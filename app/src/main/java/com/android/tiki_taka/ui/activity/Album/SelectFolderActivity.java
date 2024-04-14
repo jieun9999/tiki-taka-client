@@ -20,6 +20,7 @@ import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.StoryFoldersResponse;
+import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
@@ -132,7 +133,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
     }
 
     private void saveSelectedFolderToDB(){
-        StoryCard updatedCard = StoryCard.fromCardIdAndFolderId(cardId, selectedFolderId);
+        StoryCard updatedCard = StoryCard.fromCardIdAndFolderId(cardId, selectedFolderId, userId, partnerId);
         service.updateFolderLocationInCard(updatedCard).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {

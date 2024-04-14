@@ -37,13 +37,17 @@ public class StoryCard {
     private String updatedAt;
     //서버 응답에서 날짜와 시간을 문자열로 수신한 후, 클라이언트 측에서 문자열을 원하는 형식으로 파싱
 
-    public StoryCard(int cardId, int folderId) {
+    int partnerId;
+
+    public StoryCard(int cardId, int folderId, int userId, int partnerId) {
         this.cardId = cardId;
         this.folderId = folderId;
+        this.userId = userId;
+        this.partnerId = partnerId;
     }
 
-    public static StoryCard fromCardIdAndFolderId(int cardId, int folderId){
-        return new StoryCard(cardId,folderId);
+    public static StoryCard fromCardIdAndFolderId(int cardId, int folderId, int userId, int partnerId){
+        return new StoryCard(cardId, folderId, userId, partnerId);
     }
 
     public int getCardId() {
