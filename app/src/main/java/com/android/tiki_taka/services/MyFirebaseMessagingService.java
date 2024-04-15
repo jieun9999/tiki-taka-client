@@ -1,6 +1,7 @@
 package com.android.tiki_taka.services;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -20,7 +21,9 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.dto.FcmToken;
 import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;
+import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard1;
 import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard2;
+import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard3;
 import com.android.tiki_taka.ui.activity.Chat.ChatActivity;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -51,6 +54,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     int roomId;
     int folderId;
     int cardId;
+    String type;
 
 
     // 서비스가 생성될 때 호출되며, 여기서 FCM 토큰을 요청하는 것이 좋습니다.
@@ -135,9 +139,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 sendStoryNotification(ImageFolderActivity.class, folderId);
                 break;
             case "story_memo_notification":
+            case "story_memo_update_notification":
                 // 메모 알림 처리
                 parsingStoryData(data);
                 sendStoryNotification(WithCommentStoryCard2.class, cardId);
+                break;
+            case "story_comment_notification":
+            case "story_comment_update_notification":
+                // 댓글 알림 처리
+                parsingCommentData(data);
+                sendCommentNotification(type, cardId);
                 break;
         }
 
@@ -155,9 +166,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         title = data.get("title");
         userProfile = data.get("userProfile");
         body = data.get("body");
-        // 둘중에 하나가 Null이 될 수 있으므로 기본값을 설정해준다
         folderId = data.get("folderId") != null ? Integer.parseInt(data.get("folderId")) : -1;
         cardId = data.get("cardId") != null ? Integer.parseInt(data.get("cardId")) : -1;
+    }
+
+    private void parsingCommentData(Map<String, String> data){
+        title = data.get("title");
+        userProfile = data.get("userProfile");
+        body = data.get("body");
+        folderId = data.get("folderId") != null ? Integer.parseInt(data.get("folderId")) : -1;
+        cardId = data.get("cardId") != null ? Integer.parseInt(data.get("cardId")) : -1;
+        type = data.get("type") != null? data.get("type") : "";
     }
 
     private void sendChatNotification(){
@@ -266,6 +285,96 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             try {
                 // 인텐트 생성 및 대상 액티비티 지정
                 Intent intent = new Intent(this, targetActivity);
+                intent.putExtra("storyNotification", true);
+                intent.putExtra("Id", Id); // 알림에 메시지 정보 포함하기
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
+                // 이런식으로 알림마다 REQUEST_CODE를 다르게 줘야지 여러 메세지 중 최신 메세지로 이동
+                PendingIntent pendingIntent = PendingIntent.getActivity(this, REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+                // 이렇게 하면 사용자가 실수로 알림을 여러 번 클릭하더라도, 액티비티는 한 번만 열립니다.
+
+                // 1. 알림 채널 설정
+                NotificationManagerCompat notificationManager =
+                        NotificationManagerCompat.from(getApplicationContext());
+
+                // 2. 알림 생성 및 표시
+                NotificationCompat.Builder builder = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    if (notificationManager.getNotificationChannel(CHANNEL_ID) == null) {
+                        NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                                CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH); //긴급 (알림음o, 헤드업)
+                        notificationManager.createNotificationChannel(channel);
+                    }
+                    builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
+                } else {
+                    builder = new NotificationCompat.Builder(getApplicationContext());
+                }
+
+                // Glide를 사용하여 비트맵 동기적으로 로드
+                Bitmap bitmap = Glide.with(getApplicationContext())
+                        .asBitmap()
+                        .load(userProfile)
+                        .submit()
+                        .get();
+
+                builder.setContentTitle(title)
+                        .setContentText(body)
+                        .setSmallIcon(R.drawable.fluent_emoji_bell)// 알림의 작은 아이콘 설정
+                        .setLargeIcon(bitmap) // 로드된 비트맵을 대형 아이콘으로 설정
+                        .setAutoCancel(true) //사용자가 해당 알림을 클릭했을 때 알림 사라짐
+                        .setContentIntent(pendingIntent)
+                        .setGroupSummary(true);
+
+                Notification notification = builder.build();
+
+                // 3. 알림 권한 확인
+                // API level 33 이상일 경우, 권한 여부를 확인해야 한다
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        // 권한이 없을 경우, 권한 요청은 채팅 액티비티에서
+                    } else {
+                        // 권한이 있을 때의 알림 전송 로직
+                        notificationManager.notify(NOTIFICATION_ID, notification);
+                    }
+                } else {
+                    // API level 33 미만일 경우, 권한 없이 알림 전송 로직
+                    notificationManager.notify(NOTIFICATION_ID, notification);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void sendCommentNotification(String type, int Id){
+        String CHANNEL_ID = "story_notification";
+        String CHANNEL_NAME ="스토리 알림";
+        //  여러 알림이 있을 때, 각각의 알림에 대해 다른 행동(예: 다른 메시지 보여주기)을 하고 싶다면, 각각의 PendingIntent에 대해 고유한 REQUEST_CODE를 할당해야 합니다.
+        int REQUEST_CODE =  (int) System.currentTimeMillis();
+        // 여러 개의 개별 알림 생성
+        int NOTIFICATION_ID = (int) System.currentTimeMillis();
+
+
+        // Glide를 사용해 비동기적으로 이미지 로드 후 알림에 설정
+        new Thread(() -> {
+            try {
+
+                // 인텐트 생성 및 대상 액티비티 지정
+                Intent intent = new Intent(this, WithCommentStoryCard1.class); // 기본 액티비티 설정
+                switch (type) {
+                    case "image":
+                        intent = new Intent(this, WithCommentStoryCard1.class);
+                        break;
+                    case "text":
+                        intent = new Intent(this, WithCommentStoryCard2.class);
+                        break;
+                    case "video":
+                        intent = new Intent(this, WithCommentStoryCard3.class);
+                        break;
+                    default:
+                        // 기본 액티비티 설정 유지
+                        break;
+                }
                 intent.putExtra("storyNotification", true);
                 intent.putExtra("Id", Id); // 알림에 메시지 정보 포함하기
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작

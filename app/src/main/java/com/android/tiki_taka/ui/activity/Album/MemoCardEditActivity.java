@@ -75,7 +75,7 @@ public class MemoCardEditActivity extends AppCompatActivity {
     private StoryCardRequest createStoryCardRequestFromInput(int cardId){
         EditText noteEditTextView = findViewById(R.id.memoEditText);
         String memoText = noteEditTextView.getText().toString();
-        StoryCardRequest cardRequest = new StoryCardRequest(cardId, memoText, SharedPreferencesHelper.getPartnerId(this));
+        StoryCardRequest cardRequest = new StoryCardRequest(cardId, memoText, SharedPreferencesHelper.getPartnerId(this), userId);
         return cardRequest;
     }
 

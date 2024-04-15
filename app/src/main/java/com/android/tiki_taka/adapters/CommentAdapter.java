@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.DeleteCommentListener;
 import com.android.tiki_taka.listeners.EditCommentListener;
-import com.android.tiki_taka.models.dto.CommentItem;
+import com.android.tiki_taka.models.request.CommentRequest;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.TimeUtils;
@@ -22,18 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
-    private static ArrayList<CommentItem> commentItems;
+    private static ArrayList<CommentRequest> commentItems;
     private int currentUserId;
     private static DeleteCommentListener deleteCommentListener;
     private boolean showDeleteButton;
     private static EditCommentListener editCommentListener;
 
-    public CommentAdapter(ArrayList<CommentItem> commentItems, boolean showDeleteButton) {
+    public CommentAdapter(ArrayList<CommentRequest> commentItems, boolean showDeleteButton) {
         this.commentItems = commentItems;
         this.showDeleteButton = showDeleteButton;
     }
 
-    public CommentAdapter(ArrayList<CommentItem> commentItems, DeleteCommentListener deleteCommentListener, boolean showDeleteButton, EditCommentListener editCommentListener) {
+    public CommentAdapter(ArrayList<CommentRequest> commentItems, DeleteCommentListener deleteCommentListener, boolean showDeleteButton, EditCommentListener editCommentListener) {
         this.commentItems = commentItems;
         this.deleteCommentListener = deleteCommentListener;
         this.showDeleteButton = showDeleteButton;
@@ -49,7 +49,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     @Override
     public void onBindViewHolder(@NonNull CommentAdapter.CommentViewHolder holder, int position) {
-      CommentItem comment = commentItems.get(position);
+      CommentRequest comment = commentItems.get(position);
         ImageUtils.loadImage(comment.getUserProfile(), holder.userImgView, holder.itemView.getContext());
         holder.commentTextView.setText(comment.getCommentText());
 
@@ -123,7 +123,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         }
     }
     @SuppressLint("NotifyDataSetChanged")
-    public void setCommentsData(List<CommentItem> newCommentsData){
+    public void setCommentsData(List<CommentRequest> newCommentsData){
         commentItems.clear();
         commentItems.addAll(newCommentsData);
         notifyDataSetChanged();

@@ -24,7 +24,7 @@ import com.android.tiki_taka.listeners.DeleteCommentListener;
 import com.android.tiki_taka.listeners.EditCommentListener;
 import com.android.tiki_taka.models.request.CardIdRequest;
 import com.android.tiki_taka.models.request.CommentIdRequest;
-import com.android.tiki_taka.models.dto.CommentItem;
+import com.android.tiki_taka.models.request.CommentRequest;
 import com.android.tiki_taka.models.request.LikeStatusRequest;
 import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.StoryCard;
@@ -57,7 +57,7 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     int partnerId;
     int cardId;
     CommentAdapter adapter;
-    ArrayList<CommentItem> commentList;
+    ArrayList<CommentRequest> commentList;
     RecyclerView recyclerView;
     boolean isLiked;
 
@@ -79,7 +79,16 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-        cardId = IntentHelper.getId(this);
+        Intent intent = getIntent();
+        boolean storyNotification = intent.getBooleanExtra("storyNotification", false);
+        if(storyNotification){
+            // case 1: PUSH 알림을 클릭해서 온 경우
+            cardId = intent.getIntExtra("Id", -1);
+        }else {
+            // case 2: 카드를 클릭해서 온 경우
+            cardId = IntentHelper.getId(this);
+        }
+        partnerId = SharedPreferencesHelper.getPartnerId(this);
     }
 
     private void loadCardDetails(){
@@ -129,8 +138,7 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
                 }
             }
 
-            //파트너 아이디와 이미지 가져오기
-            partnerId = PartnerDataManager.getPartnerId();
+            //파트너 이미지 가져오기
             String partnerImg = PartnerDataManager.getPartnerImg();
             Pair<Integer, Integer> likes = LikesUtils.getLikesFor2Users(storyCard, userId, partnerId);
             int myLikes = likes.first;
@@ -170,22 +178,22 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     }
 
     private void loadComments(){
-        service.getComments(cardId).enqueue(new Callback<List<CommentItem>>() {
+        service.getComments(cardId).enqueue(new Callback<List<CommentRequest>>() {
             @Override
-            public void onResponse(Call<List<CommentItem>> call, Response<List<CommentItem>> response) {
+            public void onResponse(Call<List<CommentRequest>> call, Response<List<CommentRequest>> response) {
                 processCommentsResponse(response);
             }
 
             @Override
-            public void onFailure(Call<List<CommentItem>> call, Throwable t) {
+            public void onFailure(Call<List<CommentRequest>> call, Throwable t) {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
     }
 
-    private void processCommentsResponse(Response<List<CommentItem>> response){
+    private void processCommentsResponse(Response<List<CommentRequest>> response){
         if (response.isSuccessful() && response.body() != null) {
-            List<CommentItem> newCommentsData = response.body();
+            List<CommentRequest> newCommentsData = response.body();
             adapter.setCommentsData(newCommentsData);
 
         }else {
@@ -194,7 +202,7 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     }
 
     public void onDeleteClick(int position) {
-        CommentItem commentItemToDelete = commentList.get(position);
+        CommentRequest commentItemToDelete = commentList.get(position);
         CommentIdRequest commentIdToDelete = new CommentIdRequest(commentItemToDelete.getCommentId());
         deleteCommentFromServer(commentIdToDelete);
     }
@@ -237,7 +245,7 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
 
         if(!inputText.isEmpty()){
             //새 댓글 객체 생성
-            CommentItem newComment = new CommentItem(cardId, userId, inputText);
+            CommentRequest newComment = CommentRequest.forNewComment(cardId, userId, inputText, partnerId);
             service.postComment(newComment).enqueue(new Callback<ApiResponse>() {
                 @Override
                 public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -435,7 +443,7 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
     }
 
     private void updateCommentToServer(int commentId, String updatedComment){
-        CommentItem newCommentItem = new CommentItem(commentId, updatedComment);
+        CommentRequest newCommentItem = CommentRequest.forExistingComment(commentId, userId,updatedComment, partnerId);
         service.updateComment(newCommentItem).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {

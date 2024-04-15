@@ -1,10 +1,11 @@
-package com.android.tiki_taka.models.dto;
+package com.android.tiki_taka.models.request;
 
 import com.google.gson.annotations.SerializedName;
 
-public class CommentItem{
+public class CommentRequest {
     //SerializedName 어노테이션을 사용하는 것은 서버에서 데이터를 받아올때,
     // 서버 칼럼명이 아닌, 클래스의 멤버변수 명을 그대로 사용하고 싶어서 사용하는 것임
+    private int id;
     @SerializedName("comment_id")
     private int commentId;
     @SerializedName("card_id")
@@ -17,17 +18,24 @@ public class CommentItem{
     private String commentText;
     @SerializedName("created_at")
     private String createdAt;
+    int partnerId;
 
-    public CommentItem(int cardId, int userId, String commentText) {
-        this.cardId = cardId;
+    // 기본 생성자를 private로 선언하여 외부에서 직접 생성을 막음
+    private CommentRequest(int id, int userId, String commentText, int partnerId) {
+        this.id = id;
         this.userId = userId;
         this.commentText = commentText;
+        this.partnerId = partnerId;
     }
 
-    // 코멘트 수정
-    public CommentItem(int commentId,String commentText) {
-        this.commentId = commentId;
-        this.commentText = commentText;
+    // 새 코멘트 생성을 위한 정적 팩토리 메서드
+    public static CommentRequest forNewComment(int cardId, int userId, String commentText, int partnerId){
+        return  new CommentRequest(cardId, userId, commentText, partnerId);
+    }
+
+    // 코멘트 수정을 위한 정적 팩토리 메서드
+    public static CommentRequest forExistingComment(int commentId, int userId, String commentText, int partnerId){
+        return new CommentRequest(commentId, userId, commentText, partnerId);
     }
 
     public int getCommentId() {

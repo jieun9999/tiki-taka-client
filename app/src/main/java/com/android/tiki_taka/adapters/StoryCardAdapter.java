@@ -1,7 +1,6 @@
 package com.android.tiki_taka.adapters;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.util.Pair;
@@ -21,7 +20,7 @@ import java.util.List;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.listeners.ItemClickListener;
-import com.android.tiki_taka.models.dto.CommentItem;
+import com.android.tiki_taka.models.request.CommentRequest;
 import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.services.StoryApiService;
@@ -260,11 +259,11 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     public static void loadPreviewComments(int cardId, CommentAdapter commentAdapter){
         StoryApiService service = RetrofitClient.getClient().create(StoryApiService.class);
-        service.getPreviewComments(cardId).enqueue(new Callback<List<CommentItem>>() {
+        service.getPreviewComments(cardId).enqueue(new Callback<List<CommentRequest>>() {
             @Override
-            public void onResponse(Call<List<CommentItem>> call, Response<List<CommentItem>> response) {
+            public void onResponse(Call<List<CommentRequest>> call, Response<List<CommentRequest>> response) {
                 if(response.isSuccessful()){
-                    List<CommentItem> comments = response.body();
+                    List<CommentRequest> comments = response.body();
                     if (!comments.isEmpty()) {
                         commentAdapter.setCommentsData(comments);
                     }
@@ -273,7 +272,7 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
             @Override
             // 서버 응답이 비어있거나, 서버에서 오류가 발생했을 때
-            public void onFailure(Call<List<CommentItem>> call, Throwable t) {
+            public void onFailure(Call<List<CommentRequest>> call, Throwable t) {
                 Log.e("loadCommentsAsync", "댓글 데이터 요청 실패: " + t.getMessage());
             }
         });

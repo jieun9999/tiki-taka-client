@@ -25,7 +25,6 @@ public class StoryFolder {
     @SerializedName("updated_at")
     private String updatedAt;
 
-
     public StoryFolder(int folderId, String displayImage, String title, String location) {
         this.folderId = folderId;
         this.displayImage = displayImage;

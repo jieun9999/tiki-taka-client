@@ -17,35 +17,12 @@ public class StoryCardRequest {
     private ArrayList<String> comments;
     int partnerId;
 
-    // 이미지(사진, 카메라) 스토리 카드
-    public StoryCardRequest(int userId, ArrayList<String> uris, String title, String location, String displayImage, ArrayList<String> comments, int partnerId) {
-        this.userId = userId;
-        this.uris = uris;
-        this.title = title;
-        this.location = location;
-        this.displayImage = displayImage;
-        this.comments = comments;
-        this.partnerId = partnerId;
-    }
-
     // 메모 스토리 카드
     public StoryCardRequest(int userId, String text, String title, String location, int partnerId) {
         this.userId = userId;
         this.text = text;
         this.title = title;
         this.location = location;
-        this.partnerId = partnerId;
-    }
-
-    // 기존 폴더에 스토리 카드(카메라, 사진) 추가
-    public StoryCardRequest(int userId, int folderId, ArrayList<String> uris, String title, String location, String displayImage, ArrayList<String> comments, int partnerId) {
-        this.userId = userId;
-        this.folderId =folderId;
-        this.uris = uris;
-        this.title = title;
-        this.location = location;
-        this.displayImage = displayImage;
-        this.comments = comments;
         this.partnerId = partnerId;
     }
 
@@ -58,10 +35,11 @@ public class StoryCardRequest {
     }
 
     // 메모 카드 내용 편집
-    public StoryCardRequest(int cardId, String text, int partnerId) {
+    public StoryCardRequest(int cardId, String text, int partnerId, int userId) {
         this.cardId = cardId;
         this.text = text;
         this.partnerId = partnerId;
+        this.userId = userId;
     }
 
     public int getUserId() {
