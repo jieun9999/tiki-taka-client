@@ -146,9 +146,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 break;
             case "story_comment_notification":
             case "story_comment_update_notification":
+            case "story_like_notification":
+                // 카드 datatype에 따라 분기처리
+                // 좋아요 알림 처리
                 // 댓글 알림 처리
-                parsingCommentData(data);
-                sendCommentNotification(type, cardId);
+                parsingTypeData(data);
+                sendTypeNotification(type, cardId);
                 break;
         }
 
@@ -170,7 +173,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         cardId = data.get("cardId") != null ? Integer.parseInt(data.get("cardId")) : -1;
     }
 
-    private void parsingCommentData(Map<String, String> data){
+    private void parsingTypeData(Map<String, String> data){
         title = data.get("title");
         userProfile = data.get("userProfile");
         body = data.get("body");
@@ -346,7 +349,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }).start();
     }
 
-    private void sendCommentNotification(String type, int Id){
+    private void sendTypeNotification(String type, int Id){
         String CHANNEL_ID = "story_notification";
         String CHANNEL_NAME ="스토리 알림";
         //  여러 알림이 있을 때, 각각의 알림에 대해 다른 행동(예: 다른 메시지 보여주기)을 하고 싶다면, 각각의 PendingIntent에 대해 고유한 REQUEST_CODE를 할당해야 합니다.
