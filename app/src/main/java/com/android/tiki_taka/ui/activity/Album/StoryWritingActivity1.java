@@ -178,7 +178,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     // uri를 보고 동영상인지 이미지 인지 판별하여 다른 방법으로 렌더링함
     private void renderThumbnail(){
         thumbnailView = findViewById(R.id.imageView26);
-
         if(selectedUris != null && !selectedUris.isEmpty()){
 
             if(UriUtils.isImageUri(firstUri, this)){

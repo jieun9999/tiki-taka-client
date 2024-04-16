@@ -259,8 +259,9 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
             if(storyCard.getImage() != null && !storyCard.getImage().isEmpty()){
                 uri = Uri.parse(storyCard.getImage());
 
-            } else if (storyCard.getVideo() != null && !storyCard.getVideo().isEmpty()) {
-                uri = Uri.parse(storyCard.getVideo());
+                // 동영상 일경우, video_thumbail 칼럼을 가져옴
+            } else if (storyCard.getVideoThumbnail() != null && !storyCard.getVideoThumbnail().isEmpty()) {
+                uri = Uri.parse(storyCard.getVideoThumbnail());
             }
 
             if(uri != null){
@@ -279,10 +280,6 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
         imageViewToCrop = findViewById(R.id.cropped_image);
 
         sourceUri = selectedUris.get(0);
-
-        if (UriUtils.isVideoUri(sourceUri, this)) {
-            sourceUri = VideoUtils.getThumbNailUri(this, sourceUri);
-        }
         ImageUtils.loadImage(String.valueOf(sourceUri), imageViewToCrop, this);
 
         destinationUri = createUniqueDestinationUri();
