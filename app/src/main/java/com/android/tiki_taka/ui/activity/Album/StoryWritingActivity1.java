@@ -54,7 +54,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     StoryApiService service;
     int userId;
     ArrayList<Uri> selectedUris;
-    StoryCardRequest cardRequest;
     int folderId;
     Uri firstUri;
     ImageView thumbnailView;
