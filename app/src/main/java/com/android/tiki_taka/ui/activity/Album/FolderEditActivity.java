@@ -40,6 +40,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -58,7 +61,10 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
     String croppedimageUriString;
     List<StoryCard> storyCards;
     ArrayList<Uri> selectedUris;
-
+    private MultipartBody.Part displayImagePart;
+    private RequestBody folderIdBody;
+    private RequestBody titleBody;
+    private RequestBody locationBody;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -331,9 +337,23 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
         }
     }
 
+    private void createFolderData(String thumbnail, String storyTitle, String location){
+        // 클라이언트가 크롭한 이미지는 로컬 파일 시스템의 경로임 (예: file:///storage/emulated/0/Android/data/com.android.tiki_taka/files/cropped_1713271677355.jpg )
+        // 파일 경로에서 "file://" 부분을 제거하고 파일을 생성해서, 멀티파트로 서버에 전송함
+        String filePath = thumbnail.substring(7);
+        File displayImageFile = new File(filePath);
+        RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
+        displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
+
+        // title: RequestBody로 변환
+        titleBody = RequestBody.create(MediaType.parse("text/plain"), storyTitle != null ? storyTitle : "");
+        // location: RequestBody로 변환
+        locationBody = RequestBody.create(MediaType.parse("text/plain"), location != null ? location : "");
+        folderIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(folderId));
+    }
     private void updateFolderInDB(){
-        StoryFolder newStoryFolder = StoryFolder.fromDetails(folderId, croppedimageUriString, newTitleText, newLocationText);
-        service.updateFolder(newStoryFolder).enqueue(new Callback<ApiResponse>() {
+        createFolderData(croppedimageUriString, newTitleText, newLocationText);
+        service.updateFolder(displayImagePart, folderIdBody, titleBody, locationBody).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if(response.isSuccessful() && response.body() != null){

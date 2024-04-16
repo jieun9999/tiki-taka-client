@@ -93,8 +93,13 @@ public interface StoryApiService {
     @POST("Story/deleteCard.php")
     Call<FolderDeletedResponse> deleteCard(@Body CardIdRequest cardIdRequest);
 
+    @Multipart
     @POST("Story/updateFolder.php")
-    Call<ApiResponse> updateFolder(@Body StoryFolder storyFolder);
+    Call<ApiResponse> updateFolder(@Part MultipartBody.Part displayImage, //이미지와 텍스트 모두 전송 가능
+                                   @Part("folderId") RequestBody folderId,
+                                   @Part("title") RequestBody title,
+                                   @Part("location") RequestBody location);
+
 
     @POST("Story/updateFolderLocationInCard.php")
     Call<ApiResponse> updateFolderLocationInCard(@Body StoryCard storyCard);
