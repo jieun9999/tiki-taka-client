@@ -21,7 +21,7 @@ import android.widget.TextView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.ThumbnailCheckAdapter;
-import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
+import com.android.tiki_taka.listeners.ThumbnailStringUpdateListener;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.response.ApiResponse;
@@ -48,7 +48,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class FolderEditActivity extends AppCompatActivity implements ThumbnailUpdateListener {
+public class FolderEditActivity extends AppCompatActivity implements ThumbnailStringUpdateListener {
 
     StoryApiService service;
     int userId;
@@ -60,7 +60,7 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
     String newLocationText;
     String croppedimageUriString;
     List<StoryCard> storyCards;
-    ArrayList<Uri> selectedUris;
+    ArrayList<String> selectedUrls;
     private MultipartBody.Part displayImagePart;
     private RequestBody folderIdBody;
     private RequestBody titleBody;
@@ -258,20 +258,20 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
     }
 
     private void updateSelectedUrisFromStoryCards(){
-        selectedUris = new ArrayList<>();
+        selectedUrls = new ArrayList<>();
         for(StoryCard storyCard : storyCards){
-            Uri uri = null;
+            String url = null;
 
             if(storyCard.getImage() != null && !storyCard.getImage().isEmpty()){
-                uri = Uri.parse(storyCard.getImage());
+                url = storyCard.getImage();
 
                 // 동영상 일경우, video_thumbail 칼럼을 가져옴
             } else if (storyCard.getVideoThumbnail() != null && !storyCard.getVideoThumbnail().isEmpty()) {
-                uri = Uri.parse(storyCard.getVideoThumbnail());
+                url = storyCard.getVideoThumbnail();
             }
 
-            if(uri != null){
-                selectedUris.add(uri);
+            if(url != null){
+                selectedUrls.add(url);
             }
         }
     }
@@ -279,14 +279,13 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
     private void setRecyclerView(){
         RecyclerView recyclerView = findViewById(R.id.checkCardRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new ThumbnailCheckAdapter(selectedUris, this, this));
+        recyclerView.setAdapter(ThumbnailCheckAdapter.ThumbnailCheckAdapterFromString(selectedUrls, this, this));
     }
 
     private void setupCropListener(){
         imageViewToCrop = findViewById(R.id.cropped_image);
-
-        sourceUri = selectedUris.get(0);
-        ImageUtils.loadImage(String.valueOf(sourceUri), imageViewToCrop, this);
+        sourceUri = Uri.parse(selectedUrls.get(0));
+        ImageUtils.loadImage(selectedUrls.get(0), imageViewToCrop, this);
 
         destinationUri = createUniqueDestinationUri();
         imageViewToCrop.setOnClickListener( v -> UCorpSettings(sourceUri, destinationUri));
@@ -308,15 +307,15 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailUp
     }
 
     @Override
-    public void onUpdateThumbnail(Uri uri) {
+    public void onUpdateThumbnail(String url) {
         // 대표 사진들 중에서 체크 박스를 클릭하면 썸네일이 해당 사진으로 바뀜
         imageViewToCrop = findViewById(R.id.cropped_image);
 
         // imageViewToCrop 클릭하면, 크롭 실행됨
-        sourceUri = uri;
-        if (UriUtils.isVideoUri(sourceUri, this)) {
-            sourceUri = VideoUtils.getThumbNailUri(this, sourceUri);
-        }
+        sourceUri = Uri.parse(url);
+//        if (UriUtils.isVideoUri(sourceUri, this)) {
+//            sourceUri = VideoUtils.getThumbNailUri(this, sourceUri);
+//        }
         ImageUtils.loadImage(String.valueOf(sourceUri), imageViewToCrop, this);
 
         destinationUri = createUniqueDestinationUri();

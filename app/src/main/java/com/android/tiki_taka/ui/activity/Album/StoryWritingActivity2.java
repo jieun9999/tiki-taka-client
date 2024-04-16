@@ -21,13 +21,12 @@ import android.widget.TextView;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.ThumbnailCheckAdapter;
-import com.android.tiki_taka.listeners.ThumbnailUpdateListener;
+import com.android.tiki_taka.listeners.ThumbnailUriUpdateLister;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
-import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.UriUtils;
 import com.android.tiki_taka.utils.VideoUtils;
 import com.yalantis.ucrop.UCrop;
@@ -42,7 +41,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 
-public class StoryWritingActivity2 extends AppCompatActivity implements ThumbnailUpdateListener {
+public class StoryWritingActivity2 extends AppCompatActivity implements ThumbnailUriUpdateLister {
     StoryApiService service;
     int folderId;
     Uri sourceUri; // 소스 이미지의 Uri
@@ -277,7 +276,7 @@ public class StoryWritingActivity2 extends AppCompatActivity implements Thumbnai
     private void setRecyclerView(){
         RecyclerView recyclerView = findViewById(R.id.checkCardRecyclerView);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-        recyclerView.setAdapter(new ThumbnailCheckAdapter(selectedUris, this, this));
+        recyclerView.setAdapter(ThumbnailCheckAdapter.ThumbnailCheckAdapterFromUri(selectedUris, this, this));
     }
 
 
