@@ -313,9 +313,6 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailSt
 
         // imageViewToCrop 클릭하면, 크롭 실행됨
         sourceUri = Uri.parse(url);
-//        if (UriUtils.isVideoUri(sourceUri, this)) {
-//            sourceUri = VideoUtils.getThumbNailUri(this, sourceUri);
-//        }
         ImageUtils.loadImage(String.valueOf(sourceUri), imageViewToCrop, this);
 
         destinationUri = createUniqueDestinationUri();

@@ -251,6 +251,8 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
         }
 
+        Log.d("thumbnail", thumbnail);
+
         // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
         // 썸네일이 로컬 경로인지, 웹 경로인지에 따라서 다르게 처리함
         if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
@@ -258,9 +260,19 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             // 파일 이름으로 웹 경로인 thumbnail을 직접 넘겨서, 서버에서 full-path 항목으로 접근 가능함
             RequestBody displayImageUrlBody = RequestBody.create(MediaType.parse("text/plain"), thumbnail);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", thumbnail, displayImageUrlBody);
-        } else{
+
+        } else if(thumbnail.startsWith("content://")){
             // 로컬 파일 시스템의 경로인 경우 (예: content:// URI)
             File displayImageFile = new File(UriUtils.getRealPathFromURIString(this, thumbnail));
+            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
+            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
+
+        }else if(thumbnail.startsWith("file:///")){
+            // 로컬 파일이면서, 다음과 같은 경로일 경우
+            // (예: file:///storage/emulated/0/Android/data/com.android.tiki_taka/files/cropped_1713277432550.jpg)
+            // 파일 경로에서 "file://" 부분을 제거하고 파일을 생성해서, 멀티파트로 서버에 전송함
+            String filePath = thumbnail.substring(7);
+            File displayImageFile = new File(filePath);
             RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
         }
@@ -322,9 +334,19 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             // 파일 이름으로 웹 경로인 thumbnail을 직접 넘겨서, 서버에서 full-path 항목으로 접근 가능함
             RequestBody displayImageUrlBody = RequestBody.create(MediaType.parse("text/plain"), thumbnail);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", thumbnail, displayImageUrlBody);
-        } else{
+
+        } else if(thumbnail.startsWith("content://")){
             // 로컬 파일 시스템의 경로인 경우 (예: content:// URI)
             File displayImageFile = new File(UriUtils.getRealPathFromURIString(this, thumbnail));
+            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
+            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
+
+        }else if(thumbnail.startsWith("file:///")){
+            // 로컬 파일이면서, 다음과 같은 경로일 경우
+            // (예: file:///storage/emulated/0/Android/data/com.android.tiki_taka/files/cropped_1713277432550.jpg)
+            // 파일 경로에서 "file://" 부분을 제거하고 파일을 생성해서, 멀티파트로 서버에 전송함
+            String filePath = thumbnail.substring(7);
+            File displayImageFile = new File(filePath);
             RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
         }
