@@ -1,5 +1,8 @@
 package com.android.tiki_taka.utils;
 
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -14,9 +17,17 @@ public class RetrofitClient {
     // Retrofit 인스턴스를 생성하는 메서드
     public static Retrofit getClient() {
         if (retrofit == null) {
+            // OkHttpClient 인스턴스 생성
+            OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .writeTimeout(60, TimeUnit.SECONDS)
+                    .build();
+
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(okHttpClient)
                     .build();
         }
         return retrofit;
