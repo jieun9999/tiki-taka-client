@@ -230,14 +230,12 @@ public class StoryCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         } else if (holder.getItemViewType() == VIDEO_TYPE) {
             VideoViewHolder videoViewHolder = (VideoViewHolder) holder;
             String video = card.getVideo();
+            String videoThumbnail = card.getVideoThumbnail();
 
-            if(video.startsWith("https://")){
-                ImageUtils.loadImage(video,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
+            // 썸네일은 jpg로, 플레이 버튼에는 mp4를 제공함
+            if(videoThumbnail.startsWith("https://")){
+                ImageUtils.loadImage(videoThumbnail,  videoViewHolder.imageView, videoViewHolder.itemView.getContext());
 
-            } else {
-                // 크롭한 사진은 화질이 너무 저하되서 글라이드 동영상 uri로 렌더링
-                Uri videoUri = Uri.parse(video);
-                VideoUtils.loadVideoThumbnail( videoViewHolder.itemView.getContext() , videoUri, videoViewHolder.imageView);
             }
 
             videoViewHolder.playBtn.setOnClickListener(new View.OnClickListener() {

@@ -126,17 +126,8 @@ public class WithCommentStoryCard3 extends AppCompatActivity implements DeleteCo
             ImageView myLikesView = findViewById(R.id.imageView31);
             FrameLayout partnerLikesView = findViewById(R.id.frameLayout9);
             ImageView partnerLikesProfileView = findViewById(R.id.imageView33);
-            String video = storyCard.getVideo();
-            // 글라이드: 동영상 웹 경로를 이미지 뷰에 할당하면 미리보기를 제공해준다 (하지만, jpg를 따로 추출해주는 것은 아니다)
-            if (video!= null && !video.isEmpty()) {
-                if (video.startsWith("https:")) {
-                    ImageUtils.loadImage(video, cardImgView, this);
-
-                } else if (video.startsWith("content:")) {
-                    Uri uri = Uri.parse(video);
-                    VideoUtils.loadVideoThumbnail(this, uri, cardImgView);
-                }
-            }
+            String videoThumbnail = storyCard.getVideoThumbnail();
+            ImageUtils.loadImage(videoThumbnail, cardImgView, this);
 
             //파트너 이미지 가져오기
             String partnerImg = PartnerDataManager.getPartnerImg();
