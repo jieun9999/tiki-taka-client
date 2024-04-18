@@ -429,6 +429,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void insertVideoStoryCardInDB(){
         // 서비스 호출 전에 프로그레스 바를 표시하고 초기화합니다.
         updateProgressBar(0);
+        Toast.makeText(this, "최대 20초까지 걸릴 수 있습니다", Toast.LENGTH_LONG).show(); // 최대 20초까지 걸릴 수 있다는 안내 토스트 메시지 표시
         service.saveVideoStoryCard(uriPart, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
