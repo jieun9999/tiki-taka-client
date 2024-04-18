@@ -81,6 +81,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private List<RequestBody> commentsBodies;
     private RequestBody partnerIdBody;
     private RequestBody folderIdBody;
+    private boolean fileSizeExceeded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,7 +217,10 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         } else if (UriUtils.isVideoUri(firstUri, this)) {
             //동영상 저장 시
             createVideoCardRequest(thumbnailUri, uriStrings);
-            insertVideoStoryCardInDB();
+            // 파일 크기가 50MB를 초과했을 때, 중단됨
+            if (!fileSizeExceeded) {
+                insertVideoStoryCardInDB();
+            }
         }
 
     }
@@ -254,8 +258,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
             urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
         }
-
-        Log.d("thumbnail", thumbnail);
 
         // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
         // 썸네일이 로컬 경로인지, 웹 경로인지에 따라서 다르게 처리함
@@ -327,6 +329,17 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         urisParts = new ArrayList<>();
         for (String uriString : uris) {
             File file = new File(UriUtils.getRealPathFromURIString(this, uriString));
+
+            // 파일 크기 확인
+            long fileSizeInBytes = file.length();
+            long fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+            // 파일 크기가 50MB를 초과하는 경우 알림 표시 후 함수 중단
+            if (fileSizeInMB > 50) {
+                showFileSizeExceedAlert();
+                fileSizeExceeded = true;
+                return;
+            }
+
             RequestBody fileBody = RequestBody.create(MediaType.parse("video/*"), file);
             urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
         }
@@ -378,6 +391,19 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         }
 
+    }
+
+    private void showFileSizeExceedAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("50MB 이하의 파일을 업로드하세요")
+                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // 확인 버튼을 클릭하면 아무런 작업을 하지 않고 대화상자를 닫음
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     // 프로그레스 바를 업데이트하는 메서드
@@ -438,20 +464,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                 Log.d("message", message);
                 InitializeStack.navigateToAlbumFragment(this);
             } else {
-                // 알림 대화상자 띄우기
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(message)
-                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // 확인 버튼을 눌렀을 때 처리
-                                dialog.dismiss();
-                                ProgressBar progressBar = findViewById(R.id.progressBar);
-                                progressBar.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                // 알림 대화상자 표시
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
 
         } else {
