@@ -331,8 +331,8 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             // 파일 크기 확인
             long fileSizeInBytes = file.length();
             long fileSizeInMB = fileSizeInBytes / (1024 * 1024);
-            // 파일 크기가 50MB를 초과하는 경우 알림 표시 후 함수 중단
-            if (fileSizeInMB > 50) {
+            // 파일 크기가 30MB를 초과하는 경우 알림 표시 후 함수 중단
+            if (fileSizeInMB > 30) {
                 showFileSizeExceedAlert();
                 fileSizeExceeded = true;
                 return;
@@ -393,7 +393,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     private void showFileSizeExceedAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("50MB 이하의 파일을 업로드하세요")
+        builder.setMessage("30MB 이하의 파일을 업로드하세요")
                 .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // 확인 버튼을 클릭하면 아무런 작업을 하지 않고 대화상자를 닫음
