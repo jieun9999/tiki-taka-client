@@ -444,7 +444,9 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                         .setPositiveButton("확인", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 // 확인 버튼을 눌렀을 때 처리
-                                dialog.dismiss(); // 대화상자 닫기
+                                dialog.dismiss();
+                                ProgressBar progressBar = findViewById(R.id.progressBar);
+                                progressBar.setVisibility(View.INVISIBLE);
                             }
                         });
                 // 알림 대화상자 표시
