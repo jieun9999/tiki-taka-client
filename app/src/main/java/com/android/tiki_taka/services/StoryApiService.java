@@ -60,7 +60,7 @@ public interface StoryApiService {
    @Multipart
    @POST("Story/saveVideoStoryCard.php")
    Call<SuccessAndMessageResponse> saveVideoStoryCard(
-           @Part List<MultipartBody.Part> uris, // 하나 이상의 동영상 파일
+           @Part MultipartBody.Part uri, // 1개의 동영상 파일
            @Part MultipartBody.Part displayImage, //이미지와 텍스트 모두 전송 가능
            @Part("userId") RequestBody userId,
            @Part("title") RequestBody title,

@@ -74,7 +74,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     int partnerId;
     private MultipartBody.Part displayImagePart;
     private List<MultipartBody.Part> urisParts;
-
+    private MultipartBody.Part uriPart;
     private RequestBody userIdBody;
     private RequestBody titleBody;
     private RequestBody locationBody;
@@ -325,8 +325,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void createVideoCardRequest(String thumbnail,  ArrayList<String> uris) throws IOException {
 
         //<멀티 파트 요청에 맞게 필드 변환>
-        // 이미지 URI 리스트 (uris)
-        urisParts = new ArrayList<>();
         for (String uriString : uris) {
             File file = new File(UriUtils.getRealPathFromURIString(this, uriString));
 
@@ -341,7 +339,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             }
 
             RequestBody fileBody = RequestBody.create(MediaType.parse("video/*"), file);
-            urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
+            uriPart = MultipartBody.Part.createFormData("uri", file.getName(), fileBody);
         }
 
         // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
@@ -431,7 +429,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void insertVideoStoryCardInDB(){
         // 서비스 호출 전에 프로그레스 바를 표시하고 초기화합니다.
         updateProgressBar(0);
-        service.saveVideoStoryCard(urisParts, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
+        service.saveVideoStoryCard(uriPart, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 // 서비스 호출 후에 최종 진행률을 설정합니다.
