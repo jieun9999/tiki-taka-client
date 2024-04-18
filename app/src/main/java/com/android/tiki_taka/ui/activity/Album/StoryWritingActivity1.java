@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.request.CardIdRequest;
+import com.android.tiki_taka.models.request.ProgressRequestBody;
 import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
@@ -376,15 +378,42 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
     }
 
+    // 프로그레스 바를 업데이트하는 메서드
+    private void updateProgressBar(int percentage) {
+        // UI 스레드에서 UI 업데이트를 수행해야 합니다.
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProgressBar progressBar = findViewById(R.id.progressBar);
+                        progressBar.setProgress(percentage);
+                        // 진행률이 0이면 프로그레스 바를 표시합니다.
+                        if (percentage == 0) {
+                            progressBar.setVisibility(View.VISIBLE);
+                        }
+                    }
+            });
+            }
+        });
+    }
+
+
     private void insertVideoStoryCardInDB(){
+        // 서비스 호출 전에 프로그레스 바를 표시하고 초기화합니다.
+        updateProgressBar(0);
         service.saveVideoStoryCard(urisParts, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
+                // 서비스 호출 후에 최종 진행률을 설정합니다.
+                updateProgressBar(100);
                 ProcessInsertingCardsResponse(response);
             }
 
             @Override
             public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
+                updateProgressBar(0); // 실패했으므로 진행률을 다시 0으로 초기화합니다.
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
             }
         });
