@@ -1,9 +1,11 @@
 package com.android.tiki_taka.ui.activity.Album;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -436,7 +438,18 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
                 Log.d("message", message);
                 InitializeStack.navigateToAlbumFragment(this);
             } else {
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                // 알림 대화상자 띄우기
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(message)
+                        .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // 확인 버튼을 눌렀을 때 처리
+                                dialog.dismiss(); // 대화상자 닫기
+                            }
+                        });
+                // 알림 대화상자 표시
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
 
         } else {
