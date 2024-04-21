@@ -1,4 +1,5 @@
 package com.android.tiki_taka.utils;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Environment;
 import android.widget.ImageView;
@@ -36,6 +37,13 @@ public class ImageUtils {
         // 웹 URL에서 이미지 로드
         Glide.with(context)
                 .load(imageUriString)
+                .into(imageView);
+    }
+
+    public static void loadDrawableIntoView(Context context, ImageView imageView, String drawableName) {
+        @SuppressLint("DiscouragedApi") int resourceId = context.getResources().getIdentifier(drawableName, "drawable", context.getPackageName());
+        Glide.with(context)
+                .load(resourceId)
                 .into(imageView);
     }
 
