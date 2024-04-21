@@ -321,7 +321,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
                 // 알림을 클릭해서 들어온 경우에
                 if (notificationMessageId != -1 && notificationRoomId != -1) {
                     // 읽음 처리를 해줌 (상대방 메세지 1 사라짐)
-                    markAllMessagesAsReadToServer(currentUserId, NotificationUtils.nowDateTime());
+                    markAllMessagesAsReadToServer(currentUserId, NotificationUtils.getAdjustedCurrentDateTime());
                 }
 
                 // 액티비티 흐름 중간에 chatClient가 생성된 후 인터페이스가 구현되어야 함
@@ -380,7 +380,7 @@ public class ChatActivity extends AppCompatActivity implements DateMarkerListene
             // 스크롤을 제일 아래로 내림
             scrollToLastMessages();
             // 수신받은 메세지가 newMessage 타입이니까, 바로 읽음 요청을 서버로 보낸다
-            markAllMessagesAsReadToServer(currentUserId, NotificationUtils.nowDateTime());
+            markAllMessagesAsReadToServer(currentUserId, NotificationUtils.getAdjustedCurrentDateTime());
 
         }else if(type.equals("readMessages")) {
             //db 업데이트 한 가장 최신의 메세지 id

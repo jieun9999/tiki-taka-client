@@ -31,7 +31,6 @@ import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.FolderDeletedResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
-import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.LikesUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -84,7 +83,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
             cardId = intent.getIntExtra("Id", -1);
         }else {
             // case 2: 카드를 클릭해서 온 경우
-            cardId = IntentHelper.getId(this);
+            cardId = IntentHelper.getIdFromIntent(this);
         }
         partnerId = SharedPreferencesHelper.getPartnerId(this);
     }
@@ -328,7 +327,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
                 changeFolder.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        IntentHelper.navigateToActivity(WithCommentStoryCard1.this, SelectFolderActivity.class, cardId);
+                        IntentHelper.passToActivityWithId(WithCommentStoryCard1.this, SelectFolderActivity.class, cardId);
                         bottomSheetDialog.dismiss();
                     }
                 });
@@ -381,7 +380,7 @@ public class WithCommentStoryCard1 extends AppCompatActivity implements DeleteCo
                     if(response.body().isSuccess()){
                         if(response.body().isFolderDeleted()){
                             //isFolderDeleted가 true일 때의 처리
-                            InitializeStack.navigateToAlbumFragment(WithCommentStoryCard1.this);
+                            IntentHelper.passToAlbumFragment(WithCommentStoryCard1.this);
 
                         } else if (!response.body().isFolderDeleted()) {
                             //isFolderDeleted가 false일때 처리

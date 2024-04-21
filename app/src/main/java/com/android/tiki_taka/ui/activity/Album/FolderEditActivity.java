@@ -32,8 +32,6 @@ import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
-import com.android.tiki_taka.utils.UriUtils;
-import com.android.tiki_taka.utils.VideoUtils;
 import com.yalantis.ucrop.UCrop;
 
 import java.io.File;
@@ -81,7 +79,7 @@ public class FolderEditActivity extends AppCompatActivity implements ThumbnailSt
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-        folderId = IntentHelper.getId(this);
+        folderId = IntentHelper.getIdFromIntent(this);
     }
 
     private void setupCancelAndSaveBtn(){

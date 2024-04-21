@@ -21,7 +21,6 @@ import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.PartnerProfile;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
-import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.models.response.StoryCardsResponse;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.services.ProfileApiService;
@@ -31,7 +30,6 @@ import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
-import com.bumptech.glide.Glide;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -271,11 +269,11 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         // 스토리 폴더 아래에 있는 스토리 카드가 이미지, 메모, 동영상 3가지 형식이 있기 때문에
         // data_type에 따라 나눠서 다른 액티비티로 이동함
         if("image".equals(clickedCard.getDataType())){
-            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_IMAGE_CARD);
+            IntentHelper.passToActivityWithId(ImageFolderActivity.this, WithCommentStoryCard1.class, clickedCardId, REQUEST_CODE_IMAGE_CARD);
         } else if ("text".equals(clickedCard.getDataType())) {
-            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard2.class, clickedCardId, REQUEST_CODE_TEXT_CARD);
+            IntentHelper.passToActivityWithId(ImageFolderActivity.this, WithCommentStoryCard2.class, clickedCardId, REQUEST_CODE_TEXT_CARD);
         } else if ("video".equals(clickedCard.getDataType())) {
-            IntentHelper.navigateToActivity(ImageFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_VIDEO_CARD);
+            IntentHelper.passToActivityWithId(ImageFolderActivity.this, WithCommentStoryCard3.class, clickedCardId, REQUEST_CODE_VIDEO_CARD);
         }
     }
 
@@ -298,14 +296,14 @@ public class ImageFolderActivity extends AppCompatActivity implements ItemClickL
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IntentHelper.navigateToActivity(ImageFolderActivity.this, FolderEditActivity.class, folderId, REQUEST_EDIT_FOLDER);
+                IntentHelper.passToActivityWithId(ImageFolderActivity.this, FolderEditActivity.class, folderId, REQUEST_EDIT_FOLDER);
             }
         });
     }
 
     private void navigateToSelection2Activity(){
         ImageView plusBtn = findViewById(R.id.plus_image);
-        plusBtn.setOnClickListener(v -> IntentHelper.navigateToActivity(this, SelectionActivity2.class, folderId));
+        plusBtn.setOnClickListener(v -> IntentHelper.passToActivityWithId(this, SelectionActivity2.class, folderId));
 
     }
 

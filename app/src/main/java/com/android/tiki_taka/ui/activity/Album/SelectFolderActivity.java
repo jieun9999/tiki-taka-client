@@ -2,10 +2,8 @@ package com.android.tiki_taka.ui.activity.Album;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,16 +11,12 @@ import android.widget.Button;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.ChangeFolderAdapter;
-import com.android.tiki_taka.adapters.StoryCardAdapter;
-import com.android.tiki_taka.adapters.StoryFolderAdapter;
 import com.android.tiki_taka.listeners.FolderSelectListener;
 import com.android.tiki_taka.models.dto.StoryCard;
 import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.response.ApiResponse;
 import com.android.tiki_taka.models.response.StoryFoldersResponse;
-import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -60,7 +54,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
         Retrofit retrofit = RetrofitClient.getClient();
         service = retrofit.create(StoryApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
-        cardId = IntentHelper.getId(this);
+        cardId = IntentHelper.getIdFromIntent(this);
         partnerId = SharedPreferencesHelper.getPartnerId(this);
 
     }
@@ -153,7 +147,7 @@ public class SelectFolderActivity extends AppCompatActivity implements FolderSel
 
     private void handleSuccessResponse(ApiResponse response) {
         if (response.isSuccess()) {
-            InitializeStack.navigateToAlbumFragment(SelectFolderActivity.this);
+            IntentHelper.passToAlbumFragment(SelectFolderActivity.this);
         } else {
             Log.e("ERROR", "서버 응답 오류");
         }

@@ -32,7 +32,6 @@ public class TimeUtils {
         }
     }
 
-
     // 서버로부터 받은 2024-01-31 12:24:40" 를 "2023년 12월 25일 (월)"과 같은 형식의 문자열로 표시
     // 문자열 형태의 날짜를 파싱하여 Date 객체로 변환
     public static Date parseDate(String dateString) throws ParseException {
@@ -119,6 +118,7 @@ public class TimeUtils {
 
         return "";
     }
+    
 }
 
 

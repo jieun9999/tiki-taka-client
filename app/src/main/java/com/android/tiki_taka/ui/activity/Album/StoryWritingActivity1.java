@@ -21,34 +21,24 @@ import com.android.tiki_taka.R;
 import com.android.tiki_taka.adapters.StoryWritingAdapter;
 import com.android.tiki_taka.listeners.PencilIconClickListener;
 import com.android.tiki_taka.models.dto.StoryFolder;
-import com.android.tiki_taka.models.request.CardIdRequest;
-import com.android.tiki_taka.models.request.ProgressRequestBody;
-import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 import com.android.tiki_taka.services.StoryApiService;
 import com.android.tiki_taka.utils.ImageUtils;
-import com.android.tiki_taka.utils.InitializeStack;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
-import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.UriUtils;
 import com.android.tiki_taka.utils.VideoUtils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -104,7 +94,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     private void extractIntentData(){
-        folderId = IntentHelper.getId(this);
+        folderId = IntentHelper.getIdFromIntent(this);
         isExistingFolder = getIntent().getBooleanExtra("isExistingFolder", false);
         selectedUris = getIntent().getParcelableArrayListExtra("selectedUris");
         if(selectedUris != null){
@@ -461,7 +451,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
             if(response.body().isSuccess()){
                 Log.d("message", message);
-                InitializeStack.navigateToAlbumFragment(this);
+                IntentHelper.passToAlbumFragment(this);
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
@@ -507,7 +497,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
             @Override
             public void onClick(View v) {
                 Bundle bundle = temporarystoryWritingBundle();
-                IntentHelper.navigateToActivity(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, EDIT_FOLDER);
+                IntentHelper.navigateToActivityForResultWithBundle(StoryWritingActivity1.this, StoryWritingActivity2.class, bundle, EDIT_FOLDER);
             }
         });
     }
@@ -541,4 +531,6 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         }
     }
+
+
 }

@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.request.StoryCardRequest;
 import com.android.tiki_taka.services.StoryApiService;
-import com.android.tiki_taka.utils.InitializeStack;
+import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 
@@ -144,7 +144,7 @@ public class StoryWritingActivity4 extends AppCompatActivity {
             try {
                 String message = parseResponseData(response);
                 Log.d("success", message);
-                InitializeStack.navigateToAlbumFragment(this);
+                IntentHelper.passToAlbumFragment(this);
 
             } catch (JSONException | IOException e) {
                 e.printStackTrace();

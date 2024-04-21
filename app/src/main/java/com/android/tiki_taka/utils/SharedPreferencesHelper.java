@@ -16,6 +16,13 @@ public class SharedPreferencesHelper {
         editor.apply();
     }
 
+    public static void setUserId(Context context, int userId) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("userId", userId);
+        editor.apply();
+    }
+
     public static int getUserId(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE);
         return sharedPreferences.getInt("userId", DEFAULT_USER_ID);
