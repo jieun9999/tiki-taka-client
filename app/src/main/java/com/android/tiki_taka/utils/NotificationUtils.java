@@ -100,7 +100,7 @@ public class NotificationUtils {
         return null;
     }
 
-    public static void NotificationBasedOnResponse(Context context, Response<SuccessAndMessageResponse> response, Class<?> targetActivity){
+    public static void NotificationOnSuccess(Context context, Class<?> targetActivity, int Id){
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Android O 이상에서는 채널이 필요합니다.
@@ -109,9 +109,18 @@ public class NotificationUtils {
             notificationManager.createNotificationChannel(channel);
         }
 
-        if (response.body() != null && response.body().isSuccess()) {
+        //  여러 알림이 있을 때, 각각의 알림에 대해 다른 행동(예: 다른 메시지 보여주기)을 하고 싶다면, 각각의 PendingIntent에 대해 고유한 REQUEST_CODE를 할당해야 합니다.
+        int REQUEST_CODE =  (int) System.currentTimeMillis();
+        // 여러 개의 개별 알림 생성
+        int NOTIFICATION_ID = (int) System.currentTimeMillis();
+
             // 성공 알림
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, new Intent(context, targetActivity), PendingIntent.FLAG_UPDATE_CURRENT);
+            // 인텐트 생성 및 대상 액티비티 지정
+            Intent intent = new Intent(context, targetActivity);
+            intent.putExtra("storyNotification", true);
+            intent.putExtra("Id", Id); // 알림에 메시지 정보 포함하기
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             Notification notification = new NotificationCompat.Builder(context, "upload_status")
                     .setContentTitle("Upload Complete")
                     .setContentText("동영상 카드가 업로드 되었습니다.")
@@ -119,17 +128,29 @@ public class NotificationUtils {
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true)
                     .build();
-            notificationManager.notify(1, notification);
-        } else {
-            // 실패 알림
-            Notification notification = new NotificationCompat.Builder(context, "upload_status")
-                    .setContentTitle("Upload Failed")
-                    .setContentText("동영상 카드 업로드에 실패했습니다.")
-                    .setSmallIcon(R.drawable.baseline_sms_failed_24)
-                    .setAutoCancel(true)
-                    .build();
-            notificationManager.notify(2, notification);
+            notificationManager.notify(NOTIFICATION_ID, notification);
+    }
+
+    public static void NotificationOnFailure(Context context){
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Android O 이상에서는 채널이 필요합니다.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("upload_status", "Upload Status", NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
         }
+
+        // 여러 개의 개별 알림 생성
+        int NOTIFICATION_ID = (int) System.currentTimeMillis();
+
+        // 실패 알림
+        Notification notification = new NotificationCompat.Builder(context, "upload_status")
+                .setContentTitle("Upload Failed")
+                .setContentText("동영상 카드 업로드에 실패했습니다.")
+                .setSmallIcon(R.drawable.baseline_sms_failed_24)
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
 

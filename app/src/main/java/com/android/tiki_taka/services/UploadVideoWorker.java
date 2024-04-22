@@ -1,24 +1,16 @@
 package com.android.tiki_taka.services;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.NotificationCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
-import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
-import com.android.tiki_taka.utils.IntentHelper;
+import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard3;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -224,7 +216,7 @@ public class UploadVideoWorker extends Worker {
             handleResponse(response);
 
         } else {
-            Log.e("Error", "서버에서 불러오기에 실패: " + response.code());
+           NotificationUtils.NotificationOnFailure(getApplicationContext());
         }
     }
 
@@ -232,10 +224,11 @@ public class UploadVideoWorker extends Worker {
     // 나중에 서버에서 응답이 올때 아래와 같이 화면이동이 아닌 알림
     private void handleResponse(Response<SuccessAndMessageResponse> response){
         if (response.body() != null) {
-            NotificationUtils.NotificationBasedOnResponse(getApplicationContext(), response, HomeActivity.class);
+            int cardId = Integer.parseInt(response.body().getMessage());
+            NotificationUtils.NotificationOnSuccess(getApplicationContext(), WithCommentStoryCard3.class, cardId);
 
         } else {
-            Log.e("Error","서버 응답 오류");
+            NotificationUtils.NotificationOnFailure(getApplicationContext());
         }
     }
 
