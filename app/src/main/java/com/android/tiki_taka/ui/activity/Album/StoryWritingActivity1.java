@@ -4,7 +4,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -24,12 +29,14 @@ import com.android.tiki_taka.models.dto.StoryFolder;
 import com.android.tiki_taka.models.response.StoryFolderResponse;
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 import com.android.tiki_taka.services.StoryApiService;
+import com.android.tiki_taka.services.UploadVideoWorker;
 import com.android.tiki_taka.utils.ImageUtils;
 import com.android.tiki_taka.utils.IntentHelper;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
 import com.android.tiki_taka.utils.UriUtils;
 import com.android.tiki_taka.utils.VideoUtils;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,14 +71,14 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     int partnerId;
     private MultipartBody.Part displayImagePart;
     private List<MultipartBody.Part> urisParts;
-    private MultipartBody.Part uriPart;
     private RequestBody userIdBody;
     private RequestBody titleBody;
     private RequestBody locationBody;
     private List<RequestBody> commentsBodies;
     private RequestBody partnerIdBody;
     private RequestBody folderIdBody;
-    private boolean fileSizeExceeded;
+    ArrayList<String> uriStrings;
+    String thumbnailUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,7 +204,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     private void saveCards() throws IOException {
 
         ArrayList<String> uriStrings = convertUrisToStringList(selectedUris);
-        String thumbnailUri = determineThumbnailUri(editedThumbnailUri, displayImage, firstUri);
+        thumbnailUri = determineThumbnailUri(editedThumbnailUri, displayImage, firstUri);
 
         if(UriUtils.isImageUri(firstUri, this)){
             //이미지 저장 시
@@ -206,17 +213,14 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         } else if (UriUtils.isVideoUri(firstUri, this)) {
             //동영상 저장 시
-            createVideoCardRequest(thumbnailUri, uriStrings);
-            // 파일 크기가 50MB를 초과했을 때, 중단됨
-            if (!fileSizeExceeded) {
-                insertVideoStoryCardInDB();
-            }
+            // Create a WorkRequest
+            enqueueVideoUpload();
         }
 
     }
 
     private ArrayList<String> convertUrisToStringList(ArrayList<Uri> selectedUris){
-        ArrayList<String> uriStrings = new ArrayList<>();
+        uriStrings = new ArrayList<>();
         for (Uri uri : selectedUris) {
             uriStrings.add(uri.toString());
         }
@@ -312,129 +316,42 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         });
     }
 
-    private void createVideoCardRequest(String thumbnail,  ArrayList<String> uris) throws IOException {
 
-        //<멀티 파트 요청에 맞게 필드 변환>
-        for (String uriString : uris) {
-            File file = new File(UriUtils.getRealPathFromURIString(this, uriString));
+    // You will enqueue the work from an Activity or any other component in your application
+    public void enqueueVideoUpload(){
+        // attach data to the workRequest
+        Data.Builder data = new Data.Builder();
 
-            // 파일 크기 확인
-            long fileSizeInBytes = file.length();
-            long fileSizeInMB = fileSizeInBytes / (1024 * 1024);
-            // 파일 크기가 30MB를 초과하는 경우 알림 표시 후 함수 중단
-            if (fileSizeInMB > 30) {
-                showFileSizeExceedAlert();
-                fileSizeExceeded = true;
-                return;
-            }
-
-            RequestBody fileBody = RequestBody.create(MediaType.parse("video/*"), file);
-            uriPart = MultipartBody.Part.createFormData("uri", file.getName(), fileBody);
-        }
-
-        // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
-        // 썸네일이 로컬 경로인지, 웹 경로인지에 따라서 다르게 처리함
-        if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
-            // 웹 URL 의 경우, 파일 이름을 웹경로로 지정하여 서버에서 바로 찾을 수 있도록 함
-            // 파일 이름으로 웹 경로인 thumbnail을 직접 넘겨서, 서버에서 full-path 항목으로 접근 가능함
-            RequestBody displayImageUrlBody = RequestBody.create(MediaType.parse("text/plain"), thumbnail);
-            displayImagePart = MultipartBody.Part.createFormData("displayImage", thumbnail, displayImageUrlBody);
-
-        } else if(thumbnail.startsWith("content://")){
-            // 로컬 파일 시스템의 경로인 경우 (예: content:// URI)
-            File displayImageFile = new File(UriUtils.getRealPathFromURIString(this, thumbnail));
-            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
-            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
-
-        }else if(thumbnail.startsWith("file:///")){
-            // 로컬 파일이면서, 다음과 같은 경로일 경우
-            // (예: file:///storage/emulated/0/Android/data/com.android.tiki_taka/files/cropped_1713277432550.jpg)
-            // 파일 경로에서 "file://" 부분을 제거하고 파일을 생성해서, 멀티파트로 서버에 전송함
-            String filePath = thumbnail.substring(7);
-            File displayImageFile = new File(filePath);
-            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
-            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
-        }
-
-        // userId: RequestBody로 변환
-        userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
-        // title: RequestBody로 변환
-        titleBody = RequestBody.create(MediaType.parse("text/plain"), storyTitle != null ? storyTitle : "");
-        // location: RequestBody로 변환
-        locationBody = RequestBody.create(MediaType.parse("text/plain"), location != null ? location : "");
-        // comments: 각각의 댓글을 RequestBody로 변환한 후 리스트로 묶음
-        commentsBodies = new ArrayList<>();
-        if(comments != null){
-            for (String comment : comments) {
-                RequestBody commentBody = RequestBody.create(MediaType.parse("text/plain"), comment);
-                commentsBodies.add(commentBody);
-            }
-        }
-        // partnerId: RequestBody로 변환
-        partnerIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(partnerId));
-
+        // Use Gson to convert arrays to JSON strings
+        Gson gson = new Gson();
+        String uriStringsJson = gson.toJson(uriStrings);
+        data.putString("uris", uriStringsJson);
+        data.putString("thumbnail", thumbnailUri);
+        data.putString("title", storyTitle);
+        data.putString("location", location);
+        String commentsStringsJson = gson.toJson(comments);
+        data.putString("comments", commentsStringsJson);
         if (isExistingFolder) {
-            // 기존 폴더에 추가하는 경우에는 folderIdBody를 인자로 추가함
-            folderIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(folderId));
-
+            data.putString("folderId", String.valueOf(folderId));
+        } else {
+            // 기존 폴더가 아닐 때는 folderId로 "-1" 사용
+            data.putString("folderId", "-1");
         }
 
+        // create the input data for the work request
+        Data inputData = data.build();
+
+        //  WorkRequest (and its subclasses) define how and when it should be run.
+        WorkRequest uploadWorkRequest =
+                new OneTimeWorkRequest.Builder(UploadVideoWorker.class)
+                        .setInputData(inputData)
+                        .build();
+        WorkManager.getInstance(this).enqueue(uploadWorkRequest);
+
+        // 백그라운드 WorkRequest 스레드 요청 후에 앨범화면으로 이동시킴
+        IntentHelper.passToAlbumFragment(this);
     }
 
-    private void showFileSizeExceedAlert() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("30MB 이하의 파일을 업로드하세요")
-                .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // 확인 버튼을 클릭하면 아무런 작업을 하지 않고 대화상자를 닫음
-                        dialog.dismiss();
-                    }
-                });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    // 프로그레스 바를 업데이트하는 메서드
-    private void updateProgressBar(int percentage) {
-        // UI 스레드에서 UI 업데이트를 수행해야 합니다.
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ProgressBar progressBar = findViewById(R.id.progressBar);
-                        progressBar.setProgress(percentage);
-                        // 진행률이 0이면 프로그레스 바를 표시합니다.
-                        if (percentage == 0) {
-                            progressBar.setVisibility(View.VISIBLE);
-                        }
-                    }
-            });
-            }
-        });
-    }
-
-
-    private void insertVideoStoryCardInDB(){
-        // 서비스 호출 전에 프로그레스 바를 표시하고 초기화합니다.
-        updateProgressBar(0);
-        Toast.makeText(this, "최대 20초까지 걸릴 수 있습니다", Toast.LENGTH_LONG).show(); // 최대 20초까지 걸릴 수 있다는 안내 토스트 메시지 표시
-        service.saveVideoStoryCard(uriPart, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
-            @Override
-            public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
-                // 서비스 호출 후에 최종 진행률을 설정합니다.
-                updateProgressBar(100);
-                ProcessInsertingCardsResponse(response);
-            }
-
-            @Override
-            public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
-                updateProgressBar(0); // 실패했으므로 진행률을 다시 0으로 초기화합니다.
-                Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
-            }
-        });
-    }
 
     private void ProcessInsertingCardsResponse(Response<SuccessAndMessageResponse> response){
         if(response.isSuccessful()){
@@ -531,6 +448,5 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
 
         }
     }
-
 
 }

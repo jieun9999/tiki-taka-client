@@ -1,8 +1,18 @@
 package com.android.tiki_taka.utils;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+
+import androidx.core.app.NotificationCompat;
+
+import com.android.tiki_taka.R;
+import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,6 +21,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Response;
 
 public class NotificationUtils {
 
@@ -86,6 +98,38 @@ public class NotificationUtils {
             return adjustedTime.format(formatter);
         }
         return null;
+    }
+
+    public static void NotificationBasedOnResponse(Context context, Response<SuccessAndMessageResponse> response, Class<?> targetActivity){
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Android O 이상에서는 채널이 필요합니다.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("upload_status", "Upload Status", NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        if (response.body() != null && response.body().isSuccess()) {
+            // 성공 알림
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, new Intent(context, targetActivity), PendingIntent.FLAG_UPDATE_CURRENT);
+            Notification notification = new NotificationCompat.Builder(context, "upload_status")
+                    .setContentTitle("Upload Complete")
+                    .setContentText("동영상 카드가 업로드 되었습니다.")
+                    .setSmallIcon(R.drawable.baseline_message_24)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
+                    .build();
+            notificationManager.notify(1, notification);
+        } else {
+            // 실패 알림
+            Notification notification = new NotificationCompat.Builder(context, "upload_status")
+                    .setContentTitle("Upload Failed")
+                    .setContentText("동영상 카드 업로드에 실패했습니다.")
+                    .setSmallIcon(R.drawable.baseline_sms_failed_24)
+                    .setAutoCancel(true)
+                    .build();
+            notificationManager.notify(2, notification);
+        }
     }
 
 

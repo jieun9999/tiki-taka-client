@@ -69,5 +69,11 @@ dependencies {
     implementation ("com.google.android.exoplayer:exoplayer-core:2.19.1");
     implementation ("com.google.android.exoplayer:exoplayer-ui:2.19.1");
     implementation ("com.google.android.exoplayer:exoplayer-hls:2.19.1");
+    // WorkManager 라이브러리
+    dependencies {
+        val work_version = "2.9.0"
+        // (Java only)
+        implementation("androidx.work:work-runtime:$work_version")
+    }
 
-}
+    }
