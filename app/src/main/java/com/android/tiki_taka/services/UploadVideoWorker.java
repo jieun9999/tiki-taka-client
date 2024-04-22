@@ -10,6 +10,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
+import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;
 import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard3;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
@@ -224,8 +225,8 @@ public class UploadVideoWorker extends Worker {
     // 나중에 서버에서 응답이 올때 아래와 같이 화면이동이 아닌 알림
     private void handleResponse(Response<SuccessAndMessageResponse> response){
         if (response.body() != null) {
-            int cardId = Integer.parseInt(response.body().getMessage());
-            NotificationUtils.NotificationOnSuccess(getApplicationContext(), WithCommentStoryCard3.class, cardId);
+            int folderId = Integer.parseInt(response.body().getMessage());
+            NotificationUtils.NotificationOnSuccess(getApplicationContext(), ImageFolderActivity.class, folderId);
 
         } else {
             NotificationUtils.NotificationOnFailure(getApplicationContext());
