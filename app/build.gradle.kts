@@ -74,6 +74,11 @@ dependencies {
         val work_version = "2.9.0"
         // (Java only)
         implementation("androidx.work:work-runtime:$work_version")
+    // firebase realtime database sdk 추가하기
+        implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+        implementation("com.google.firebase:firebase-database")
+
     }
+
 
     }

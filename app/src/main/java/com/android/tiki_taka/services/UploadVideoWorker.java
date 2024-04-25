@@ -2,18 +2,18 @@ package com.android.tiki_taka.services;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
 import com.android.tiki_taka.ui.activity.Album.ImageFolderActivity;
-import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard3;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -58,11 +59,9 @@ public class UploadVideoWorker extends Worker {
     private RequestBody partnerIdBody;
     private RequestBody folderIdBody;
     private boolean fileSizeExceeded;
-    private Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable statusChecker;
-    private String key;
-
     public static final String TAG = "UploadVideoWorker";
+    private UploadStatusChecker uploadStatusChecker;
+    private String parentKey;
 
     public UploadVideoWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -82,6 +81,7 @@ public class UploadVideoWorker extends Worker {
             if (!fileSizeExceeded) {
                 uploadVideo();
             }
+
             return Result.success();
         } catch (Exception e) {
             Log.e(TAG, "Error uploading video", e);
@@ -124,7 +124,6 @@ public class UploadVideoWorker extends Worker {
             folderId = -1; // Set default or handle error appropriately
         }
 
-
     }
 
     public void ConvertToMultipartData() {
@@ -147,7 +146,9 @@ public class UploadVideoWorker extends Worker {
             // S3에 업로드될 키 생성
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
             String currentDate = dateFormat.format(new Date());
-            key = "uploads/" + currentDate + "/" + file.getName();
+            parentKey = currentDate + "/" + file.getName();
+            // Firebase 키에 허용되지 않는 문자를 언더스코어로 대체
+            parentKey = generateFirebaseSafeKey(parentKey);
 
         }
 
@@ -197,6 +198,12 @@ public class UploadVideoWorker extends Worker {
         }
     }
 
+    public String generateFirebaseSafeKey(String fileName) {
+        // 키에서 Firebase에 허용되지 않는 문자를 언더스코어로 대체
+        String key = fileName.replaceAll("[.$#\\[\\]]", "_");
+        return key;
+    }
+
     public void showFileSizeExceedAlert() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getApplicationContext());
         builder.setMessage("30MB 이하의 파일을 업로드하세요")
@@ -211,21 +218,26 @@ public class UploadVideoWorker extends Worker {
     }
 
     public void uploadVideo() {
-        // Start checking the status right after initiating the upload
-        startCheckingUploadStatus();
+        // 업로드 상태 체커 인스턴스 생성
+        uploadStatusChecker = new UploadStatusChecker(parentKey);
+        // 상태 체킹 시작
+        uploadStatusChecker.startChecking();
+
         service.saveVideoStoryCard(uriPart, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 ProcessInsertingCardsResponse(response);
-                // Stop checking the status once a response is received
-                stopCheckingUploadStatus();
+                // 응답이 오면 상태 체킹 중단
+                uploadStatusChecker.stopChecking();
+
             }
 
             @Override
             public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
-                // Also stop checking on failure
-                stopCheckingUploadStatus();
+                // 실패 시에도 상태 체킹 중단
+                uploadStatusChecker.stopChecking();
+
             }
         });
     }
@@ -251,26 +263,5 @@ public class UploadVideoWorker extends Worker {
         }
     }
 
-    public void startCheckingUploadStatus(){
-        statusChecker = new Runnable() {
-            @Override
-            public void run() {
-                checkUploadStatus();
-                handler.postDelayed(statusChecker,1000);
-            }
-        };
-
-        // 시작할 때 1초 정도 지연
-        handler.postDelayed(statusChecker, 1000);
-    }
-
-    public void checkUploadStatus(){
-       // key를 가지고 해당된 행을 realtime database 에서 찾아오기
-
-    }
-
-    public void stopCheckingUploadStatus(){
-        handler.removeCallbacks(statusChecker);
-    }
 
 }
