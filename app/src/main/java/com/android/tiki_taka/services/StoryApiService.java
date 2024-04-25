@@ -100,7 +100,6 @@ public interface StoryApiService {
                                    @Part("title") RequestBody title,
                                    @Part("location") RequestBody location);
 
-
     @POST("Story/updateFolderLocationInCard.php")
     Call<ApiResponse> updateFolderLocationInCard(@Body StoryCard storyCard);
 

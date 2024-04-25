@@ -2,6 +2,8 @@ package com.android.tiki_taka.services;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -21,7 +23,9 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -54,7 +58,9 @@ public class UploadVideoWorker extends Worker {
     private RequestBody partnerIdBody;
     private RequestBody folderIdBody;
     private boolean fileSizeExceeded;
-
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable statusChecker;
+    private String key;
 
     public static final String TAG = "UploadVideoWorker";
 
@@ -137,6 +143,12 @@ public class UploadVideoWorker extends Worker {
             }
             RequestBody fileBody = RequestBody.create(MediaType.parse("video/*"), file);
             uriPart = MultipartBody.Part.createFormData("uri", file.getName(), fileBody);
+
+            // S3에 업로드될 키 생성
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+            String currentDate = dateFormat.format(new Date());
+            key = "uploads/" + currentDate + "/" + file.getName();
+
         }
 
         // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
@@ -199,15 +211,21 @@ public class UploadVideoWorker extends Worker {
     }
 
     public void uploadVideo() {
+        // Start checking the status right after initiating the upload
+        startCheckingUploadStatus();
         service.saveVideoStoryCard(uriPart, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
                 ProcessInsertingCardsResponse(response);
+                // Stop checking the status once a response is received
+                stopCheckingUploadStatus();
             }
 
             @Override
             public void onFailure(Call<SuccessAndMessageResponse> call, Throwable t) {
                 Log.e("Network Error", "네트워크 호출 실패: " + t.getMessage());
+                // Also stop checking on failure
+                stopCheckingUploadStatus();
             }
         });
     }
@@ -231,6 +249,28 @@ public class UploadVideoWorker extends Worker {
         } else {
             NotificationUtils.NotificationOnFailure(getApplicationContext());
         }
+    }
+
+    public void startCheckingUploadStatus(){
+        statusChecker = new Runnable() {
+            @Override
+            public void run() {
+                checkUploadStatus();
+                handler.postDelayed(statusChecker,1000);
+            }
+        };
+
+        // 시작할 때 1초 정도 지연
+        handler.postDelayed(statusChecker, 1000);
+    }
+
+    public void checkUploadStatus(){
+       // key를 가지고 해당된 행을 realtime database 에서 찾아오기
+
+    }
+
+    public void stopCheckingUploadStatus(){
+        handler.removeCallbacks(statusChecker);
     }
 
 }
