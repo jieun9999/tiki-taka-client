@@ -55,13 +55,27 @@ public class UploadStatusChecker{
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     // 여기서 progress 값 가져오기
-                    Integer progress = dataSnapshot.child("progress").getValue(Integer.class);
 
-                    if (progress == 100) {
-                        Log.d("waiting", "업로드 완료");
+                    Long updatedAt = dataSnapshot.child("updated_at").getValue(Long.class);
+                    updatedAt *= 1000; // 초 단위를 밀리초 단위로 변환
+                    Long currentTime = System.currentTimeMillis();
+                    long timeDifference = currentTime - updatedAt;
+//                    Log.d("updatedAt", String.valueOf(updatedAt));
+//                    Log.d("currentTime", String.valueOf(currentTime));
+//                    Log.d("timeDifference", String.valueOf(timeDifference));
+
+                    if(timeDifference > 10000){
+                        // 특히 같은 이름의 파일을 여러 번 업로드하는 경우에도 각 업로드의 상태를 개별적으로 확인할 수 있게 한다
+                        Log.d("waiting", "업로드 준비 중입니다.(과거에 업로드한 데이터)");
+
                     }else {
-                        // 진행률을 UI에 업데이트 (UI 스레드에서 실행해야 함)
-                        Log.d("progress", String.valueOf(progress));
+                        Integer progress = dataSnapshot.child("progress").getValue(Integer.class);
+                        if (progress == 100) {
+                            Log.d("waiting", "업로드 완료");
+                        }else {
+                            // 진행률을 UI에 업데이트 (UI 스레드에서 실행해야 함)
+                            Log.d("progress", String.valueOf(progress));
+                        }
                     }
 
                 }else {
