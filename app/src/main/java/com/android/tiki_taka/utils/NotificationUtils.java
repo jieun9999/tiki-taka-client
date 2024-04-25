@@ -29,7 +29,6 @@ public class NotificationUtils {
 
     private static final String PREFS_NAME = "notification_prefs";
     private static final String NOTIFICATIONS_KEY = "notifications";
-    private static final int FIXED_NOTIFICATION_ID = 1000; // 고정된 ID 값을 사용
 
     // 알림 리스트를 SharedPreferences에 저장
     public static void saveNotificationList(Context context, List<String> notifications) {
@@ -102,7 +101,7 @@ public class NotificationUtils {
         return null;
     }
 
-    public static void NotificationOnSuccess(Context context, Class<?> targetActivity, int Id){
+    public static void NotificationOnSuccess(Context context, Class<?> targetActivity, int Id, int NOTIFICATION_ID){
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Android O 이상에서는 채널이 필요합니다.
@@ -113,24 +112,22 @@ public class NotificationUtils {
 
         //  여러 알림이 있을 때, 각각의 알림에 대해 다른 행동(예: 다른 메시지 보여주기)을 하고 싶다면, 각각의 PendingIntent에 대해 고유한 REQUEST_CODE를 할당해야 합니다.
         int REQUEST_CODE =  (int) System.currentTimeMillis();
-        // 여러 개의 개별 알림 생성
-        int NOTIFICATION_ID = (int) System.currentTimeMillis();
 
-            // 성공 알림
-            // 인텐트 생성 및 대상 액티비티 지정
-            Intent intent = new Intent(context, targetActivity);
-            intent.putExtra("storyNotification", true);
-            intent.putExtra("Id", Id); // 알림에 메시지 정보 포함하기
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            Notification notification = new NotificationCompat.Builder(context, "upload_status")
-                    .setContentTitle("Upload Complete")
-                    .setContentText("동영상 카드가 업로드 되었습니다.")
-                    .setSmallIcon(R.drawable.baseline_message_24)
-                    .setContentIntent(pendingIntent)
-                    .setAutoCancel(true)
-                    .build();
-            notificationManager.notify(NOTIFICATION_ID, notification);
+        // 성공 알림
+        // 인텐트 생성 및 대상 액티비티 지정
+        Intent intent = new Intent(context, targetActivity);
+        intent.putExtra("storyNotification", true);
+        intent.putExtra("Id", Id); // 알림에 메시지 정보 포함하기
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // 액티비티 스택 상에서 대상 액티비티 위에 있는 모든 액티비티들을 스택에서 제거한 뒤에 대상 액티비티를 시작
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notification = new NotificationCompat.Builder(context, "upload_status")
+                .setContentTitle("업로드 완료")
+                .setContentText("업로드한 동영상 카드를 확인해보세요!")
+                .setSmallIcon(R.drawable.baseline_message_24)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     public static void NotificationOnFailure(Context context){
@@ -156,7 +153,7 @@ public class NotificationUtils {
     }
 
     // 업로드 진행률과 관련된 알림
-    public static void initProgressNotification(Context context){
+    public static void initProgressNotification(Context context, int NOTIFICATION_ID){
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -165,18 +162,18 @@ public class NotificationUtils {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "upload_channel")
-                .setContentTitle("File Upload")
-                .setContentText("Upload in progress")
+                .setContentTitle("업로드 준비")
+                .setContentText("잠시만 기다려주세요.")
                 .setSmallIcon(R.drawable.baseline_upload_24)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setProgress(100, 0, false);
 
-        notificationManager.notify(FIXED_NOTIFICATION_ID, builder.build());
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    public static void updateProgressNotification(Context context, int progress){
+    public static void updateProgressNotification(Context context, int progress, int NOTIFICATION_ID){
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -185,20 +182,14 @@ public class NotificationUtils {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "upload_channel")
-                .setContentTitle("File Upload")
-                .setContentText("Upload in progress")
+                .setContentTitle("업로드 중")
                 .setSmallIcon(R.drawable.baseline_upload_24)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setProgress(100, progress, false);
 
-        notificationManager.notify(FIXED_NOTIFICATION_ID, builder.build());
-    }
-
-    public static void cancelNotification(Context context) {
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(FIXED_NOTIFICATION_ID); // 특정 ID의 알림을 취소
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
 

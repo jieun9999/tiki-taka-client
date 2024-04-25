@@ -62,6 +62,7 @@ public class UploadVideoWorker extends Worker {
     public static final String TAG = "UploadVideoWorker";
     private UploadStatusChecker uploadStatusChecker;
     private String parentKey;
+    int NOTIFICATION_ID; // 3종류 알림이 같은 아이디를 씀
 
     public UploadVideoWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -218,8 +219,9 @@ public class UploadVideoWorker extends Worker {
     }
 
     public void uploadVideo() {
+        NOTIFICATION_ID = (int) System.currentTimeMillis();
         // 업로드 상태 체커 인스턴스 생성
-        uploadStatusChecker = new UploadStatusChecker(parentKey, getApplicationContext());
+        uploadStatusChecker = new UploadStatusChecker(parentKey, getApplicationContext(), NOTIFICATION_ID);
         // 상태 체킹 시작
         uploadStatusChecker.startChecking();
 
@@ -256,7 +258,7 @@ public class UploadVideoWorker extends Worker {
     private void handleResponse(Response<SuccessAndMessageResponse> response){
         if (response.body() != null) {
             int folderId = Integer.parseInt(response.body().getMessage());
-            NotificationUtils.NotificationOnSuccess(getApplicationContext(), ImageFolderActivity.class, folderId);
+            NotificationUtils.NotificationOnSuccess(getApplicationContext(), ImageFolderActivity.class, folderId, NOTIFICATION_ID);
 
         } else {
             NotificationUtils.NotificationOnFailure(getApplicationContext());

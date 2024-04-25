@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import com.android.tiki_taka.ui.activity.Album.WithCommentStoryCard3;
 import com.android.tiki_taka.utils.NotificationUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,12 +22,14 @@ public class UploadStatusChecker{
     private final int INTERVAL = 1000; // 1초마다 실행
     String parentKey;
     private Context context; // UploadVideoWorker에게 전달받은 컨텍스트
+    public int NOTIFICATION_ID;
 
-    public UploadStatusChecker(String parentKey, Context context) {
+    public UploadStatusChecker(String parentKey, Context context, int NOTIFICATION_ID) {
         // Firebase Realtime Database 초기화
         this.databaseReference = FirebaseDatabase.getInstance().getReference("uploads").child(parentKey);
         this.parentKey = parentKey;
         this.context = context;
+        this.NOTIFICATION_ID = NOTIFICATION_ID;
 
         //HandlerThread 초기화
         this.handlerThread = new HandlerThread("StatusCheckerThread");
@@ -70,20 +73,21 @@ public class UploadStatusChecker{
 
                     if(timeDifference > 10000){
                         // 특히 같은 이름의 파일을 여러 번 업로드하는 경우에도 각 업로드의 상태를 개별적으로 확인할 수 있게 한다
-                        NotificationUtils.initProgressNotification(context);
+                        NotificationUtils.initProgressNotification(context, NOTIFICATION_ID);
 
                     }else {
                         Integer progress = dataSnapshot.child("progress").getValue(Integer.class);
                         if (progress == 100) {
-                            NotificationUtils.cancelNotification(context);
+                           // 알림은 UploadVideoWorker 클래스에서
+
                         }else {
                             // 진행률을 UI에 업데이트 (UI 스레드에서 실행해야 함)
-                            NotificationUtils.updateProgressNotification(context, progress);
+                            NotificationUtils.updateProgressNotification(context, progress, NOTIFICATION_ID);
                         }
                     }
 
                 }else {
-                    NotificationUtils.initProgressNotification(context);
+                    NotificationUtils.initProgressNotification(context, NOTIFICATION_ID);
                 }
             }
 
