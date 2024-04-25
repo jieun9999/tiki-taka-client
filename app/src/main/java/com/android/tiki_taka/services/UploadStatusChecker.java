@@ -56,11 +56,16 @@ public class UploadStatusChecker{
                 if (dataSnapshot.exists()) {
                     // 여기서 progress 값 가져오기
                     Integer progress = dataSnapshot.child("progress").getValue(Integer.class);
-                    // 진행률을 UI에 업데이트 (UI 스레드에서 실행해야 함)
-                    Log.d("progress", String.valueOf(progress));
+
+                    if (progress == 100) {
+                        Log.d("waiting", "업로드 완료");
+                    }else {
+                        // 진행률을 UI에 업데이트 (UI 스레드에서 실행해야 함)
+                        Log.d("progress", String.valueOf(progress));
+                    }
+
                 }else {
-                    Log.d("parentKey", parentKey);
-                    Log.d("error", "dataSnapshot이 존재하지 않습니다.");
+                    Log.d("waiting", "업로드 준비 중입니다.");
                 }
             }
 
