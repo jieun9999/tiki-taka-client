@@ -219,7 +219,7 @@ public class UploadVideoWorker extends Worker {
 
     public void uploadVideo() {
         // 업로드 상태 체커 인스턴스 생성
-        uploadStatusChecker = new UploadStatusChecker(parentKey);
+        uploadStatusChecker = new UploadStatusChecker(parentKey, getApplicationContext());
         // 상태 체킹 시작
         uploadStatusChecker.startChecking();
 

@@ -1,9 +1,11 @@
 package com.android.tiki_taka.services;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import com.android.tiki_taka.utils.NotificationUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -18,11 +20,13 @@ public class UploadStatusChecker{
     private Handler handler;
     private final int INTERVAL = 1000; // 1초마다 실행
     String parentKey;
+    private Context context; // UploadVideoWorker에게 전달받은 컨텍스트
 
-    public UploadStatusChecker(String parentKey) {
+    public UploadStatusChecker(String parentKey, Context context) {
         // Firebase Realtime Database 초기화
         this.databaseReference = FirebaseDatabase.getInstance().getReference("uploads").child(parentKey);
         this.parentKey = parentKey;
+        this.context = context;
 
         //HandlerThread 초기화
         this.handlerThread = new HandlerThread("StatusCheckerThread");
@@ -33,9 +37,9 @@ public class UploadStatusChecker{
     private Runnable statusChecker = new Runnable() {
         @Override
         public void run() {
-                checkUploadStatus(); // 진행 상태 체크 메소드 실행
-                // 예약된 다음 실행을 위해 핸들러에 Runnable 재등록
-                handler.postDelayed(this, INTERVAL);
+            checkUploadStatus(); // 진행 상태 체크 메소드 실행
+            // 예약된 다음 실행을 위해 핸들러에 Runnable 재등록
+            handler.postDelayed(this, INTERVAL);
         }
     };
 
@@ -66,20 +70,20 @@ public class UploadStatusChecker{
 
                     if(timeDifference > 10000){
                         // 특히 같은 이름의 파일을 여러 번 업로드하는 경우에도 각 업로드의 상태를 개별적으로 확인할 수 있게 한다
-                        Log.d("waiting", "업로드 준비 중입니다.(과거에 업로드한 데이터)");
+                        NotificationUtils.initProgressNotification(context);
 
                     }else {
                         Integer progress = dataSnapshot.child("progress").getValue(Integer.class);
                         if (progress == 100) {
-                            Log.d("waiting", "업로드 완료");
+                            NotificationUtils.cancelNotification(context);
                         }else {
                             // 진행률을 UI에 업데이트 (UI 스레드에서 실행해야 함)
-                            Log.d("progress", String.valueOf(progress));
+                            NotificationUtils.updateProgressNotification(context, progress);
                         }
                     }
 
                 }else {
-                    Log.d("waiting", "업로드 준비 중입니다.");
+                    NotificationUtils.initProgressNotification(context);
                 }
             }
 

@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.android.tiki_taka.R;
 import com.android.tiki_taka.models.response.SuccessAndMessageResponse;
@@ -28,6 +29,7 @@ public class NotificationUtils {
 
     private static final String PREFS_NAME = "notification_prefs";
     private static final String NOTIFICATIONS_KEY = "notifications";
+    private static final int FIXED_NOTIFICATION_ID = 1000; // 고정된 ID 값을 사용
 
     // 알림 리스트를 SharedPreferences에 저장
     public static void saveNotificationList(Context context, List<String> notifications) {
@@ -105,7 +107,7 @@ public class NotificationUtils {
 
         // Android O 이상에서는 채널이 필요합니다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("upload_status", "Upload Status", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel = new NotificationChannel("upload_status", "Upload Status", NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(channel);
         }
 
@@ -136,7 +138,7 @@ public class NotificationUtils {
 
         // Android O 이상에서는 채널이 필요합니다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("upload_status", "Upload Status", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel = new NotificationChannel("upload_status", "Upload Status", NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(channel);
         }
 
@@ -151,6 +153,52 @@ public class NotificationUtils {
                 .setAutoCancel(true)
                 .build();
         notificationManager.notify(NOTIFICATION_ID, notification);
+    }
+
+    // 업로드 진행률과 관련된 알림
+    public static void initProgressNotification(Context context){
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("upload_channel", "Upload Progress", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "upload_channel")
+                .setContentTitle("File Upload")
+                .setContentText("Upload in progress")
+                .setSmallIcon(R.drawable.baseline_upload_24)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setProgress(100, 0, false);
+
+        notificationManager.notify(FIXED_NOTIFICATION_ID, builder.build());
+    }
+
+    public static void updateProgressNotification(Context context, int progress){
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("upload_channel", "Upload Progress", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "upload_channel")
+                .setContentTitle("File Upload")
+                .setContentText("Upload in progress")
+                .setSmallIcon(R.drawable.baseline_upload_24)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setProgress(100, progress, false);
+
+        notificationManager.notify(FIXED_NOTIFICATION_ID, builder.build());
+    }
+
+    public static void cancelNotification(Context context) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(FIXED_NOTIFICATION_ID); // 특정 ID의 알림을 취소
     }
 
 
