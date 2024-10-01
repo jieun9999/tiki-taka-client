@@ -21,7 +21,10 @@ import com.android.tiki_taka.ui.fragment.AlbumFragment;
 import com.android.tiki_taka.ui.fragment.HomeFragment;
 import com.android.tiki_taka.utils.RetrofitClient;
 import com.android.tiki_taka.utils.SharedPreferencesHelper;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -85,6 +88,22 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(new ItemSelectedListener()); // ItemSelectedListener 클래스를 이용해 탭 선택 시의 동작을 정의합니다.
 
 
+        // //네트워크 작업(채팅)을 수행할 때 주의해야 할 중요한 점 중 하나는 네트워크 작업을 메인 스레드에서 실행하지 않아야 한다는 것!!!
+        String TAG = "FCM Service";
+        // 현재 토큰을 가져오기
+        FirebaseMessaging.getInstance().getToken().
+                addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "토큰 생성 실패", task.getException());
+                            return;
+                        }
+                        // 새로운 토큰 생성 성공 시
+                        String token = task.getResult();
+                        Log.d(TAG,token);
+                    }
+                });
     }
 
 
