@@ -63,6 +63,8 @@ public class SigninActivity1 extends AppCompatActivity {
         Retrofit retrofit = RetrofitClient.getClient();
         // Retrofit을 통해 ApiService 인터페이스를 구현한 서비스 인스턴스를 생성
         service = retrofit.create(AuthApiService.class);
+        // ProfileApiService 초기화
+        service2 = retrofit.create(ProfileApiService.class);
         userId = SharedPreferencesHelper.getUserId(this);
 
         emailEditText.addTextChangedListener(new TextWatcher() {
@@ -91,7 +93,7 @@ public class SigninActivity1 extends AppCompatActivity {
             }
             @Override
             public void afterTextChanged(Editable s) {
-                if (ValidationUtils.isValidPassword(s.toString())) {
+                if (!ValidationUtils.isValidPassword(s.toString())) {
                     passInputLayout.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
                 } else {
                     passInputLayout.setError(null);
@@ -188,6 +190,7 @@ public class SigninActivity1 extends AppCompatActivity {
 
 
     public void checkConnectState(){
+        Log.e("userId", String.valueOf(userId));
         service2.checkConnectState(userId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

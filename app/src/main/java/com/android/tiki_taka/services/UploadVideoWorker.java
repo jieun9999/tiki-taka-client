@@ -2,6 +2,7 @@ package com.android.tiki_taka.services;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -127,10 +128,11 @@ public class UploadVideoWorker extends Worker {
 
     }
 
-    public void ConvertToMultipartData() {
+    public void ConvertToMultipartData() throws Exception {
         //<멀티 파트 요청에 맞게 필드 변환>
         for (String uriString : uris) {
-            File file = new File(UriUtils.getRealPathFromURIString(this.getApplicationContext(), uriString));
+            Uri uri = Uri.parse(uriString);  // uriString을 Uri로 변환
+            File file = UriUtils.getFileFromUri(this.getApplicationContext(), uri);  // Uri를 사용하여 파일 얻기
 
             // 파일 크기 확인
             long fileSizeInBytes = file.length();
@@ -141,6 +143,7 @@ public class UploadVideoWorker extends Worker {
                 fileSizeExceeded = true;
                 return;
             }
+
             RequestBody fileBody = RequestBody.create(MediaType.parse("video/*"), file);
             uriPart = MultipartBody.Part.createFormData("uri", file.getName(), fileBody);
 
@@ -150,40 +153,36 @@ public class UploadVideoWorker extends Worker {
             parentKey = currentDate + "/" + file.getName();
             // Firebase 키에 허용되지 않는 문자를 언더스코어로 대체
             parentKey = generateFirebaseSafeKey(parentKey);
-
         }
 
         // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
         // 썸네일이 로컬 경로인지, 웹 경로인지에 따라서 다르게 처리함
         if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
-            // 웹 URL 의 경우, 파일 이름을 웹경로로 지정하여 서버에서 바로 찾을 수 있도록 함
-            // 파일 이름으로 웹 경로인 thumbnail을 직접 넘겨서, 서버에서 full-path 항목으로 접근 가능함
+            // 웹 URL의 경우
             RequestBody displayImageUrlBody = RequestBody.create(MediaType.parse("text/plain"), thumbnail);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", thumbnail, displayImageUrlBody);
 
         } else if (thumbnail.startsWith("content://")) {
-            // 로컬 파일 시스템의 경로인 경우 (예: content:// URI)
-            File displayImageFile = new File(UriUtils.getRealPathFromURIString(this.getApplicationContext(), thumbnail));
+            // 로컬 파일 시스템의 경로인 경우
+            Uri thumbnailUri = Uri.parse(thumbnail);  // thumbnail을 Uri로 변환
+            File displayImageFile = UriUtils.getFileFromUri(this.getApplicationContext(), thumbnailUri);
             RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"), displayImageFile);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName(), displayImageRequestBody);
 
         } else if (thumbnail.startsWith("file:///")) {
-            // 로컬 파일이면서, 다음과 같은 경로일 경우
-            // (예: file:///storage/emulated/0/Android/data/com.android.tiki_taka/files/cropped_1713277432550.jpg)
-            // 파일 경로에서 "file://" 부분을 제거하고 파일을 생성해서, 멀티파트로 서버에 전송함
+            // 로컬 파일 경로
             String filePath = thumbnail.substring(7);
             File displayImageFile = new File(filePath);
             RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"), displayImageFile);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName(), displayImageRequestBody);
         }
 
-        // userId: RequestBody로 변환
+        // userId, title, location 등의 RequestBody 변환
         userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
-        // title: RequestBody로 변환
         titleBody = RequestBody.create(MediaType.parse("text/plain"), storyTitle != null ? storyTitle : "");
-        // location: RequestBody로 변환
         locationBody = RequestBody.create(MediaType.parse("text/plain"), location != null ? location : "");
-        // comments: 각각의 댓글을 RequestBody로 변환한 후 리스트로 묶음
+
+        // comments RequestBody 변환
         commentsBodies = new ArrayList<>();
         if (comments != null) {
             for (String comment : comments) {
@@ -191,13 +190,15 @@ public class UploadVideoWorker extends Worker {
                 commentsBodies.add(commentBody);
             }
         }
-        // partnerId: RequestBody로 변환
+
+        // partnerId 변환
         partnerIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(partnerId));
 
         if (folderId != -1) {
             folderIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(folderId));
         }
     }
+
 
     public String generateFirebaseSafeKey(String fileName) {
         // 키에서 Firebase에 허용되지 않는 문자를 언더스코어로 대체

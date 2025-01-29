@@ -1,10 +1,17 @@
 package com.android.tiki_taka.utils;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class UriUtils {
 
@@ -20,23 +27,38 @@ public class UriUtils {
         return mimeType != null && mimeType.startsWith("image/");
     }
 
-    // 이미지 파일을 서버에 업로드 할때는 실제 파일 경로가 필요함
-    // content:// URI를 실제 파일 경로로 변환하는 방법
-    public static String getRealPathFromURIString(Context context, String uriString) {
-        Uri contentUri = Uri.parse(uriString);
-        Cursor cursor = null;
-        try {
-            String[] proj = { MediaStore.Images.Media.DATA };
-            cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                return cursor.getString(column_index);
+    // 파일 경로 대신 URI로부터 파일을 복사하여 임시 파일을 만드는 방식
+    public static File getFileFromUri(Context context, Uri uri) throws Exception {
+        ContentResolver contentResolver = context.getContentResolver();
+        String fileName = getFileName(contentResolver, uri);
+        File tempFile = new File(context.getCacheDir(), fileName);
+
+        try (InputStream inputStream = contentResolver.openInputStream(uri);
+             OutputStream outputStream = new FileOutputStream(tempFile)) {
+            byte[] buffer = new byte[4 * 1024];
+            int read;
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
             }
-        } finally {
-            if (cursor != null) {
+            outputStream.flush();
+        }
+        return tempFile;
+    }
+
+    // URI로부터 파일 이름을 가져오는 메서드
+    @SuppressLint("Range")
+    private static String getFileName(ContentResolver contentResolver, Uri uri) {
+        String fileName = "";
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
+        if (cursor != null) {
+            try {
+                if (cursor.moveToFirst()) {
+                    fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
                 cursor.close();
             }
         }
-        return null; // 파일 경로를 찾을 수 없는 경우
+        return fileName;
     }
 }

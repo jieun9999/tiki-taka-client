@@ -19,7 +19,11 @@ public class ValidationUtils {
     }
 
     public static boolean isValidPassword(String password) {
-        return !password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}$");
+        // 8자 이상 20자 이하, 영문과 숫자를 혼합한 기본 조건
+        boolean basicCriteria = password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,20}$");
+        // 기본 조건을 만족하거나, 기본 조건을 만족한 이후 특수 문자가 추가된 경우도 허용
+        boolean extendedCriteria = password.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d!@#$%^&*()_+\\-=]{8,20}$");
+        return basicCriteria || extendedCriteria;
     }
 
 }

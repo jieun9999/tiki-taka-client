@@ -201,7 +201,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         recyclerView.setAdapter(new StoryWritingAdapter(selectedUris, this,this));
     }
 
-    private void saveCards() throws IOException {
+    private void saveCards() throws Exception {
 
         ArrayList<String> uriStrings = convertUrisToStringList(selectedUris);
         thumbnailUri = determineThumbnailUri(editedThumbnailUri, displayImage, firstUri);
@@ -242,39 +242,27 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         }
     }
 
-    private void createImageCardRequest( String thumbnail,  ArrayList<String> uris) throws IOException {
+    private void createImageCardRequest( String thumbnail,  ArrayList<String> uris) throws Exception {
 
         //<멀티 파트 요청에 맞게 필드 변환>
-        // 이미지 URI 리스트 (uris)
         urisParts = new ArrayList<>();
         for (String uriString : uris) {
-            File file = new File(UriUtils.getRealPathFromURIString(this, uriString));
+            Uri uri = Uri.parse(uriString);
+            File file = UriUtils.getFileFromUri(this, uri);  // 파일을 얻음
             RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
-            urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody)); //여러 파일 전송시 이름 주의!
+            urisParts.add(MultipartBody.Part.createFormData("uris[]", file.getName(), fileBody));  // 여러 파일 전송 시 이름 주의!
         }
 
         // displayImage: 이미지 파일이므로 MultipartBody.Part로 변환
-        // 썸네일이 로컬 경로인지, 웹 경로인지에 따라서 다르게 처리함
         if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
-            // 웹 URL 의 경우, 파일 이름을 웹경로로 지정하여 서버에서 바로 찾을 수 있도록 함
-            // 파일 이름으로 웹 경로인 thumbnail을 직접 넘겨서, 서버에서 full-path 항목으로 접근 가능함
             RequestBody displayImageUrlBody = RequestBody.create(MediaType.parse("text/plain"), thumbnail);
             displayImagePart = MultipartBody.Part.createFormData("displayImage", thumbnail, displayImageUrlBody);
 
-        } else if(thumbnail.startsWith("content://")){
-            // 로컬 파일 시스템의 경로인 경우 (예: content:// URI)
-            File displayImageFile = new File(UriUtils.getRealPathFromURIString(this, thumbnail));
-            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
-            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
-
-        }else if(thumbnail.startsWith("file:///")){
-            // 로컬 파일이면서, 다음과 같은 경로일 경우
-            // (예: file:///storage/emulated/0/Android/data/com.android.tiki_taka/files/cropped_1713277432550.jpg)
-            // 파일 경로에서 "file://" 부분을 제거하고 파일을 생성해서, 멀티파트로 서버에 전송함
-            String filePath = thumbnail.substring(7);
-            File displayImageFile = new File(filePath);
-            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"),displayImageFile);
-            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName() , displayImageRequestBody);
+        } else {
+            Uri thumbnailUri = Uri.parse(thumbnail);
+            File displayImageFile = UriUtils.getFileFromUri(this, thumbnailUri);  // 썸네일을 파일로 얻음
+            RequestBody displayImageRequestBody = RequestBody.create(MediaType.parse("image/*"), displayImageFile);
+            displayImagePart = MultipartBody.Part.createFormData("displayImage", displayImageFile.getName(), displayImageRequestBody);
         }
 
         // userId: RequestBody로 변환
@@ -303,6 +291,15 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
     }
 
     private void insertImageStoryCardsInDB(){
+        // 데이터가 잘 넘어감
+        Log.d("urisParts", urisParts.toString());
+        Log.d("displayImagePart", displayImagePart.toString());
+        Log.d("userIdBody", userIdBody.toString());
+        Log.d("titleBody", titleBody.toString());
+        Log.d("locationBody", locationBody.toString());
+        Log.d("commentsBodies", commentsBodies.toString());
+        Log.d("partnerIdBody", partnerIdBody.toString());
+
         service.saveImageStoryCards(urisParts, displayImagePart, userIdBody, titleBody, locationBody, commentsBodies, partnerIdBody, folderIdBody).enqueue(new Callback<SuccessAndMessageResponse>() {
             @Override
             public void onResponse(Call<SuccessAndMessageResponse> call, Response<SuccessAndMessageResponse> response) {
@@ -405,7 +402,7 @@ public class StoryWritingActivity1 extends AppCompatActivity implements PencilIc
         uploadBtn.setOnClickListener(v -> {
             try {
                 saveCards();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
