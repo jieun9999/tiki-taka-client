@@ -48,6 +48,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import okhttp3.MultipartBody;
 
 public class ProfileActivity1 extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_CODE = 100; // 권한 요청을 구별하기 위한 고유한 요청 코드, 런타임 권한 요청시 사용
@@ -545,10 +546,20 @@ public class ProfileActivity1 extends AppCompatActivity {
     }
 
     private void updateProfileBackImage(String imageUriString, int userId){
-        JSONObject jsonObject = createJsonRequestBody(imageUriString);
-        RequestBody requestBody = createRequestBody(jsonObject);
+        // Uri를 파일 경로로 변환
+        Uri imageUri = Uri.parse(imageUriString);
+        String realPath = ImageUtils.getRealPathFromUri(this, imageUri);
+        // 파일 객체 생성
+        File imageFile = new File(realPath);
 
-        service.updateProfileBackImage(requestBody).enqueue(new Callback<ResponseBody>() {
+        // RequestBody 생성 (이미지 파일)
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
+        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", imageFile.getName(), requestFile);
+
+        // RequestBody 생성 (텍스트 데이터, userId)
+        RequestBody userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
+
+        service.updateProfileBackImage(userIdBody, imagePart).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 updateBackImgResponseProcess(response);
@@ -616,10 +627,20 @@ public class ProfileActivity1 extends AppCompatActivity {
 
     private void updateProfileImage(String imageUriString, int userId){
 
-        JSONObject jsonObject = createJsonRequestBody(imageUriString);
-        RequestBody requestBody = createRequestBody(jsonObject);
+        // Uri를 파일 경로로 변환
+        Uri imageUri = Uri.parse(imageUriString);
+        String realPath = ImageUtils.getRealPathFromUri(this, imageUri);
+        // 파일 객체 생성
+        File imageFile = new File(realPath);
 
-        service.updateProfileImage(requestBody).enqueue(new Callback<ResponseBody>() {
+        // RequestBody 생성 (이미지 파일)
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
+        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", imageFile.getName(), requestFile);
+
+        // RequestBody 생성 (텍스트 데이터, userId)
+        RequestBody userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
+
+        service.updateProfileImage(userIdBody, imagePart).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 updateProfileImageResponseProcess(response);

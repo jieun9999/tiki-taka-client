@@ -34,6 +34,7 @@ import com.android.tiki_taka.models.dto.PartnerDataManager;
 import com.android.tiki_taka.models.dto.PartnerProfile;
 import com.android.tiki_taka.models.dto.UserProfile;
 import com.android.tiki_taka.services.ProfileApiService;
+import com.android.tiki_taka.ui.activity.Profile.HomeActivity;
 import com.android.tiki_taka.ui.activity.Profile.ProfileActivity1;
 import com.android.tiki_taka.utils.TimeUtils;
 import com.android.tiki_taka.utils.ImageUtils;
@@ -48,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -207,6 +209,7 @@ public class HomeFragment extends Fragment {
         String myName = userProfile.getName();
         name2.setText(myName);
         String profile2ImageUrl = userProfile.getProfileImage();
+        Log.e("profile2ImageUrl", profile2ImageUrl);
         ImageUtils.loadImage(profile2ImageUrl,profile2, getContext());
 
         String firstDateStr = userProfile.getMeetingDay();
@@ -375,10 +378,20 @@ public class HomeFragment extends Fragment {
 
     private void updateBackgroundImage(String imageUrl, int userId){
 
-        JSONObject jsonObject = createJsonObject(imageUrl);
-        RequestBody body = createRequestBody(jsonObject);
+        // Uri를 파일 경로로 변환
+        Uri imageUri = Uri.parse(imageUrl);
+        String realPath = ImageUtils.getRealPathFromUri(requireContext(), imageUri);
+        // 파일 객체 생성
+        File imageFile = new File(realPath);
 
-        service.updateBackgroundImage(body).enqueue(new Callback<ResponseBody>() {
+        // RequestBody 생성 (이미지 파일)
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), imageFile);
+        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", imageFile.getName(), requestFile);
+
+        // RequestBody 생성 (텍스트 데이터, userId)
+        RequestBody userIdBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(userId));
+
+        service.updateBackgroundImage(userIdBody, imagePart).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 onResponseProcess(response);

@@ -84,23 +84,6 @@ public class SigninActivity1 extends AppCompatActivity {
             }
 
         });
-        passEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!ValidationUtils.isValidPassword(s.toString())) {
-                    passInputLayout.setError("비밀번호는 8자 이상 20자 이하, 영문과 숫자를 혼합하여 사용해야 합니다.");
-                } else {
-                    passInputLayout.setError(null);
-                }
-            }
-
-        });
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

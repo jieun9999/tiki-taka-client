@@ -1,7 +1,10 @@
 package com.android.tiki_taka.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -45,6 +48,18 @@ public class ImageUtils {
         Glide.with(context)
                 .load(resourceId)
                 .into(imageView);
+    }
+
+    // Uri를 실제 파일 경로로 변환
+    public static String getRealPathFromUri(Context context, Uri uri) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        if (cursor == null) return null;
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        String path = cursor.getString(column_index);
+        cursor.close();
+        return path;
     }
 
 }

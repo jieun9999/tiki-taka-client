@@ -1,6 +1,7 @@
 package com.android.tiki_taka.services;
 import com.android.tiki_taka.models.dto.HomeProfiles;
 
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -8,7 +9,9 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Query;
 
 public interface ProfileApiService {
@@ -16,8 +19,10 @@ public interface ProfileApiService {
     @GET("/UserPref/homeProfile.php")
     Call<HomeProfiles> getHomeProfile(@Query("userId") int userId);
 
+    @Multipart
     @POST("/UserPref/updateBackgroundImage.php")
-    Call<ResponseBody> updateBackgroundImage(@Body RequestBody body);
+    Call<ResponseBody> updateBackgroundImage(@Part("userId") RequestBody userId,
+                                             @Part MultipartBody.Part image);
 
     @GET("/UserPref/getMyModalData.php")
     Call<ResponseBody> getMyModalData(@Query("userId") int userId);
@@ -25,11 +30,15 @@ public interface ProfileApiService {
     @GET("/UserPref/getPtnrModalData.php")
     Call<ResponseBody> getPtnrModalData(@Query("userId") int userId);
 
+    @Multipart
     @POST("/UserPref/updateProfileBackImage.php")
-    Call<ResponseBody> updateProfileBackImage(@Body RequestBody body);
+    Call<ResponseBody> updateProfileBackImage(@Part("userId") RequestBody userId,
+                                              @Part MultipartBody.Part image);
 
+    @Multipart
     @POST("/UserPref/updateProfileImage.php")
-    Call<ResponseBody> updateProfileImage(@Body RequestBody body);
+    Call<ResponseBody> updateProfileImage(@Part("userId") RequestBody userId,
+                                          @Part MultipartBody.Part image);
 
     @FormUrlEncoded
     @POST("/UserPref/updateProfileName.php")
